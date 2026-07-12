@@ -51,17 +51,28 @@ const userController = {
     }
 
     try {
+      // 1. डेटाबेस में ईमेल के द्वारा यूजर को खोजें
       const isExistUser = await User.findOne({ email }).select("+password");
 
+      // अगर यूजर नहीं मिलता
       if (!isExistUser) {
         return res.status(404).json({
           message: "User not found",
         });
       }
 
+      // 2. STRICT ROLE CHECK: चेक करें कि यूजर का रोल 'admin' है या नहीं
+      // (यह मानकर कि आपके Schema में role: { type: String, default: 'user' } है)
+      if (isExistUser.role !== "admin") {
+        return res.status(403).json({
+          message: "Access Denied: You do not have permission to access the admin portal.",
+        });
+      }
+
+      // 3. PASSWORD CHECK: पासवर्ड मैच करें
       const matchedPassword = await bcrypt.compare(
         password,
-        isExistUser.password,
+        isExistUser.password
       );
 
       if (!matchedPassword) {
@@ -70,24 +81,35 @@ const userController = {
         });
       }
 
+      // 4. GENERATE TOKEN: पेलोड में रोल भी डाल दें ताकि फ्रंटएंड/मिडिलवेयर पर काम आए
       const token = jwt.sign(
         {
-          id: isExistUser._id
+          id: isExistUser._id,
+          role: isExistUser.role,
         },
         process.env.JWT_SECRET,
         {
           expiresIn: "7d",
-        },
+        }
       );
 
+      // 5. COOKIE SETTING
       res.cookie("token", token, {
         httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // केवल HTTPS पर काम करेगा प्रोडक्शन में
+        sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
+      // रिस्पॉन्स में यूजर प्रोफाइल (बिना पासवर्ड के) भेजें ताकि रिडक्स स्टोर अपडेट हो सके
       return res.status(200).json({
-        message: "Login successful",
+        message: "Admin login successful",
         token,
+        user: {
+          id: isExistUser._id,
+          fullname: isExistUser.fullname,
+          email: isExistUser.email
+        },
       });
     } catch (error) {
       return res.status(500).json({
@@ -95,6 +117,26 @@ const userController = {
       });
     }
   },
+
+   logout : async (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: false, // true in production with HTTPS
+      sameSite: "lax",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
 };
 
 module.exports = userController;

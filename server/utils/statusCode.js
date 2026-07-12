@@ -1,4 +1,4 @@
-export const HTTP_CODES = {
+const HTTP_CODES = {
   OK: 200,
   NO_CONTENT_FOUND: 204,
   MOVED_PERMANENTLY: 301,
@@ -14,3 +14,5 @@ export const HTTP_CODES = {
   UPGRADE_REQUIRED: 426,
   INTERNAL_SERVER_ERROR: 500,
 };
+
+module.exports = HTTP_CODES

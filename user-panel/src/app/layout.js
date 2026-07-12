@@ -1,16 +1,65 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/ui/header";
 import Footer from "@/components/ui/footer";
+import SmoothScroll from "@/components/smoothScroll";
+import Providers from "./Provider";
+import localFont from "next/font/local";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const raleway = localFont({
+  src: [
+    {
+      path: "../../public/fonts/Railway/Raleway-Light.ttf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/Railway/Raleway-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/Railway/Raleway-Medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/Railway/Raleway-SemiBold.ttf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/Railway/Raleway-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-raleway",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const playfairDisplay = localFont({
+  src: [
+    {
+      path: "../../public/fonts/PlayFairDisplay/PlayfairDisplay-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/PlayFairDisplay/PlayfairDisplay-Medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/PlayFairDisplay/PlayfairDisplay-SemiBold.ttf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/PlayFairDisplay/PlayfairDisplay-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-playfair",
 });
 
 export const metadata = {
@@ -22,13 +71,17 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${raleway.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Header/>
-        {children}
-        <Footer/>
-        </body>
+        <SmoothScroll>
+          <Providers>
+            <Header />
+            {children}
+            <Footer />
+          </Providers>
+        </SmoothScroll>
+      </body>
     </html>
   );
 }

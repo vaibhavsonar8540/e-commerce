@@ -15,7 +15,7 @@ const productSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-    }, // is used for convert id to product name ex - product/6523s65s2f232 -> slug -> product/i-phone
+    },
 
     description: {
       type: String,
@@ -117,13 +117,67 @@ const productSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
+    // ---------------------------
+    // Analytics
+    // ---------------------------
+
+    totalSales: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    totalLikes: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    totalViews: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    wishlistCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    popularityScore: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+
+    isTrending: {
+      type: Boolean,
+      default: false,
+    },
+
+    isBestSeller: {
+      type: Boolean,
+      default: false,
+    },
+
+    isNewArrival: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Automatically generate slug
+// Generate slug
 productSchema.pre("save", function (next) {
   if (!this.slug || this.isModified("productName")) {
     this.slug = slugify(this.productName, {
@@ -135,7 +189,7 @@ productSchema.pre("save", function (next) {
   next();
 });
 
-// Text Search Index
+// Text Search
 productSchema.index({
   productName: "text",
   description: "text",
