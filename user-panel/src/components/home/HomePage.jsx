@@ -1,3 +1,5 @@
+"use client"
+
 import heroBanner from "@/assets/home/heroBanner.webp";
 import HeroBanner from "@/components/heroBanner";
 import ProductCard from "@/components/productCard";
@@ -9,6 +11,7 @@ import { ImPriceTags } from "react-icons/im";
 import Category from "./category";
 import CustomImage from "../customImage";
 import coupneOffBanner from "@/assets/home/electronic.webp";
+import { useSelector } from "react-redux";
 
 const data = {
   title: "Kurti",
@@ -17,6 +20,7 @@ const data = {
 };
 
 const HomePage = () => {
+
   return (
     <div>
       <section>
