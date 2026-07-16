@@ -61,15 +61,7 @@ const userController = {
         });
       }
 
-      // 2. STRICT ROLE CHECK: चेक करें कि यूजर का रोल 'admin' है या नहीं
-      // (यह मानकर कि आपके Schema में role: { type: String, default: 'user' } है)
-      if (isExistUser.role !== "admin") {
-        return res.status(403).json({
-          message: "Access Denied: You do not have permission to access the admin portal.",
-        });
-      }
-
-      // 3. PASSWORD CHECK: पासवर्ड मैच करें
+      // 2. PASSWORD CHECK: पासवर्ड मैच करें
       const matchedPassword = await bcrypt.compare(
         password,
         isExistUser.password
@@ -81,7 +73,7 @@ const userController = {
         });
       }
 
-      // 4. GENERATE TOKEN: पेलोड में रोल भी डाल दें ताकि फ्रंटएंड/मिडिलवेयर पर काम आए
+      // 3. GENERATE TOKEN: पेलोड में रोल भी डाल दें ताकि फ्रंटएंड/मिडिलवेयर पर काम आए
       const token = jwt.sign(
         {
           id: isExistUser._id,
@@ -93,7 +85,7 @@ const userController = {
         }
       );
 
-      // 5. COOKIE SETTING
+      // 4. COOKIE SETTING
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production", // केवल HTTPS पर काम करेगा प्रोडक्शन में
@@ -103,12 +95,13 @@ const userController = {
 
       // रिस्पॉन्स में यूजर प्रोफाइल (बिना पासवर्ड के) भेजें ताकि रिडक्स स्टोर अपडेट हो सके
       return res.status(200).json({
-        message: "Admin login successful",
+        message: "Login successful",
         token,
         user: {
           id: isExistUser._id,
           fullname: isExistUser.fullname,
-          email: isExistUser.email
+          email: isExistUser.email,
+          role: isExistUser.role
         },
       });
     } catch (error) {
@@ -158,6 +151,66 @@ getMe: async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
+  }
+},
+
+getUsers: async (req, res) => {
+  try {
+    const { role, search } = req.query;
+    const query = {};
+    
+    if (role) {
+      query.role = role;
+    }
+    
+    if (search) {
+      query.$or = [
+        { fullname: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    const users = await User.find(query).select("-password");
+    return res.status(200).json({
+      success: true,
+      users
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+},
+
+getDashboardStats: async (req, res) => {
+  try {
+    const CollectionModel = require("../Model/collection/collectionModel");
+    const CategoryModel = require("../Model/collection/categoryModel");
+    const SubCategoryModel = require("../Model/collection/subCategoryModel");
+    
+    const userCount = await User.countDocuments({ role: "user" });
+    const sellerCount = await User.countDocuments({ role: "seller" });
+    const collectionCount = await CollectionModel.countDocuments();
+    const categoryCount = await CategoryModel.countDocuments();
+    const subCategoryCount = await SubCategoryModel.countDocuments();
+
+    return res.status(200).json({
+      success: true,
+      counts: {
+        users: userCount,
+        sellers: sellerCount,
+        collections: collectionCount,
+        categories: categoryCount,
+        subcategories: subCategoryCount
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 },
 };

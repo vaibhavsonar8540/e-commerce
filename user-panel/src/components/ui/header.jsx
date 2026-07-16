@@ -192,7 +192,7 @@ const Header = () => {
 
                     {(user?.role === "admin" || user?.role === "seller") && (
                       <Link
-                        href="/seller/add-product"
+                        href="/add-product"
                         onClick={() => setIsProfileOpen(false)}
                         className="block px-4 py-3 hover:bg-gray-100"
                       >

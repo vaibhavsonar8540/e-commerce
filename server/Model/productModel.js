@@ -23,16 +23,22 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
+    collections : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "CollectionValue",
+      required : true
+    },
+
     category: {
-      type: String,
-      required: true,
-      enum: [
-        "Electronics",
-        "Fashion",
-        "Home",
-        "Beauty",
-        "Sports",
-      ],
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "Category",
+      required : true
+    },
+
+    subCategory : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "SubCategory",
+      required : true
     },
 
     brand: {

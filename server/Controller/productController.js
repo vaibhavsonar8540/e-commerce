@@ -7,7 +7,9 @@ const productController = {
       const {
         productName,
         description,
+        collections,
         category,
+        subcategory,
         brand,
         price,
         discountPrice,
@@ -18,7 +20,7 @@ const productController = {
       } = req.body;
 
       // Required field validation
-      if (!productName || !description || !category || !price || !stock) {
+      if (!productName || !description || !collections || !price || !stock) {
         return res.status(HTTP_CODES.VALIDATION_ERROR).json({
           success: false,
           message: "Please fill all required fields.",
@@ -59,7 +61,9 @@ const productController = {
       const newProduct = await Product.create({
         productName,
         description,
+        collections,
         category,
+        subcategory,
         brand,
         price,
         discountPrice,

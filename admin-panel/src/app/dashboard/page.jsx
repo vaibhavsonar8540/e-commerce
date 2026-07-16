@@ -1,102 +1,160 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Users,
   Store,
   Layers3,
   Grid2X2,
-  ListTree,
+  ListTree
 } from "lucide-react";
-
-const stats = [
-  {
-    title: "Sellers",
-    count: 120,
-    href: "/sellers",
-    icon: Store,
-    bg: "bg-blue-100",
-    iconBg: "bg-blue-500",
-    text: "text-blue-700",
-  },
-  {
-    title: "Users",
-    count: 2450,
-    href: "/users",
-    icon: Users,
-    bg: "bg-purple-100",
-    iconBg: "bg-purple-500",
-    text: "text-purple-700",
-  },
-  {
-    title: "Collections",
-    count: 18,
-    href: "/collections",
-    icon: Layers3,
-    bg: "bg-yellow-100",
-    iconBg: "bg-yellow-500",
-    text: "text-yellow-700",
-  },
-  {
-    title: "Categories",
-    count: 52,
-    href: "/categories",
-    icon: Grid2X2,
-    bg: "bg-green-100",
-    iconBg: "bg-green-500",
-    text: "text-green-700",
-  },
-  {
-    title: "Sub Categories",
-    count: 167,
-    href: "/subcategories",
-    icon: ListTree,
-    bg: "bg-red-100",
-    iconBg: "bg-red-500",
-    text: "text-red-700",
-  },
-];
+import api from "@/utils/axiosInstant";
 
 export default function Dashboard() {
+  const [counts, setCounts] = useState({
+    users: 0,
+    sellers: 0,
+    collections: 0,
+    categories: 0,
+    subcategories: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const { data } = await api.get("/user/dashboard-stats");
+        if (data && data.success && data.counts) {
+          setCounts(data.counts);
+        }
+      } catch (err) {
+        console.error("Error loading dashboard stats:", err);
+        setError(err.response?.data?.message || "Failed to load dashboard statistics");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const stats = [
+    {
+      title: "Sellers",
+      count: counts.sellers,
+      href: "/sellers",
+      icon: Store,
+      bg: "bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border border-blue-200/50 shadow-sm hover:shadow-md",
+      iconBg: "bg-blue-600 text-white shadow-lg shadow-blue-200",
+      text: "text-blue-700",
+    },
+    {
+      title: "Users",
+      count: counts.users,
+      href: "/users",
+      icon: Users,
+      bg: "bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border border-purple-200/50 shadow-sm hover:shadow-md",
+      iconBg: "bg-purple-600 text-white shadow-lg shadow-purple-200",
+      text: "text-purple-700",
+    },
+    {
+      title: "Collections",
+      count: counts.collections,
+      href: "/collections",
+      icon: Layers3,
+      bg: "bg-gradient-to-br from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-200 border border-amber-200/50 shadow-sm hover:shadow-md",
+      iconBg: "bg-amber-600 text-white shadow-lg shadow-amber-200",
+      text: "text-amber-700",
+    },
+    {
+      title: "Categories",
+      count: counts.categories,
+      href: "/categories",
+      icon: Grid2X2,
+      bg: "bg-gradient-to-br from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 border border-emerald-200/50 shadow-sm hover:shadow-md",
+      iconBg: "bg-emerald-600 text-white shadow-lg shadow-emerald-200",
+      text: "text-emerald-700",
+    },
+    {
+      title: "Sub Categories",
+      count: counts.subcategories,
+      href: "/subcategories",
+      icon: ListTree,
+      bg: "bg-gradient-to-br from-rose-50 to-rose-100 hover:from-rose-100 hover:to-rose-200 border border-rose-200/50 shadow-sm hover:shadow-md",
+      iconBg: "bg-rose-600 text-white shadow-lg shadow-rose-200",
+      text: "text-rose-700",
+    },
+  ];
+
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <h1 className="text-4xl font-bold mb-10">
-        Hi, Welcome back 👋
-      </h1>
+    <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
+      <div className="mb-10 animate-fade-in">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 tracking-tight">
+          Hi, Welcome back 👋
+        </h1>
+        <p className="text-xs sm:text-sm text-gray-400 mt-1">Here is a quick snapshot of your e-commerce operations dashboard.</p>
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
-        {stats.map((item) => {
-          const Icon = item.icon;
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 h-56 animate-pulse flex flex-col justify-between">
+              <div className="flex justify-between items-start">
+                <div className="w-14 h-14 bg-gray-200 rounded-2xl"></div>
+                <div className="w-8 h-6 bg-gray-200 rounded-lg"></div>
+              </div>
+              <div className="space-y-2">
+                <div className="w-20 h-4 bg-gray-250 rounded-md"></div>
+                <div className="w-12 h-8 bg-gray-200 rounded-md"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="bg-white rounded-3xl border border-red-200 p-8 flex flex-col items-center justify-center text-center shadow-sm max-w-md mx-auto">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 mb-4 font-bold text-lg">!</div>
+          <h3 className="font-semibold text-gray-800 mb-1">Failed to load dashboard metrics</h3>
+          <p className="text-gray-500 text-sm">{error}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          {stats.map((item) => {
+            const Icon = item.icon;
 
-          return (
-            <Link key={item.title} href={item.href}>
-              <div
-                className={`${item.bg} rounded-3xl p-6 shadow-sm cursor-pointer h-56`}
-              >
-                <div className="flex justify-between items-start">
-                  <div
-                    className={`${item.iconBg} w-14 h-14 rounded-2xl flex items-center justify-center text-white`}
-                  >
-                    <Icon size={28} />
+            return (
+              <Link key={item.title} href={item.href} className="group">
+                <div
+                  className={`${item.bg} rounded-3xl p-6 shadow-sm cursor-pointer h-56 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div
+                      className={`${item.iconBg} w-14 h-14 rounded-2xl flex items-center justify-center`}
+                    >
+                      <Icon size={26} />
+                    </div>
+
+                    <span className={`text-xl sm:text-2xl font-bold tracking-tight ${item.text}`}>
+                      {item.count}
+                    </span>
                   </div>
 
-                  <span className={`font-semibold ${item.text}`}>
-                    {item.count}
-                  </span>
-                </div>
+                  <div>
+                    <p className="text-[12px] sm:text-xs text-gray-400 font-bold uppercase tracking-wider">
+                      {item.title}
+                    </p>
 
-                <div className="mt-12">
-                  <p className="text-lg text-gray-700 font-medium">
-                    {item.title}
-                  </p>
-
-                  <h2 className={`text-4xl font-bold mt-2 ${item.text}`}>
-                    {item.count}
-                  </h2>
+                    <h2 className={`text-3xl sm:text-4xl font-extrabold mt-1 tracking-tight ${item.text}`}>
+                      {item.count}
+                    </h2>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -25,6 +25,13 @@ const Login = () => {
       const res = await api.post("/user/login", { email, password });
       
       if (res.data) {
+        if (res.data.user.role !== "admin") {
+          setError("Access Denied: You do not have permission to access the admin portal.");
+          await api.post("/user/logout");
+          setLoading(false);
+          return;
+        }
+
         // Redux store में केवल सक्सेसफुल एडमिन डेटा सेव होगा
         dispatch(loginSuccess({
           user: res.data.user,
