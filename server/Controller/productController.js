@@ -80,7 +80,7 @@ const productController = {
       return res.status(HTTP_CODES.OK).json({
         success: true,
         message: "Product created successfully.",
-        product: newProduct,
+        data: newProduct,
       });
     } catch (error) {
       return res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).json({
