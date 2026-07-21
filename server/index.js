@@ -6,6 +6,11 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors")
 const router = require("./route/productRoute");
 const collectionRoute = require("./route/collectionRoute");
+const cartRoute = require("./route/cartRoute");
+const wishlistRoute = require("./route/wishlistRoute");
+const orderRoute = require("./route/orderRoute");
+const filerRoute = require("./route/filerRoute");
+const contactRoute = require("./route/contactRoute");
 const app = express();
 app.use(express.json());
 
@@ -34,6 +39,11 @@ const port = process.env.PORT;
 app.use("/api/user" , userRoute)
 app.use("/api/product" , router)
 app.use("/api/collection", collectionRoute);
+app.use("/api/cart", cartRoute);
+app.use("/api/wishlist", wishlistRoute);
+app.use("/api/order", orderRoute);
+app.use("/api/filer", filerRoute);
+app.use("/api/contact", contactRoute);
 
 
 app.listen(port || 3000, async () => {

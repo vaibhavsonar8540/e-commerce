@@ -16,16 +16,42 @@ import {
   setHeaderHeight,
   setIsModelOpen,
   setIsMobileMenuOpen,
+  setIsCartOpen,
 } from "@/redux/slices/commonSlice";
 import { Authentication } from "../DynamicComponents";
 import Cookies from "js-cookie";
 import { logout } from "@/redux/slices/authSlice";
+import CartDrawer from "./cartDrawer";
 
 const Header = () => {
   const headerRef = useRef();
   const pathname = usePathname();
   const isTransparentHeader = pathname === "/dd";
   const dispatch = useDispatch();
+
+  const [isSticky, setIsSticky] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/collection/search?query=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setIsSticky(true);
+      } else {
+        setIsSticky(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const {
     collection,
@@ -60,7 +86,11 @@ const Header = () => {
 
   useEffect(() => {
     if (headerRef.current) {
-      dispatch(setHeaderHeight(headerRef.current.offsetHeight));
+      const height = headerRef.current.offsetHeight;
+      const t = setTimeout(() => {
+        dispatch(setHeaderHeight(height));
+      }, 0);
+      return () => clearTimeout(t);
     }
   }, [dispatch]);
 
@@ -120,7 +150,7 @@ const Header = () => {
       <header
         ref={headerRef}
         className={`hidden lg:flex w-full px-10 py-2 bg-white justify-between items-center transition-all duration-300
-        ${isTransparentHeader ? "absolute top-0 left-0 z-10" : "relative bg-white"}`}
+        ${isSticky ? "fixed top-0 left-0 right-0 z-50 shadow-md bg-white/95 border-b border-gray-100/50 backdrop-blur-md translate-y-0 transform" : isTransparentHeader ? "absolute top-0 left-0 z-10" : "relative bg-white"}`}
       >
         <Link className="cursor-pointer" href={"/"}>
           <CustomImage
@@ -135,18 +165,18 @@ const Header = () => {
 
         <section className="flex gap-6 items-center">
           <div className="group">
-            <h2 className={`${hoverClassname} text-sm lg:text-[17px]`}>
+            <Link href={"/seller"} className={`${hoverClassname} text-sm lg:text-[17px]`}>
               Become a Seller
-            </h2>
+            </Link>
             <div className="mt-1 h-[2px] w-0 bg-primary transition-all duration-300 ease-in-out group-hover:w-full"></div>
           </div>
           <div className="w-[2px] h-5 bg-primary"></div>
           <div className="flex gap-4 items-center">
-            <HiMiniMagnifyingGlass className={`${hoverClassname} w-full h-6`} />
+            <HiMiniMagnifyingGlass onClick={() => setIsSearchOpen(!isSearchOpen)} className={`${hoverClassname} w-full h-6`} />
 
             <FaRegHeart className={`${hoverClassname} w-full h-5`} />
 
-            <LuShoppingCart className={`${hoverClassname} w-full h-5`} />
+            <LuShoppingCart onClick={() => dispatch(setIsCartOpen(true))} className={`${hoverClassname} w-full h-5`} />
 
             {!isAuthenticated ? (
               <RiUser3Line
@@ -169,53 +199,93 @@ const Header = () => {
                 </button>
 
                 {isProfileOpen && (
-                  <div className="absolute right-0 top-10 w-48 rounded-xl border bg-white shadow-md overflow-hidden z-50">
-                    <div className="px-4 pt-3">
-                      <h3 className="font-semibold">{user?.fullname}</h3>
+                  <div className="absolute right-0 top-11 w-48 rounded-[20px] border border-[#47230B]/20 bg-white shadow-xl overflow-hidden z-50 transition-all duration-200">
+                    <div className="px-4 py-3 border-b border-light-cream">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Welcome</p>
+                      <h3 className="font-bold text-primary truncate leading-tight capitalize">{user?.fullname}</h3>
                     </div>
 
-                    <Link
-                      href="/profile"
-                      onClick={() => setIsProfileOpen(false)}
-                      className="block px-4 pt-2 hover:bg-gray-100"
-                    >
-                      Profile
-                    </Link>
-
-                    <Link
-                      href="/orders"
-                      onClick={() => setIsProfileOpen(false)}
-                      className="block px-4 pt-2 hover:bg-gray-100"
-                    >
-                      Your Orders
-                    </Link>
-
-                    {(user?.role === "admin" || user?.role === "seller") && (
+                    <div className="p-1.5 flex flex-col gap-0.5">
                       <Link
-                        href="/add-product"
+                        href="/profile"
                         onClick={() => setIsProfileOpen(false)}
-                        className="block px-4 py-3 hover:bg-gray-100"
+                        className="block px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-light-cream/70 hover:text-primary transition-colors"
                       >
-                        Add Product
+                        Profile
                       </Link>
-                    )}
 
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
-                    >
-                      Logout
-                    </button>
+                      <Link
+                        href="/orders"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="block px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-light-cream/70 hover:text-primary transition-colors"
+                      >
+                        Your Orders
+                      </Link>
+
+                      {(user?.role === "admin" || user?.role === "seller") && (
+                        <>
+                          <Link
+                            href="/add-product"
+                            onClick={() => setIsProfileOpen(false)}
+                            className="block px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-light-cream/70 hover:text-primary transition-colors"
+                          >
+                            Add Product
+                          </Link>
+                          <Link
+                            href="/my-products"
+                            onClick={() => setIsProfileOpen(false)}
+                            className="block px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-light-cream/70 hover:text-primary transition-colors"
+                          >
+                            Your Products
+                          </Link>
+                        </>
+                      )}
+
+                      <div className="h-[1px] bg-light-cream/40 my-1 mx-1.5"></div>
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold text-red-650 hover:bg-red-50 transition-colors cursor-pointer"
+                      >
+                        Logout
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             )}
           </div>
         </section>
+
+        {/* DESKTOP SEARCH BAR */}
+        <div className={`absolute left-0 right-0 z-20 border-b border-gray-100 bg-white/80 backdrop-blur-md transition-all duration-300 ease-in-out overflow-hidden shadow-sm ${isSearchOpen ? "top-full opacity-100 h-16 pointer-events-auto" : "top-0 opacity-0 h-0 pointer-events-none"}`}>
+          <div className="max-w-4xl mx-auto h-full flex items-center px-6">
+            <form onSubmit={handleSearchSubmit} className="w-full flex items-center gap-3">
+              <HiMiniMagnifyingGlass className="text-gray-500 w-5 h-5 shrink-0" />
+              <input
+                type="text"
+                placeholder="Search products by list, category, collection name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent border-none outline-none text-sm text-gray-800 placeholder-gray-400 py-2 animate-pulse"
+                autoFocus={isSearchOpen}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="text-xs font-bold text-gray-400 hover:text-black uppercase cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </form>
+          </div>
+        </div>
       </header>
 
       {/* MOBILE HEADER */}
-      <header className="flex lg:hidden w-full px-4 py-3 bg-white justify-between items-center border-b border-gray-100 sticky top-0 z-40">
+      <header className={`flex lg:hidden w-full px-4 py-3 bg-white justify-between items-center border-b border-gray-100 sticky top-0 z-40 transition-all duration-300 ${isSticky ? "shadow-md bg-white/95" : ""}`}>
         <div className="flex items-center">
           {isMobileMenuOpen ? (
             <HiX
@@ -242,12 +312,38 @@ const Header = () => {
         </div>
 
         <div className="flex gap-4 items-center">
-          <HiMiniMagnifyingGlass className="w-5 h-5 text-gray-700 cursor-pointer" />
+          <HiMiniMagnifyingGlass onClick={() => setIsSearchOpen(!isSearchOpen)} className="w-5 h-5 text-gray-700 cursor-pointer" />
           <RiUser3Line
             onClick={() => dispatch(setIsModelOpen(true))}
             className="w-5 h-5 text-gray-700 cursor-pointer"
           />
-          <LuShoppingCart className="w-5 h-5 text-gray-700 cursor-pointer" />
+          <LuShoppingCart onClick={() => dispatch(setIsCartOpen(true))} className="w-5 h-5 text-gray-700 cursor-pointer" />
+        </div>
+
+        {/* MOBILE SEARCH BAR */}
+        <div className={`absolute left-0 right-0 z-20 border-b border-gray-100 bg-white/90 backdrop-blur-md transition-all duration-300 ease-in-out overflow-hidden shadow-sm ${isSearchOpen ? "top-full opacity-100 h-14 pointer-events-auto" : "top-0 opacity-0 h-0 pointer-events-none"}`}>
+          <div className="w-full h-full flex items-center px-4">
+            <form onSubmit={handleSearchSubmit} className="w-full flex items-center gap-2.5">
+              <HiMiniMagnifyingGlass className="text-gray-500 w-4 h-4 shrink-0" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent border-none outline-none text-xs text-gray-800 placeholder-gray-400 py-1.5"
+                autoFocus={isSearchOpen}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="text-[10px] font-bold text-gray-400 hover:text-black uppercase cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </form>
+          </div>
         </div>
       </header>
 
@@ -389,6 +485,9 @@ const Header = () => {
           </div>
         </div>
       )}
+
+      {/* CART DRAWER */}
+      <CartDrawer />
     </>
   );
 };

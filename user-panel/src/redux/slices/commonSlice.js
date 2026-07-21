@@ -10,7 +10,8 @@ const initialState = {
   isMobileMenuOpen: false,
   loading: false,
   isModelOpen : false,
-  isCartOpen : false
+  isCartOpen : false,
+  cart: { items: [], subTotal: 0, discountApplied: 0, grandTotal: 0 }
 };
 
 const commonSlice = createSlice({
@@ -64,6 +65,10 @@ const commonSlice = createSlice({
       state.isCartOpen = action.payload
     },
 
+    setCart : (state , action) => {
+      state.cart = action.payload
+    },
+
     // Optional: Reset Common State
     resetCommonState: () => initialState,
   },
@@ -80,6 +85,7 @@ export const {
   setHeaderHeight,
   setIsModelOpen,
   setIsCartOpen,
+  setCart,
   resetCommonState,
 } = commonSlice.actions;
 

@@ -1,25 +1,47 @@
-"use client"
+"use client";
 
 import heroBanner from "@/assets/home/heroBanner.webp";
 import HeroBanner from "@/components/heroBanner";
-import ProductCard from "@/components/productCard";
 import Link from "next/link";
 import kurti from "@/assets/kurti.jpg";
 import { GiBoxUnpacking } from "react-icons/gi";
 import { RiMoneyRupeeCircleFill } from "react-icons/ri";
 import { ImPriceTags } from "react-icons/im";
 import Category from "./category";
-import CustomImage from "../customImage";
-import coupneOffBanner from "@/assets/home/electronic.webp";
-import { useSelector } from "react-redux";
-
-const data = {
-  title: "Kurti",
-  image: kurti,
-  price: 600,
-};
+import { useEffect, useState } from "react";
+import api from "@/utils/axiosInstant";
+import ProductSlider from "@/components/productSlider";
 
 const HomePage = () => {
+  const [menProducts, setMenProducts] = useState([]);
+  const [womenProducts, setWomenProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchHomeSliders() {
+      try {
+        const [menRes, womenRes] = await Promise.all([
+          api.get("/product/get-filtered", {
+            params: { collectionSlug: "men" },
+          }),
+          api.get("/product/get-filtered", {
+            params: { collectionSlug: "women" },
+          }),
+        ]);
+        if (menRes.data?.success) {
+          setMenProducts(menRes.data.products.slice(0, 5));
+        }
+        if (womenRes.data?.success) {
+          setWomenProducts(womenRes.data.products.slice(0, 5));
+        }
+      } catch (err) {
+        console.error("Error fetching home sliders:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchHomeSliders();
+  }, []);
 
   return (
     <div>
@@ -75,32 +97,27 @@ const HomePage = () => {
         <Category />
       </section>
 
-      <section className="mt-10">
-        <div className="px-16">
-          <h2 className="text-primary font-playfair text-4xl font-medium">
-            Most Loved
-          </h2>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pb-16 space-y-12 animate-in fade-in duration-300">
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <span className="w-8 h-8 border-3 border-[#47230B]/20 border-t-[#47230B] rounded-full animate-spin"></span>
+          </div>
+        ) : (
+          <>
+            <ProductSlider
+              title="Latest Arrivals For Men"
+              subtitle="Discover the new standard in menswear fashion essentials."
+              products={menProducts}
+            />
 
-          <div className="w-24 h-1 bg-primary mt-3 rounded-full"></div>
-        </div>
-        <div>
-          
-        </div>
+            <ProductSlider
+              title="Latest Arrivals For Women"
+              subtitle="Upgrade your wardrobe with our handpicked elegant fits."
+              products={womenProducts}
+            />
+          </>
+        )}
       </section>
-
-      {/* <section className="px-10 py-10">
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
-          <ProductCard data={data} />
-          <ProductCard data={data} />
-          <ProductCard data={data} />
-          <ProductCard data={data} />
-          <ProductCard data={data} />
-        </div>
-      </section>
-
-      <section>
-        <CustomImage srcAttr={coupneOffBanner} className={"w-full"} />
-      </section> */}
     </div>
   );
 };

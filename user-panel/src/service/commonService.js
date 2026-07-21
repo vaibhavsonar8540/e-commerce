@@ -22,3 +22,23 @@ export const getSubCategories = async () => {
 
     return res.data.subCategories;
 };
+
+export const getCartApi = async () => {
+    const res = await api.get("/cart/get-cart");
+    return res.data.data;
+};
+
+export const addToCartApi = async (productId, quantity) => {
+    const res = await api.post("/cart/add-to-cart", { productId, quantity });
+    return res.data.data;
+};
+
+export const updateCartQtyApi = async (productId, quantity) => {
+    const res = await api.post("/cart/update-quantity", { productId, quantity });
+    return res.data.data;
+};
+
+export const removeFromCartApi = async (productId) => {
+    const res = await api.post("/cart/remove-from-cart", { productId });
+    return res.data.data;
+};

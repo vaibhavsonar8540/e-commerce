@@ -176,6 +176,86 @@ const productController = {
     });
   }
 },
+
+  getFiltered: async (req, res) => {
+    try {
+      const { collectionSlug, categorySlug, subcategorySlug } = req.query;
+      const query = { status: "active" };
+
+      const CollectionValue = require("../Model/collection/collectionModel");
+      const Category = require("../Model/collection/categoryModel");
+      const SubCategory = require("../Model/collection/subCategoryModel");
+
+      if (subcategorySlug) {
+        const sub = await SubCategory.findOne({ slug: subcategorySlug });
+        if (sub) {
+          query.$or = [{ subCategory: sub._id }, { subcategory: sub._id }];
+        } else {
+          return res.status(200).json({ success: true, products: [] });
+        }
+      } else if (categorySlug) {
+        const cat = await Category.findOne({ slug: categorySlug });
+        if (cat) {
+          query.category = cat._id;
+        } else {
+          return res.status(200).json({ success: true, products: [] });
+        }
+      } else if (collectionSlug) {
+        const col = await CollectionValue.findOne({ slug: collectionSlug });
+        if (col) {
+          query.collections = col._id;
+        } else {
+          return res.status(200).json({ success: true, products: [] });
+        }
+      }
+
+      const products = await Product.find(query)
+        .populate("seller", "fullname email")
+        .populate("collections", "name slug")
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug");
+
+      return res.status(200).json({
+        success: true,
+        message: "Filtered products fetched successfully.",
+        products,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  },
+
+  getById: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const product = await Product.findById(id)
+        .populate("seller", "fullname email")
+        .populate("collections", "name slug")
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug");
+
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found.",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Product fetched successfully.",
+        product,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  },
 };
 
 module.exports = productController;

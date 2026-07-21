@@ -19,7 +19,9 @@ router.post(
 );
 
 router.get("/get", productController.get)
-router.get("/my-products" , productController.myProducts)
+router.get("/get-filtered", productController.getFiltered)
+router.get("/get/:id", productController.getById)
+router.get("/my-products" , checkAuth, productController.myProducts)
 router.get("/most-sold", productController.getMostSold);
 router.get("/new-arrivals", productController.getNewArrivals); // latest 5 products
 

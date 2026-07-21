@@ -2,8 +2,10 @@ import { createProduct } from "@/service/productService"
 
 export const addProduct = (payload) => async(dispatch) => {
     try {
-        await dispatch(createProduct(payload))
+        const data = await createProduct(payload)
+        return data
     } catch (error) {
         console.log(error)
+        throw error
     }
 }

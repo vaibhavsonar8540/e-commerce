@@ -101,6 +101,7 @@ const userController = {
           id: isExistUser._id,
           fullname: isExistUser.fullname,
           email: isExistUser.email,
+          phone: isExistUser.phone,
           role: isExistUser.role
         },
       });
@@ -146,6 +147,7 @@ getMe: async (req, res) => {
         id: user._id,
         fullname: user.fullname,
         email: user.email,
+        phone: user.phone,
         role: user.role
       },
     });
@@ -213,6 +215,50 @@ getDashboardStats: async (req, res) => {
     });
   }
 },
+
+  updateProfile: async (req, res) => {
+    try {
+      const { fullname, phone } = req.body;
+
+      if (!fullname || !phone) {
+        return res.status(400).json({ success: false, message: "Fullname and phone number are required." });
+      }
+
+      const phoneRegex = /^[6-9]\d{9}$/;
+      if (!phoneRegex.test(phone)) {
+        return res.status(400).json({ success: false, message: "Please enter a valid 10-digit Indian phone number" });
+      }
+
+      const isExistPhone = await User.findOne({ phone, _id: { $ne: req.user._id } });
+      if (isExistPhone) {
+        return res.status(409).json({ success: false, message: "Phone number is already associated with another account." });
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        { fullname, phone },
+        { new: true, runValidators: true }
+      ).select("-password");
+
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Profile updated successfully.",
+        user: {
+          id: updatedUser._id,
+          fullname: updatedUser.fullname,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          role: updatedUser.role
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  }
 };
 
 module.exports = userController;
