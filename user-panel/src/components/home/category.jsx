@@ -11,26 +11,32 @@ const data = [
   {
     title: "Saree",
     img: saree,
+    link : "/collection/women/saree"
   },
   {
     title: "Kurti",
     img: kurti,
+    link : "/collection/women/kurti"
   },
   {
     title: "Casual Wear",
     img: shirt,
+    link : "/collection/men/casual"
   },
   {
     title: "Ethnic Wear",
     img: ethnic,
+    link : "/collection/men/ethnic-wear"
   },
   {
     title: "Kids Wear",
     img: kids,
+    link : "/collection/kids"
   },
   {
     title: "Home & Kitchen",
     img: kitchen,
+    link : "/collection/home-and-kitchen"
   },
 ];
 
@@ -45,7 +51,7 @@ const Category = () => {
             className="flex flex-col items-center"
           >
             {/* Card */}
-            <Link href={""} className="relative w-[200px] h-[180px] bg-light-cream rounded-t-full overflow-visible">
+            <Link href={item.link} className="relative w-[200px] h-[180px] bg-light-cream rounded-t-full overflow-visible">
               <CustomImage
                 srcAttr={item.img}
                 altAttr={item.title}
@@ -55,7 +61,7 @@ const Category = () => {
             </Link>
 
             {/* Text */}
-            <Link href={""} className="mt-6 text-center text-primary font-medium text-lg">
+            <Link href={item.link} className="mt-6 text-center text-primary font-medium text-lg">
               {item.title}
             </Link>
           </div>

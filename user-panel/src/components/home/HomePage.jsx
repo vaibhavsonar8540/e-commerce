@@ -2,8 +2,6 @@
 
 import heroBanner from "@/assets/home/heroBanner.webp";
 import HeroBanner from "@/components/heroBanner";
-import Link from "next/link";
-import kurti from "@/assets/kurti.jpg";
 import { GiBoxUnpacking } from "react-icons/gi";
 import { RiMoneyRupeeCircleFill } from "react-icons/ri";
 import { ImPriceTags } from "react-icons/im";
@@ -11,6 +9,10 @@ import Category from "./category";
 import { useEffect, useState } from "react";
 import api from "@/utils/axiosInstant";
 import ProductSlider from "@/components/productSlider";
+import fashionBanner from "@/assets/home/fashionBanner.webp";
+import electronicBannerForBigScreen from "@/assets/home/electronicBannerBigScreen.webp";
+import electronicBannerForSmallScreen from "@/assets/home/electronicBannerSmallScreen.webp";
+import CustomImage from "../customImage";
 
 const HomePage = () => {
   const [menProducts, setMenProducts] = useState([]);
@@ -98,7 +100,7 @@ const HomePage = () => {
       </section>
 
       {womenProducts && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pb-16 animate-in fade-in duration-300">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pb-10 animate-in fade-in duration-300">
           <ProductSlider
             title="Latest Arrivals For Women"
             products={womenProducts}
@@ -106,6 +108,21 @@ const HomePage = () => {
           />
         </section>
       )}
+
+      <section className="relative overflow-hidden">
+        <CustomImage srcAttr={fashionBanner} altAttr="Fashion Banner" titleAttr="Fashion Banner" />
+
+        <div className="absolute right-6 sm:right-12 md:right-20 top-1/2 -translate-y-1/2 select-none">
+          <div className="flex flex-col space-y-2 sm:space-y-4 font-playfair text-white uppercase drop-shadow-md">
+            <span className="text-xl sm:text-3xl md:text-5xl font-medium tracking-[0.25em] ml-10 sm:ml-16 md:ml-24 leading-snug">
+              Discover Your
+            </span>
+            <span className="text-2xl sm:text-4xl md:text-6xl font-extrabold tracking-[0.15em] leading-tight">
+              Signature Style
+            </span>
+          </div>
+        </div>
+      </section>
 
       {menProducts && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pb-16 animate-in fade-in duration-300">
@@ -117,7 +134,6 @@ const HomePage = () => {
           />
         </section>
       )}
-
     </div>
   );
 };

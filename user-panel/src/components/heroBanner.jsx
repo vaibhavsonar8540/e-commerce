@@ -15,7 +15,7 @@ const HeroBanner = ({
   altAttr = "",
   titleAttr = "",
   contentClass = "",
-  variant = ""
+  variant = "",
 }) => {
   return (
     <div className={`relative ${className}`}>

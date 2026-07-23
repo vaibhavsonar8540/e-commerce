@@ -42,10 +42,12 @@ export default function AddProducts() {
   // Form validation schema using Yup
   const validationSchema = Yup.object().shape({
     productName: Yup.string()
+      .trim()
       .min(3, "Product name must be at least 3 characters")
       .max(150, "Product name cannot exceed 150 characters")
-      .required("Product name is required"),
+      .required("Product title is required"),
     description: Yup.string()
+      .trim()
       .min(10, "Description must be at least 10 characters")
       .required("Description is required"),
     collections: Yup.string().required("Collection selection is required"),
@@ -71,12 +73,12 @@ export default function AddProducts() {
       .typeError("Stock must be a number")
       .min(0, "Stock cannot be negative")
       .required("Stock is required"),
-    sizes: Yup.array().of(Yup.string()),
-    colors: Yup.string(),
+    sizes: Yup.array().of(Yup.string()).optional(),
+    colors: Yup.string().optional(),
     fabric: Yup.string().optional(),
-    thumbnail: Yup.mixed().required("Thumbnail image is required"),
-    images: Yup.array().max(5, "You can upload up to 5 images"),
-    videos: Yup.mixed().optional(),
+    thumbnail: Yup.mixed().required("Cover thumbnail image is required"),
+    images: Yup.array().max(5, "You can upload up to 5 images").optional(),
+    videos: Yup.mixed().nullable().optional(),
   });
 
   const formik = useFormik({
@@ -214,6 +216,7 @@ export default function AddProducts() {
     if (file) {
       formik.setFieldValue("thumbnail", file);
       setThumbnailPreview(URL.createObjectURL(file));
+      formik.setFieldTouched("thumbnail", true, false);
     }
   };
 
@@ -401,13 +404,16 @@ export default function AddProducts() {
                 onBlur={formik.handleBlur}
                 placeholder="Enter product name..."
                 className={`w-full py-3 px-4 border rounded-2xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm sm:text-base ${
-                  formik.touched.productName && formik.errors.productName
-                    ? "border-red-400 focus:border-red-500"
+                  (formik.touched.productName || formik.submitCount > 0) && formik.errors.productName
+                    ? "border-red-400 focus:border-red-500 bg-red-50/10"
                     : "border-gray-200"
                 }`}
               />
-              {formik.touched.productName && formik.errors.productName && (
-                <p className="text-xs text-red-500 font-semibold">{formik.errors.productName}</p>
+              {(formik.touched.productName || formik.submitCount > 0) && formik.errors.productName && (
+                <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle size={13} className="shrink-0" />
+                  <span>{formik.errors.productName}</span>
+                </p>
               )}
             </div>
 
@@ -424,13 +430,16 @@ export default function AddProducts() {
                 onBlur={formik.handleBlur}
                 placeholder="Outline product qualities, materials, sizing fit details..."
                 className={`w-full py-3 px-4 border rounded-2xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm sm:text-base resize-none ${
-                  formik.touched.description && formik.errors.description
-                    ? "border-red-400 focus:border-red-500"
+                  (formik.touched.description || formik.submitCount > 0) && formik.errors.description
+                    ? "border-red-400 focus:border-red-500 bg-red-50/10"
                     : "border-gray-200"
                 }`}
               />
-              {formik.touched.description && formik.errors.description && (
-                <p className="text-xs text-red-500 font-semibold">{formik.errors.description}</p>
+              {(formik.touched.description || formik.submitCount > 0) && formik.errors.description && (
+                <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle size={13} className="shrink-0" />
+                  <span>{formik.errors.description}</span>
+                </p>
               )}
             </div>
 
@@ -448,8 +457,8 @@ export default function AddProducts() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={`appearance-none w-full py-3 px-4 border rounded-2xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm cursor-pointer ${
-                      formik.touched.collections && formik.errors.collections
-                        ? "border-red-400 focus:border-red-500"
+                      (formik.touched.collections || formik.submitCount > 0) && formik.errors.collections
+                        ? "border-red-400 focus:border-red-500 bg-red-50/10"
                         : "border-gray-200"
                     }`}
                   >
@@ -462,15 +471,18 @@ export default function AddProducts() {
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 w-4 h-4" />
                 </div>
-                {formik.touched.collections && formik.errors.collections && (
-                  <p className="text-xs text-red-500 font-semibold">{formik.errors.collections}</p>
+                {(formik.touched.collections || formik.submitCount > 0) && formik.errors.collections && (
+                  <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                    <AlertCircle size={13} className="shrink-0" />
+                    <span>{formik.errors.collections}</span>
+                  </p>
                 )}
               </div>
 
               {/* Category */}
               <div className="flex-1 space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                  Category
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center justify-between">
+                  <span>Category <span className="text-gray-400 font-normal text-[11px] lowercase">(optional)</span></span>
                 </label>
                 <div className="relative">
                   <select
@@ -479,8 +491,8 @@ export default function AddProducts() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={`appearance-none w-full py-3 px-4 border rounded-2xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm cursor-pointer ${
-                      formik.touched.category && formik.errors.category
-                        ? "border-red-400 focus:border-red-500"
+                      (formik.touched.category || formik.submitCount > 0) && formik.errors.category
+                        ? "border-red-400 focus:border-red-500 bg-red-50/10"
                         : "border-gray-200"
                     }`}
                   >
@@ -493,8 +505,11 @@ export default function AddProducts() {
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 w-4 h-4" />
                 </div>
-                {formik.touched.category && formik.errors.category && (
-                  <p className="text-xs text-red-500 font-semibold">{formik.errors.category}</p>
+                {(formik.touched.category || formik.submitCount > 0) && formik.errors.category && (
+                  <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                    <AlertCircle size={13} className="shrink-0" />
+                    <span>{formik.errors.category}</span>
+                  </p>
                 )}
               </div>
             </div>
@@ -503,8 +518,8 @@ export default function AddProducts() {
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Subcategory */}
               <div className="flex-1 space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                  Subcategory
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center justify-between">
+                  <span>Subcategory <span className="text-gray-400 font-normal text-[11px] lowercase">(optional)</span></span>
                 </label>
                 <div className="relative">
                   <select
@@ -513,8 +528,8 @@ export default function AddProducts() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={`appearance-none w-full py-3 px-4 border rounded-2xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm cursor-pointer ${
-                      formik.touched.subcategory && formik.errors.subcategory
-                        ? "border-red-400 focus:border-red-500"
+                      (formik.touched.subcategory || formik.submitCount > 0) && formik.errors.subcategory
+                        ? "border-red-400 focus:border-red-500 bg-red-50/10"
                         : "border-gray-200"
                     }`}
                   >
@@ -527,15 +542,18 @@ export default function AddProducts() {
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 w-4 h-4" />
                 </div>
-                {formik.touched.subcategory && formik.errors.subcategory && (
-                  <p className="text-xs text-red-500 font-semibold">{formik.errors.subcategory}</p>
+                {(formik.touched.subcategory || formik.submitCount > 0) && formik.errors.subcategory && (
+                  <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                    <AlertCircle size={13} className="shrink-0" />
+                    <span>{formik.errors.subcategory}</span>
+                  </p>
                 )}
               </div>
 
               {/* Brand */}
               <div className="flex-1 space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                  Brand Name
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center justify-between">
+                  <span>Brand Name <span className="text-gray-400 font-normal text-[11px] lowercase">(optional)</span></span>
                 </label>
                 <input
                   type="text"
@@ -568,21 +586,24 @@ export default function AddProducts() {
                     onBlur={formik.handleBlur}
                     placeholder="0.00"
                     className={`w-full py-3 pl-8 pr-4 border rounded-2xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm ${
-                      formik.touched.price && formik.errors.price
-                        ? "border-red-400 focus:border-red-500"
+                      (formik.touched.price || formik.submitCount > 0) && formik.errors.price
+                        ? "border-red-400 focus:border-red-500 bg-red-50/10"
                         : "border-gray-200"
                     }`}
                   />
                 </div>
-                {formik.touched.price && formik.errors.price && (
-                  <p className="text-xs text-red-500 font-semibold">{formik.errors.price}</p>
+                {(formik.touched.price || formik.submitCount > 0) && formik.errors.price && (
+                  <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                    <AlertCircle size={13} className="shrink-0" />
+                    <span>{formik.errors.price}</span>
+                  </p>
                 )}
               </div>
 
               {/* Discount price */}
               <div className="flex-1 space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                  Discounted Price
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center justify-between">
+                  <span>Discounted Price <span className="text-gray-400 font-normal text-[11px] lowercase">(optional)</span></span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -596,14 +617,17 @@ export default function AddProducts() {
                     onBlur={formik.handleBlur}
                     placeholder="0.00"
                     className={`w-full py-3 pl-8 pr-4 border rounded-2xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm ${
-                      formik.touched.discountPrice && formik.errors.discountPrice
-                        ? "border-red-400 focus:border-red-500"
+                      (formik.touched.discountPrice || formik.submitCount > 0) && formik.errors.discountPrice
+                        ? "border-red-400 focus:border-red-500 bg-red-50/10"
                         : "border-gray-200"
                     }`}
                   />
                 </div>
-                {formik.touched.discountPrice && formik.errors.discountPrice && (
-                  <p className="text-xs text-red-500 font-semibold">{formik.errors.discountPrice}</p>
+                {(formik.touched.discountPrice || formik.submitCount > 0) && formik.errors.discountPrice && (
+                  <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                    <AlertCircle size={13} className="shrink-0" />
+                    <span>{formik.errors.discountPrice}</span>
+                  </p>
                 )}
               </div>
             </div>
@@ -621,13 +645,16 @@ export default function AddProducts() {
                 onBlur={formik.handleBlur}
                 placeholder="Enter stock quantity..."
                 className={`w-full py-3 px-4 border rounded-2xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm ${
-                  formik.touched.stock && formik.errors.stock
-                    ? "border-red-400 focus:border-red-500"
+                  (formik.touched.stock || formik.submitCount > 0) && formik.errors.stock
+                    ? "border-red-400 focus:border-red-500 bg-red-50/10"
                     : "border-gray-200"
                 }`}
               />
-              {formik.touched.stock && formik.errors.stock && (
-                <p className="text-xs text-red-500 font-semibold">{formik.errors.stock}</p>
+              {(formik.touched.stock || formik.submitCount > 0) && formik.errors.stock && (
+                <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle size={13} className="shrink-0" />
+                  <span>{formik.errors.stock}</span>
+                </p>
               )}
             </div>
 
@@ -733,14 +760,16 @@ export default function AddProducts() {
                 Media Attachments
               </h3>
               <p className="text-xs text-gray-400 mt-1">
-                Upload files to display item design visual reviews.
+                Upload cover thumbnail (required) and optional gallery pictures or video.
               </p>
             </div>
 
             {/* Thumbnail Upload & Preview */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex justify-between">
-                <span>Cover Thumbnail Image <span className="text-red-500">*</span></span>
+                <span>
+                  Cover Thumbnail Image <span className="text-red-500">*</span>
+                </span>
               </label>
 
               {thumbnailPreview ? (
@@ -756,15 +785,22 @@ export default function AddProducts() {
                       onClick={() => {
                         setThumbnailPreview(null);
                         formik.setFieldValue("thumbnail", null);
+                        formik.setFieldTouched("thumbnail", true, false);
                       }}
-                      className="p-3 bg-red-600 text-white rounded-full hover:bg-red-700 shadow-md hover:scale-105 transition"
+                      className="p-3 bg-red-600 text-white rounded-full hover:bg-red-700 shadow-md hover:scale-105 transition cursor-pointer"
                     >
                       <X size={20} />
                     </button>
                   </div>
                 </div>
               ) : (
-                <label className="border-2 border-dashed border-gray-200 hover:border-gray-400 hover:bg-gray-50/50 rounded-2xl p-6 transition text-center cursor-pointer flex flex-col items-center justify-center select-none">
+                <label
+                  className={`border-2 border-dashed rounded-2xl p-6 transition text-center cursor-pointer flex flex-col items-center justify-center select-none ${
+                    (formik.touched.thumbnail || formik.submitCount > 0) && formik.errors.thumbnail
+                      ? "border-red-400 bg-red-50/20"
+                      : "border-gray-200 hover:border-gray-400 hover:bg-gray-50/50"
+                  }`}
+                >
                   <input
                     type="file"
                     name="thumbnail"
@@ -783,15 +819,20 @@ export default function AddProducts() {
                   </p>
                 </label>
               )}
-              {formik.touched.thumbnail && formik.errors.thumbnail && (
-                <p className="text-xs text-red-500 font-semibold">{formik.errors.thumbnail}</p>
+              {(formik.touched.thumbnail || formik.submitCount > 0) && formik.errors.thumbnail && (
+                <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle size={13} className="shrink-0" />
+                  <span>{formik.errors.thumbnail}</span>
+                </p>
               )}
             </div>
 
             {/* Multi-images Gallery Upload & Previews */}
             <div className="space-y-3">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex justify-between">
-                <span>Gallery Images</span>
+                <span>
+                  Gallery Images <span className="text-gray-400 font-normal text-[11px] lowercase">(optional)</span>
+                </span>
                 <span className="text-[10px] text-gray-400 font-normal">
                   Maximum 5 images ({formik.values.images.length}/5 uploaded)
                 </span>
@@ -855,8 +896,8 @@ export default function AddProducts() {
 
             {/* Video Upload & Preview */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                Showcase Demonstration Video (optional)
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center justify-between">
+                <span>Showcase Video <span className="text-gray-400 font-normal text-[11px] lowercase">(optional)</span></span>
               </label>
 
               {videoPreview ? (
