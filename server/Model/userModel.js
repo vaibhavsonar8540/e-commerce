@@ -56,6 +56,22 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // Seller fields
+    businessName: {
+      type: String,
+      default: null,
+    },
+
+    gstin: {
+      type: String,
+      default: null,
+    },
+
+    address: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

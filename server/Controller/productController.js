@@ -17,6 +17,7 @@ const productController = {
         status,
         sizes,
         colors,
+        fabric,
       } = req.body;
 
       // Required field validation
@@ -62,8 +63,8 @@ const productController = {
         productName,
         description,
         collections,
-        category,
-        subcategory,
+        category: category || undefined,
+        subCategory: subcategory || undefined,
         brand,
         price,
         discountPrice,
@@ -72,6 +73,7 @@ const productController = {
         seller: req.user._id,
         sizes,
         colors,
+        fabric,
         thumbnail,
         images,
         videos,
@@ -83,9 +85,10 @@ const productController = {
         data: newProduct,
       });
     } catch (error) {
+      console.error("Create Product Error:", error);
       return res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: error.message,
+        message: `${error.message}\nStack: ${error.stack}`,
       });
     }
   },
@@ -95,7 +98,7 @@ const productController = {
     try {
       const products = await Product.find().populate(
         "seller",
-        "fullname email",
+        "fullname email phone businessName address gstin",
       );
 
       return res.status(HTTP_CODES.OK).json({
@@ -120,7 +123,7 @@ const productController = {
       })
         .sort({ totalSales: -1 }) // Highest sales first
         .limit(10) // Top 10 products
-        .populate("seller", "fullname email");
+        .populate("seller", "fullname email phone businessName address gstin");
 
       return res.status(HTTP_CODES.OK).json({
         success: true,
@@ -141,7 +144,7 @@ const productController = {
     try {
       const products = await Product.find({
         seller: req.user._id,
-      }).populate("seller", "fullname email");
+      }).populate("seller", "fullname email phone businessName address gstin");
 
       return res.status(HTTP_CODES.OK).json({
         success: true,
@@ -163,7 +166,7 @@ const productController = {
     })
       .sort({ createdAt: -1 })
       .limit(5)
-      .populate("seller", "fullname email");
+      .populate("seller", "fullname email phone businessName address gstin");
 
     return res.status(HTTP_CODES.OK).json({
       success: true,
@@ -210,7 +213,7 @@ const productController = {
       }
 
       const products = await Product.find(query)
-        .populate("seller", "fullname email")
+        .populate("seller", "fullname email phone businessName address gstin")
         .populate("collections", "name slug")
         .populate("category", "name slug")
         .populate("subCategory", "name slug");
@@ -232,7 +235,7 @@ const productController = {
     try {
       const { id } = req.params;
       const product = await Product.findById(id)
-        .populate("seller", "fullname email")
+        .populate("seller", "fullname email phone businessName address gstin")
         .populate("collections", "name slug")
         .populate("category", "name slug")
         .populate("subCategory", "name slug");
@@ -254,6 +257,60 @@ const productController = {
         success: false,
         message: error.message,
       });
+    }
+  },
+
+  update: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const product = await Product.findById(id);
+
+      if (!product) {
+        return res.status(404).json({ success: false, message: "Product not found." });
+      }
+
+      // Check if logged in user is the owner (seller) or is an admin
+      if (product.seller.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+        return res.status(403).json({ success: false, message: "You are not authorized to edit this product." });
+      }
+
+      const updateData = { ...req.body };
+      if (updateData.category === "") updateData.category = undefined;
+      if (updateData.subcategory === "") updateData.subcategory = undefined;
+      if (updateData.subCategory === "") updateData.subCategory = undefined;
+
+      const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true });
+      return res.status(200).json({
+        success: true,
+        message: "Product updated successfully.",
+        product: updatedProduct,
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  delete: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const product = await Product.findById(id);
+
+      if (!product) {
+        return res.status(404).json({ success: false, message: "Product not found." });
+      }
+
+      // Check authorization
+      if (product.seller.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+        return res.status(403).json({ success: false, message: "You are not authorized to delete this product." });
+      }
+
+      await Product.findByIdAndDelete(id);
+      return res.status(200).json({
+        success: true,
+        message: "Product deleted successfully.",
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
     }
   },
 };

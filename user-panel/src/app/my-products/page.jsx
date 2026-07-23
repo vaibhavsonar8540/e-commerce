@@ -8,6 +8,7 @@ import { ArrowLeft, Package, Sparkles, RefreshCw, AlertCircle, Plus, Eye } from 
 import Link from "next/link";
 import api from "@/utils/axiosInstant";
 import { toast } from "react-toastify";
+import { getMediaUrl, DEFAULT_PLACEHOLDER_IMAGE } from "@/utils/imageUrl";
 
 export default function MyProductsPage() {
   const router = useRouter();
@@ -140,13 +141,13 @@ export default function MyProductsPage() {
         </div>
 
         {/* Search Bar / Filter tools */}
-        <div className="bg-white border border-gray-200/80 rounded-2xl p-4 shadow-sm">
+        <div className="bg-[#F8F8F8] border border-gray-200 rounded-2xl p-4">
           <input
             type="text"
             placeholder="Search products by title or brand..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full py-2.5 px-4 border border-gray-200 rounded-xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm"
+            className="w-full py-2.5 px-4 border border-gray-200 rounded-xl outline-none focus:border-gray-400 transition text-gray-700 placeholder:text-gray-400 bg-white text-sm"
           />
         </div>
 
@@ -212,14 +213,17 @@ export default function MyProductsPage() {
                       <tr key={p._id} className="hover:bg-gray-50/20 transition-colors">
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-4">
-                            {p.thumbnail ? (
+                            {p.thumbnail || p.images?.[0] ? (
                               <img
-                                src={p.thumbnail}
+                                src={getMediaUrl(p.thumbnail || p.images?.[0])}
                                 alt={p.productName}
                                 className="w-12 h-12 rounded-xl object-cover border border-gray-100 shadow-sm shrink-0"
+                                onError={(e) => {
+                                  e.target.src = DEFAULT_PLACEHOLDER_IMAGE;
+                                }}
                               />
                             ) : (
-                              <div className="w-12 h-12 rounded-xl bg-gray-105 flex items-center justify-center text-gray-400 shrink-0">
+                              <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
                                 <Package size={18} />
                               </div>
                             )}

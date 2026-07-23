@@ -6,6 +6,7 @@ import { setIsCartOpen, setIsModelOpen } from "@/redux/slices/commonSlice";
 import { fetchCart, updateCartQtyAction, removeFromCartAction } from "@/redux/action/commonAction";
 import { X, Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { getMediaUrl, DEFAULT_PLACEHOLDER_IMAGE } from "@/utils/imageUrl";
 
 export default function CartDrawer() {
   const dispatch = useDispatch();
@@ -121,11 +122,11 @@ export default function CartDrawer() {
                     {/* Thumbnail img */}
                     <div className="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden shrink-0 border border-gray-100 flex items-center justify-center">
                       <img
-                        src={`${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}/${prod.thumbnail}`}
+                        src={getMediaUrl(prod.thumbnail)}
                         alt={prod.productName}
                         className="w-full h-full object-contain"
                         onError={(e) => {
-                          e.target.src = "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=100";
+                          e.target.src = DEFAULT_PLACEHOLDER_IMAGE;
                         }}
                       />
                     </div>

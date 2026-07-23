@@ -22,6 +22,8 @@ router.get("/get", productController.get)
 router.get("/get-filtered", productController.getFiltered)
 router.get("/get/:id", productController.getById)
 router.get("/my-products" , checkAuth, productController.myProducts)
+router.put("/update/:id", checkAuth, productController.update);
+router.delete("/delete/:id", checkAuth, productController.delete);
 router.get("/most-sold", productController.getMostSold);
 router.get("/new-arrivals", productController.getNewArrivals); // latest 5 products
 

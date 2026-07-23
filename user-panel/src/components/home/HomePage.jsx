@@ -97,27 +97,27 @@ const HomePage = () => {
         <Category />
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pb-16 space-y-12 animate-in fade-in duration-300">
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <span className="w-8 h-8 border-3 border-[#47230B]/20 border-t-[#47230B] rounded-full animate-spin"></span>
-          </div>
-        ) : (
-          <>
-            <ProductSlider
-              title="Latest Arrivals For Men"
-              subtitle="Discover the new standard in menswear fashion essentials."
-              products={menProducts}
-            />
+      {womenProducts && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pb-16 animate-in fade-in duration-300">
+          <ProductSlider
+            title="Latest Arrivals For Women"
+            products={womenProducts}
+            collectionSlug="women"
+          />
+        </section>
+      )}
 
-            <ProductSlider
-              title="Latest Arrivals For Women"
-              subtitle="Upgrade your wardrobe with our handpicked elegant fits."
-              products={womenProducts}
-            />
-          </>
-        )}
-      </section>
+      {menProducts && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pb-16 animate-in fade-in duration-300">
+          <ProductSlider
+            title="Latest Arrivals For Men"
+            subtitle="Discover the new standard in menswear fashion essentials."
+            products={menProducts}
+            collectionSlug="men"
+          />
+        </section>
+      )}
+
     </div>
   );
 };

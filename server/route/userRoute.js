@@ -13,4 +13,9 @@ userRoute.put("/update-profile", CheckAuth, userController.updateProfile)
 userRoute.get("/all", CheckAuth, CheckRole, userController.getUsers)
 userRoute.get("/dashboard-stats", CheckAuth, CheckRole, userController.getDashboardStats)
 
+// Seller onboarding
+userRoute.post("/send-seller-otp", userController.sendSellerOtp)
+userRoute.post("/verify-seller-otp", userController.verifySellerOtp)
+userRoute.post("/register-seller", userController.registerSeller)
+
 module.exports = userRoute

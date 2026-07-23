@@ -42,3 +42,18 @@ export const removeFromCartApi = async (productId) => {
     const res = await api.post("/cart/remove-from-cart", { productId });
     return res.data.data;
 };
+
+export const getWishlistApi = async () => {
+    const res = await api.get("/wishlist/wishlist");
+    return res.data.data;
+};
+
+export const addToWishlistApi = async (productId) => {
+    const res = await api.post("/wishlist/add-to-favrouite", { productId });
+    return res.data.data;
+};
+
+export const removeFromWishlistApi = async (productId) => {
+    const res = await api.post("/wishlist/remove-from-favrouite", { productId });
+    return res.data.data;
+};

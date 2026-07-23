@@ -67,7 +67,7 @@ const wishlistController = {
             // Find the wishlist and populate the products in the array
             const wishList = await Wishlist.findOne({ userId }).populate({
                 path: "productId", // Path to populate matches your schema
-                select: "productName price discountedPrice images stock" // Only fetch essential UI fields
+                select: "productName price discountedPrice images stock thumbnail" // Only fetch essential UI fields
             });
 
             if (!wishList) {
@@ -83,6 +83,46 @@ const wishlistController = {
                 success: true,
                 message: "Wishlist retrieved successfully.",
                 data: wishList
+            });
+
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error.",
+                error: error.message
+            });
+        }
+    },
+
+    // 3. REMOVE ITEM FROM WISHLIST
+    removeFromFav: async (req, res) => {
+        const { productId } = req.body;
+        const userId = req.user?.id;
+
+        try {
+            if (!productId || !userId) {
+                return res.status(400).json({ success: false, message: "Invalid request data." });
+            }
+
+            let wishList = await Wishlist.findOne({ userId });
+            if (!wishList) {
+                return res.status(404).json({ success: false, message: "Wishlist not found." });
+            }
+
+            // Remove product from array
+            wishList.productId = wishList.productId.filter(id => id.toString() !== productId);
+            await wishList.save();
+
+            // Get updated list
+            const updatedWishlist = await Wishlist.findOne({ userId }).populate({
+                path: "productId",
+                select: "productName price discountedPrice images stock thumbnail"
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Product removed from wishlist successfully.",
+                data: updatedWishlist || { userId, productId: [] }
             });
 
         } catch (error) {

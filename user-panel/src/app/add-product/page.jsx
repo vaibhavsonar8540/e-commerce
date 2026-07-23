@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import api from "@/utils/axiosInstant";
 import {
   ArrowLeft,
   FileSpreadsheet,
@@ -10,15 +11,20 @@ import {
   Check,
   Plus,
   X,
+  AlertCircle,
+  Package,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { addProduct } from "@/redux/action/productAction";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
+import Link from "next/link";
+import { setIsModelOpen } from "@/redux/slices/commonSlice";
 
 export default function AddProducts() {
   const dispatch = useDispatch();
+  const { user, isAuthenticated, loading: authLoading } = useSelector((state) => state.auth);
   const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [imagesPreviews, setImagesPreviews] = useState([]);
@@ -29,6 +35,9 @@ export default function AddProducts() {
   const { collection, categories, subCategories } = useSelector(
     (state) => state.common,
   );
+
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [filteredSubcategories, setFilteredSubcategories] = useState([]);
 
   // Form validation schema using Yup
   const validationSchema = Yup.object().shape({
@@ -64,6 +73,7 @@ export default function AddProducts() {
       .required("Stock is required"),
     sizes: Yup.array().of(Yup.string()),
     colors: Yup.string(),
+    fabric: Yup.string().optional(),
     thumbnail: Yup.mixed().required("Thumbnail image is required"),
     images: Yup.array().max(5, "You can upload up to 5 images"),
     videos: Yup.mixed().optional(),
@@ -83,6 +93,7 @@ export default function AddProducts() {
       status: "active",
       sizes: [],
       colors: "",
+      fabric: "",
       thumbnail: null,
       images: [],
       videos: null,
@@ -94,9 +105,10 @@ export default function AddProducts() {
         formData.append("productName", values.productName);
         formData.append("description", values.description);
         formData.append("collections", values.collections);
-        formData.append("category", values.category);
-        formData.append("subcategory", values.subcategory);
+        if (values.category) formData.append("category", values.category);
+        if (values.subcategory) formData.append("subcategory", values.subcategory);
         if (values.brand) formData.append("brand", values.brand);
+        if (values.fabric) formData.append("fabric", values.fabric);
         formData.append("price", values.price);
         if (values.discountPrice !== "" && values.discountPrice !== null && values.discountPrice !== undefined) {
           formData.append("discountPrice", values.discountPrice);
@@ -148,6 +160,44 @@ export default function AddProducts() {
       }
     },
   });
+
+  // Fetch categories when collections selection changes
+  useEffect(() => {
+    if (formik.values.collections) {
+      api.get(`/collection/categories?collectionId=${formik.values.collections}`)
+        .then((res) => {
+          setFilteredCategories(res.data.categories || []);
+          formik.setFieldValue("category", "");
+          formik.setFieldValue("subcategory", "");
+        })
+        .catch((err) => {
+          console.error("Error fetching categories:", err);
+          setFilteredCategories([]);
+        });
+    } else {
+      setFilteredCategories([]);
+      formik.setFieldValue("category", "");
+      formik.setFieldValue("subcategory", "");
+    }
+  }, [formik.values.collections]);
+
+  // Fetch subcategories when category selection changes
+  useEffect(() => {
+    if (formik.values.category) {
+      api.get(`/collection/sub-categories?categoryId=${formik.values.category}`)
+        .then((res) => {
+          setFilteredSubcategories(res.data.subCategories || []);
+          formik.setFieldValue("subcategory", "");
+        })
+        .catch((err) => {
+          console.error("Error fetching subcategories:", err);
+          setFilteredSubcategories([]);
+        });
+    } else {
+      setFilteredSubcategories([]);
+      formik.setFieldValue("subcategory", "");
+    }
+  }, [formik.values.category]);
 
   // Size selection handling
   const toggleSize = (size) => {
@@ -203,40 +253,95 @@ export default function AddProducts() {
     setVideoPreview(null);
   };
 
+  // Auth & Role Guard
+  if (authLoading) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-gray-50/30">
+        <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></span>
+        <p className="text-sm font-semibold text-gray-500 mt-3">Verifying authentication...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-gray-50/30 p-4">
+        <div className="bg-white border border-gray-200/80 rounded-3xl p-8 max-w-md w-full text-center shadow-sm space-y-6">
+          <div className="w-16 h-16 bg-[#f9ece5] text-black rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+            <Package size={28} />
+          </div>
+          <h2 className="text-2xl font-bold font-playfair text-black">Access Vendor Portal</h2>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            Please login as an Admin or Seller to view, manage, and track your active product listings.
+          </p>
+          <div>
+            <button
+              onClick={() => dispatch(setIsModelOpen(true))}
+              type="button"
+              className="w-full py-3 bg-black hover:bg-gray-950 text-white font-bold rounded-2xl transition duration-200 outline-none text-sm cursor-pointer shadow-md hover:shadow-lg"
+            >
+              Sign In / Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (user?.role !== "seller" && user?.role !== "admin") {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-gray-50/30 p-4">
+        <div className="bg-white border border-gray-200/80 rounded-3xl p-8 max-w-md w-full text-center shadow-sm space-y-6">
+          <div className="w-16 h-16 bg-red-50 text-red-700 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+            <AlertCircle size={28} />
+          </div>
+          <h2 className="text-2xl font-bold font-playfair text-red-800">Unauthorised Access</h2>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            Only accounts registered as <strong>Sellers</strong> or <strong>Admins</strong> are authorised to list products and access this catalog.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/"
+              className="inline-flex w-full justify-center py-3 bg-black hover:bg-gray-900 text-white font-bold rounded-2xl transition duration-200 text-sm shadow-md"
+            >
+              Return to Catalog
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8 lg:p-12">
-      {/* Top Navigation / Header */}
-      <div className="max-w-6xl mx-auto flex items-center justify-between mb-10">
-        <button
-          onClick={() => window.history.back()}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow transition cursor-pointer"
-        >
-          <ArrowLeft size={16} />
-          <span>Back</span>
-        </button>
-
-        <button
-          type="button"
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl shadow-md hover:shadow-lg transition duration-205 cursor-pointer"
-        >
-          <FileSpreadsheet size={16} />
-          <span>Import Excel</span>
-        </button>
-      </div>
-
       {/* Main Content Layout */}
-      <div className="max-w-6xl mx-auto block lg:grid lg:grid-cols-3 lg:gap-10">
+      <div className="max-w-6xl mx-auto block lg:grid lg:grid-cols-3 lg:gap-10 pt-4">
         {/* Left Side: Explanatory Column */}
         <div className="mb-8 lg:mb-0 lg:col-span-1">
-          <div className="sticky top-6">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight font-playfair">
-              Product Information
-            </h2>
-            <p className="mt-3 text-sm sm:text-base text-gray-500 leading-relaxed">
-              Provide necessary descriptions, categorizations, pricing
-              particulars, and sizes for this catalog entry. Be sure to upload
-              high-fidelity image thumbnails and demos.
-            </p>
+          <div className="lg:sticky lg:top-28 space-y-6">
+            {/* Top Navigation / Actions */}
+            <div>
+              <button
+                type="button"
+                onClick={() => window.history.back()}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow transition cursor-pointer"
+              >
+                <ArrowLeft size={16} />
+                <span>Back</span>
+              </button>
+            </div>
+
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight font-playfair">
+                Product Information
+              </h2>
+              <p className="mt-3 text-sm sm:text-base text-gray-500 leading-relaxed">
+                Provide necessary descriptions, categorizations, pricing
+                particulars, and sizes for this catalog entry. Be sure to upload
+                high-fidelity image thumbnails and demos.
+              </p>
+            </div>
+            
             <div className="mt-8 hidden lg:block border-l-2 border-black/10 pl-4 space-y-4">
               <div>
                 <h4 className="text-xs uppercase tracking-wider font-extrabold text-gray-400">
@@ -261,7 +366,17 @@ export default function AddProducts() {
         </div>
 
         {/* Right Side: Form Containment */}
-        <form className="lg:col-span-2 space-y-8" onSubmit={formik.handleSubmit}>
+        <form className="lg:col-span-2 space-y-6" onSubmit={formik.handleSubmit}>
+          {/* Import Excel button on top of product form in right corner */}
+          <div className="flex justify-end mb-2">
+            <button
+              type="button"
+              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl shadow-md hover:shadow-lg transition cursor-pointer"
+            >
+              <FileSpreadsheet size={16} />
+              <span>Import Excel</span>
+            </button>
+          </div>
           {/* Card 1: Product Specifications */}
           <div className="bg-white rounded-3xl border border-gray-200/80 p-6 sm:p-8 shadow-sm space-y-6">
             <div className="border-b border-gray-100 pb-4">
@@ -370,7 +485,7 @@ export default function AddProducts() {
                     }`}
                   >
                     <option value="">Select Category</option>
-                    {categories?.map((item) => (
+                    {filteredCategories?.map((item) => (
                       <option key={item._id || item.id || item} value={item._id || item.id || item}>
                         {item.name || item}
                       </option>
@@ -404,7 +519,7 @@ export default function AddProducts() {
                     }`}
                   >
                     <option value="">Select Subcategory</option>
-                    {subCategories?.map((item) => (
+                    {filteredSubcategories?.map((item) => (
                       <option key={item._id || item.id || item} value={item._id || item.id || item}>
                         {item.name || item}
                       </option>
@@ -590,6 +705,22 @@ export default function AddProducts() {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 placeholder="e.g. Red, Blue, Black, White"
+                className="w-full py-3 px-4 border border-gray-200 rounded-2xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm font-semibold"
+              />
+            </div>
+
+            {/* Fabric Input */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                Fabric Type
+              </label>
+              <input
+                type="text"
+                name="fabric"
+                value={formik.values.fabric}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="e.g. Cotton, Silk, Rayon, Polyester"
                 className="w-full py-3 px-4 border border-gray-200 rounded-2xl outline-none focus:border-black transition text-gray-800 bg-gray-50/30 text-sm font-semibold"
               />
             </div>

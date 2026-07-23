@@ -35,7 +35,35 @@ const userController = {
         ...req.body,
         password: hashedPassword,
       });
-      res.status(201).json({ message: "User created successfully !", newUser });
+
+      // Generate JWT for auto login
+      const token = jwt.sign(
+        {
+          id: newUser._id,
+          role: newUser.role,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "7d",
+        }
+      );
+
+      // Set cookie for auto login
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.status(201).json({
+        message: "User created successfully !",
+        token,
+        user: {
+          id: newUser._id,
+          fullname: newUser.fullname,
+        }
+      });
     } catch (error) {
       res.status(404).json({ message: "Error while creating new user", error });
     }
@@ -254,6 +282,158 @@ getDashboardStats: async (req, res) => {
           phone: updatedUser.phone,
           role: updatedUser.role
         }
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  sendSellerOtp: async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ success: false, message: "Email is required." });
+      }
+
+      // Find user
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ success: false, message: "No account found with this email address." });
+      }
+
+      // Generate 6 digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+      user.loginOtp = otp;
+      user.otpExpiry = expiry;
+      await user.save();
+
+      console.log(`\n========================================\n[SELLER OTP] OTP for ${email} is: ${otp}\n========================================\n`);
+
+      // Attempt to send email if nodemailer is installed (optional fallback)
+      try {
+        const nodemailer = require("nodemailer");
+        const transporter = nodemailer.createTransport({
+          host: "smtp.ethereal.email",
+          port: 587,
+          secure: false,
+          auth: {
+            user: process.env.SMTP_USER || "test",
+            pass: process.env.SMTP_PASS || "test"
+          }
+        });
+        await transporter.sendMail({
+          from: '"Veloza Seller Portal" <no-reply@veloza.com>',
+          to: email,
+          subject: "Seller Onboarding Verification OTP",
+          text: `Your verification OTP is: ${otp}. It is valid for 10 minutes.`,
+          html: `<p>Your verification OTP is: <strong>${otp}</strong>. It is valid for 10 minutes.</p>`
+        });
+      } catch (err) {
+        // Nodemailer not installed or transport error; silent fallback to console log
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP sent successfully to your email. (Please check console/terminal logs during local testing)",
+        otp // return OTP in response for easy testing
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  verifySellerOtp: async (req, res) => {
+    try {
+      const { email, otp } = req.body;
+      if (!email || !otp) {
+        return res.status(400).json({ success: false, message: "Email and OTP are required." });
+      }
+
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found." });
+      }
+
+      if (user.loginOtp !== otp) {
+        return res.status(400).json({ success: false, message: "Invalid OTP code." });
+      }
+
+      if (new Date() > user.otpExpiry) {
+        return res.status(400).json({ success: false, message: "OTP code has expired." });
+      }
+
+      // Clear OTP
+      user.loginOtp = null;
+      user.otpExpiry = null;
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Email verified successfully."
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  registerSeller: async (req, res) => {
+    try {
+      const { email, businessName, gstin, address } = req.body;
+      if (!email) {
+        return res.status(400).json({
+          success: false,
+          message: "Email is required to complete seller registration."
+        });
+      }
+
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found." });
+      }
+
+      // Update role and details
+      user.role = "seller";
+      user.businessName = businessName || user.businessName || "";
+      user.gstin = gstin || user.gstin || "";
+      user.address = address || user.address || "";
+      await user.save();
+
+      // Sign a new token with updated roles
+      const token = jwt.sign(
+        {
+          id: user._id,
+          role: user.role,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "7d",
+        }
+      );
+
+      // Set cookie
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Congratulations! You have successfully registered as a seller.",
+        user: {
+          id: user._id,
+          fullname: user.fullname,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          businessName: user.businessName,
+          gstin: user.gstin,
+          address: user.address
+        },
+        token
       });
     } catch (error) {
       return res.status(500).json({ success: false, message: error.message });

@@ -1,6 +1,19 @@
 @import "tailwindcss";
 @config "../../tailwind.config.mjs";
 
+@theme {
+  --color-primary: #45220e;
+  --color-secondary: #FF6B35;
+  --color-mid-grey: #757575;
+  --color-light-cream: #F9ECE5;
+  --color-light-grey: #F3F4F6;
+  --color-whitesmoke: #F5F5F5;
+  --color-off-white: #F8F8F8;
+  --font-raleway: var(--font-raleway);
+  --font-sans: var(--font-raleway);
+  --font-playfair: var(--font-playfair);
+}
+
 :root {
   --primary: #45220e;
   --secondary: oklch(0.97 0 0);

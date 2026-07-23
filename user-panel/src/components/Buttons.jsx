@@ -12,14 +12,14 @@ const getVariant = (variant) => {
       return "bg-transparent border border-white text-white hover:bg-white hover:text-primary";
 
     default:
-      return "bg-white border border-secondary text-secondary hover:bg-secondary hover:text-white";
+      return "bg-white border border-black text-black hover:bg-black hover:text-white";
   }
 };
 
 export const Button = ({
   children,
   className = "",
-  variant = "primaryHover",
+  variant = "",
   ...props
 }) => {
   return (

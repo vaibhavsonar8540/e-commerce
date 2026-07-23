@@ -1,5 +1,5 @@
-import { setCategories, setCollection, setLoading, setSubCategories, setCart } from "@/redux/slices/commonSlice";
-import { getCategories, getCollection, getSubCategories, getCartApi, addToCartApi, updateCartQtyApi, removeFromCartApi } from "@/service/commonService";
+import { setCategories, setCollection, setLoading, setSubCategories, setCart, setWishlist } from "@/redux/slices/commonSlice";
+import { getCategories, getCollection, getSubCategories, getCartApi, addToCartApi, updateCartQtyApi, removeFromCartApi, getWishlistApi, addToWishlistApi, removeFromWishlistApi } from "@/service/commonService";
 
 export const fetchCollection = () => async (dispatch) => {
     try {
@@ -75,6 +75,36 @@ export const removeFromCartAction = (productId) => async (dispatch) => {
         dispatch(fetchCart());
     } catch (error) {
         console.log("Error removing item from cart:", error);
+        throw error;
+    }
+};
+
+export const fetchWishlist = () => async (dispatch) => {
+    try {
+        const wishlistData = await getWishlistApi();
+        // Since wishlistData holds { productId: [...] }, let's dispatch that array
+        dispatch(setWishlist(wishlistData?.productId || []));
+    } catch (error) {
+        console.log("Error fetching wishlist:", error);
+    }
+};
+
+export const addToWishlistAction = (productId) => async (dispatch) => {
+    try {
+        await addToWishlistApi(productId);
+        dispatch(fetchWishlist());
+    } catch (error) {
+        console.log("Error adding to wishlist:", error);
+        throw error;
+    }
+};
+
+export const removeFromWishlistAction = (productId) => async (dispatch) => {
+    try {
+        await removeFromWishlistApi(productId);
+        dispatch(fetchWishlist());
+    } catch (error) {
+        console.log("Error removing from wishlist:", error);
         throw error;
     }
 };

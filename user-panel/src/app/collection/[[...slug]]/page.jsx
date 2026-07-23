@@ -18,6 +18,12 @@ export default function CollectionPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+  const [sortByDate, setSortByDate] = useState("newest");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+
   const { collection: collectionsList, categories: categoriesList, subCategories: subcategoriesList } = useSelector(
     (state) => state.common
   );
@@ -30,6 +36,59 @@ export default function CollectionPage({ params }) {
   const activeCollection = collectionsList?.find((c) => c.slug === collectionSlug);
   const activeCategory = categoriesList?.find((c) => c.slug === categorySlug);
   const activeSubcategory = subcategoriesList?.find((c) => c.slug === subcategorySlug);
+
+  // Sync state filters with URL slugs when page changes or config loads
+  useEffect(() => {
+    if (activeCategory) {
+      setSelectedCategory(activeCategory._id);
+    } else {
+      setSelectedCategory("");
+    }
+  }, [categorySlug, activeCategory]);
+
+  useEffect(() => {
+    if (activeSubcategory) {
+      setSelectedSubcategory(activeSubcategory._id);
+    } else {
+      setSelectedSubcategory("");
+    }
+  }, [subcategorySlug, activeSubcategory]);
+
+  // Filter lists for selectors
+  const pageCategories = categoriesList?.filter(
+    (c) => c.collectionName === activeCollection?._id || c.collectionName?._id === activeCollection?._id
+  ) || [];
+
+  const pageSubcategories = subcategoriesList?.filter(
+    (s) => s.category === selectedCategory || s.category?._id === selectedCategory
+  ) || [];
+
+  const handleCategoryChange = (catId) => {
+    setSelectedCategory(catId);
+    setSelectedSubcategory("");
+  };
+
+  // Filtered & Sorted products list to render
+  const filteredProducts = products
+    .filter((prod) => {
+      const prodCat = prod.category?._id || prod.category;
+      const prodSub = prod.subCategory?._id || prod.subCategory || prod.subcategory?._id || prod.subcategory;
+      if (selectedCategory && prodCat !== selectedCategory) {
+        return false;
+      }
+      if (selectedSubcategory && prodSub !== selectedSubcategory) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortByDate === "newest") {
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      } else if (sortByDate === "oldest") {
+        return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+      }
+      return 0;
+    });
 
   const displayTitle = collectionSlug === "search"
     ? `Search Results for "${searchQuery}"`
@@ -48,8 +107,6 @@ export default function CollectionPage({ params }) {
           response = await api.get("/product/get-filtered", {
             params: {
               collectionSlug,
-              categorySlug,
-              subcategorySlug,
             },
           });
         }
@@ -117,6 +174,130 @@ export default function CollectionPage({ params }) {
           </p>
         </div>
 
+        {/* Filters Container */}
+        {collectionSlug !== "search" && (
+          <div className="bg-[#F8F8F8] border border-gray-200 p-5 sm:p-6 rounded-2xl space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Filter by Category */}
+              <div className="space-y-1.5 flex flex-col">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                  Filter by Category
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="appearance-none w-full py-2.5 px-4 pr-10 border border-gray-200 rounded-xl outline-none focus:border-gray-400 transition text-gray-700 bg-white text-sm cursor-pointer shadow-xs"
+                  >
+                    <option value="">All Categories</option>
+                    {pageCategories.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">
+                    ▼
+                  </span>
+                </div>
+              </div>
+
+              {/* Filter by Subcategory */}
+              <div className="space-y-1.5 flex flex-col">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                  Filter by Subcategory
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedSubcategory}
+                    onChange={(e) => setSelectedSubcategory(e.target.value)}
+                    disabled={!selectedCategory}
+                    className="appearance-none w-full py-2.5 px-4 pr-10 border border-gray-200 rounded-xl outline-none focus:border-gray-400 transition text-gray-700 bg-white text-sm cursor-pointer disabled:bg-gray-100 disabled:cursor-not-allowed shadow-xs"
+                  >
+                    <option value="">All Subcategories</option>
+                    {pageSubcategories.map((sub) => (
+                      <option key={sub._id} value={sub._id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">
+                    ▼
+                  </span>
+                </div>
+              </div>
+
+              {/* Sort by Date */}
+              <div className="space-y-1.5 flex flex-col">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                  Sort by Date
+                </label>
+                <div className="relative">
+                  <select
+                    value={sortByDate}
+                    onChange={(e) => setSortByDate(e.target.value)}
+                    className="appearance-none w-full py-2.5 px-4 pr-10 border border-gray-200 rounded-xl outline-none focus:border-gray-400 transition text-gray-700 bg-white text-sm cursor-pointer shadow-xs"
+                  >
+                    <option value="newest">Newly Uploaded</option>
+                    <option value="oldest">Oldest Uploaded</option>
+                  </select>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">
+                    ▼
+                  </span>
+                </div>
+              </div>
+
+              {/* Price Range Filteration (UI Only) */}
+              <div className="space-y-1.5 flex flex-col">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                  Price Range ($)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="w-full py-2.5 px-3 border border-gray-200 rounded-xl outline-none focus:border-gray-400 text-sm text-gray-700 bg-white placeholder:text-gray-400 shadow-xs"
+                  />
+                  <span className="text-gray-400 text-xs">-</span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="w-full py-2.5 px-3 border border-gray-200 rounded-xl outline-none focus:border-gray-400 text-sm text-gray-700 bg-white placeholder:text-gray-400 shadow-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-200/60">
+              {(selectedCategory || selectedSubcategory || minPrice || maxPrice || sortByDate !== "newest") && (
+                <button
+                  onClick={() => {
+                    setSelectedCategory("");
+                    setSelectedSubcategory("");
+                    setSortByDate("newest");
+                    setMinPrice("");
+                    setMaxPrice("");
+                  }}
+                  className="px-4 py-2.5 bg-red-50 border border-red-200 text-xs font-bold text-red-600 rounded-xl hover:bg-red-100 transition cursor-pointer"
+                >
+                  Clear Filters
+                </button>
+              )}
+              <button
+                type="button"
+                className="bg-black hover:bg-black text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider cursor-pointer shadow-xs"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Products Listing Grid */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-3">
@@ -127,7 +308,7 @@ export default function CollectionPage({ params }) {
           <div className="bg-red-50 text-red-700/90 border border-red-200/50 p-5 rounded-2xl text-center font-medium">
             <p>{errorMessage}</p>
           </div>
-        ) : products.length === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <div className="bg-white border border-gray-200/80 rounded-3xl p-12 text-center max-w-xl mx-auto shadow-sm space-y-5">
             <div className="w-16 h-16 bg-gray-105 rounded-2xl flex items-center justify-center mx-auto text-gray-400 mb-4 shadow-inner">
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -136,18 +317,17 @@ export default function CollectionPage({ params }) {
             </div>
             <h3 className="text-xl font-bold text-gray-800">No Catalog Products Found</h3>
             <p className="text-sm text-gray-500 leading-relaxed max-w-md mx-auto">
-              There are currently no products available under this collection classification. Please try searching another category.
+              There are currently no products matching this filter combination.
             </p>
             <div className="pt-2">
-              <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 bg-black hover:bg-gray-900 text-white font-semibold text-sm rounded-xl transition">
-                <ArrowLeft size={16} />
-                <span>Return Home</span>
-              </Link>
+              <button onClick={() => { setSelectedCategory(""); setSelectedSubcategory(""); }} className="inline-flex items-center gap-2 px-5 py-2.5 bg-black hover:bg-gray-900 text-white font-semibold text-sm rounded-xl transition cursor-pointer">
+                <span>Clear Filters</span>
+              </button>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {products.map((prod) => (
+            {filteredProducts.map((prod) => (
               <ProductCard key={prod._id} data={prod} />
             ))}
           </div>

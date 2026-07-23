@@ -1,21 +1,73 @@
 "use client";
 
-import React, { useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import ProductCard from "./productCard";
 
-export default function ProductSlider({ title, subtitle, products = [] }) {
+export default function ProductSlider({ title, subtitle, products = [], collectionSlug, seeMoreUrl }) {
   const scrollRef = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftState, setScrollLeftState] = useState(0);
 
-  const scroll = (direction) => {
-    if (scrollRef.current) {
-      const { scrollLeft, clientWidth } = scrollRef.current;
-      const scrollAmount = clientWidth * 0.75;
-      scrollRef.current.scrollTo({
-        left: direction === "left" ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
-        behavior: "smooth",
-      });
+  // Derive redirection URL
+  let targetUrl = seeMoreUrl;
+  if (!targetUrl) {
+    if (collectionSlug) {
+      targetUrl = `/collection/${collectionSlug}`;
+    } else if (title?.toLowerCase().includes("women")) {
+      targetUrl = "/collection/women";
+    } else if (title?.toLowerCase().includes("men")) {
+      targetUrl = "/collection/men";
+    } else {
+      targetUrl = "/collection";
     }
+  }
+
+  // Auto slide functionality (Timer: slow 3.5s interval)
+  const autoSlide = useCallback(() => {
+    if (!scrollRef.current || isHovered || isDragging) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    // Check if reached end (with 10px buffer)
+    if (scrollLeft + clientWidth >= scrollWidth - 10) {
+      scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    } else {
+      const cardWidth = clientWidth > 640 ? 240 : 180;
+      scrollRef.current.scrollBy({ left: cardWidth, behavior: "smooth" });
+    }
+  }, [isHovered, isDragging]);
+
+  useEffect(() => {
+    if (!products || products.length <= 1) return;
+    const interval = setInterval(autoSlide, 3500);
+    return () => clearInterval(interval);
+  }, [autoSlide, products]);
+
+  // Mouse Drag / Touch User Interaction handlers
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeftState(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+    setIsHovered(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeftState - walk;
   };
 
   if (!products || products.length === 0) {
@@ -35,34 +87,32 @@ export default function ProductSlider({ title, subtitle, products = [] }) {
           )}
         </div>
 
-        {/* Navigation Buttons */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => scroll("left")}
-            className="p-2 border border-[#47230B]/15 hover:border-[#47230B]/30 hover:bg-[#F9ECE5]/40 text-[#47230B] rounded-full transition shadow-sm cursor-pointer flex items-center justify-center"
-            aria-label="Previous products"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            className="p-2 border border-[#47230B]/15 hover:border-[#47230B]/30 hover:bg-[#F9ECE5]/40 text-[#47230B] rounded-full transition shadow-sm cursor-pointer flex items-center justify-center"
-            aria-label="Next products"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
+        {/* See More Link (Replaced old arrow buttons) */}
+        <Link
+          href={targetUrl}
+          className="text-sm font-bold text-[#47230B] hover:text-black hover:underline transition flex items-center gap-1.5 cursor-pointer pb-1 group shrink-0"
+        >
+          <span>See More</span>
+          <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
+        </Link>
       </div>
 
-      {/* Main Slider Content */}
+      {/* Main Slider Content with User Interaction & Smooth Dragging */}
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory scrollbar-none"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={handleMouseLeave}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        className={`flex gap-4 overflow-x-auto pb-4 scroll-smooth scrollbar-none select-none ${
+          isDragging ? "cursor-grabbing" : "cursor-grab"
+        }`}
       >
         {products.map((product) => (
           <div
             key={product._id || product.id}
-            className="w-[calc(50%-8px)] xs:w-[calc(33.33%-11px)] sm:w-[calc(25%-12px)] lg:w-[calc(20%-13px)] shrink-0 snap-start"
+            className="w-[calc(50%-8px)] xs:w-[calc(33.33%-11px)] sm:w-[calc(25%-12px)] lg:w-[calc(20%-13px)] shrink-0"
           >
             <ProductCard data={product} />
           </div>

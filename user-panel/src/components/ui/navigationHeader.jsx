@@ -56,11 +56,11 @@ const closeMenu = () => {
 
       {hoverCollection && (
         <div
-         onMouseEnter={() => {
-        if (closeTimer.current) clearTimeout(closeTimer.current);
-      }}
-      onMouseLeave={closeMenu}
-          className="absolute left-0 bg-white shadow-xl z-10 w-full min-h-[40vh] max-h-[65vh] overflow-y-auto border-t border-t-primary"
+          onMouseEnter={() => {
+            if (closeTimer.current) clearTimeout(closeTimer.current);
+          }}
+          onMouseLeave={closeMenu}
+          className="absolute left-0 bg-white shadow-xl z-50 w-full min-h-[40vh] max-h-[65vh] overflow-y-auto border-t border-t-primary"
           style={{ top: headerHeight }}
         >
           <div className="flex px-10 py-8 gap-10 maxWidthContainer mx-auto">

@@ -32,13 +32,13 @@ const productSchema = new mongoose.Schema(
     category: {
       type : mongoose.Schema.Types.ObjectId,
       ref : "Category",
-      required : true
+      required : false
     },
 
     subCategory : {
       type : mongoose.Schema.Types.ObjectId,
       ref : "SubCategory",
-      required : true
+      required : false
     },
 
     brand: {
@@ -91,6 +91,12 @@ const productSchema = new mongoose.Schema(
         type: String,
       },
     ],
+
+    fabric: {
+      type: String,
+      trim: true,
+      default: "",
+    },
 
     stock: {
       type: Number,
@@ -184,15 +190,13 @@ const productSchema = new mongoose.Schema(
 );
 
 // Generate slug
-productSchema.pre("save", function (next) {
+productSchema.pre("save", function () {
   if (!this.slug || this.isModified("productName")) {
     this.slug = slugify(this.productName, {
       lower: true,
       strict: true,
     });
   }
-
-  next();
 });
 
 // Text Search

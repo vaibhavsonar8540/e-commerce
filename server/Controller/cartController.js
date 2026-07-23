@@ -82,9 +82,9 @@ const cartController = {
         const userId = req.user?.id;
 
         try {
-            const cart = await Cart.findOne({ userId }).populate({
+                        const cart = await Cart.findOne({ userId }).populate({
                 path: "items.productId",
-                select: "productName price discountedPrice images stock"
+                select: "productName price discountedPrice images stock thumbnail"
             });
 
             if (!cart || cart.items.length === 0) {

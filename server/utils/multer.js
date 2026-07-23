@@ -23,22 +23,16 @@ const storage = new CloudinaryStorage({
       resource_type = "video";
     }
 
+    const ext = file.originalname.split(".").pop().toLowerCase();
+    const allowed = ["jpg", "jpeg", "png", "webp", "mp4", "mov", "avi", "mkv", "webm"];
+    const format = allowed.includes(ext) ? ext : undefined;
+
     return {
-  folder,
-  resource_type,
-  format: file.mimetype.split("/")[1],
-  allowed_formats: [
-    "jpg",
-    "jpeg",
-    "png",
-    "webp",
-    "mp4",
-    "mov",
-    "avi",
-    "mkv",
-    "webm",
-  ],
-};
+      folder,
+      resource_type,
+      format,
+      allowed_formats: allowed,
+    };
   },
 });
 

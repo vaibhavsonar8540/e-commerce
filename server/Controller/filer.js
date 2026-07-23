@@ -115,7 +115,7 @@ const filerController = {
           })
             .sort({ createdAt: -1 })
             .limit(10)
-            .populate("seller", "fullname email")
+            .populate("seller", "fullname email phone businessName address gstin")
             .populate("collections", "name slug")
             .populate("category", "name slug")
             .populate("subCategory", "name slug");

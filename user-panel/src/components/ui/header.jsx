@@ -22,6 +22,7 @@ import { Authentication } from "../DynamicComponents";
 import Cookies from "js-cookie";
 import { logout } from "@/redux/slices/authSlice";
 import CartDrawer from "./cartDrawer";
+import { toast } from "react-toastify";
 
 const Header = () => {
   const headerRef = useRef();
@@ -65,6 +66,8 @@ const Header = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
+  const searchRef = useRef(null);
+  const searchToggleRef = useRef(null);
 
   const [openCollectionId, setOpenCollectionId] = useState(null);
   const [openCategoryId, setOpenCategoryId] = useState(null);
@@ -83,6 +86,23 @@ const Header = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutsideSearch = (e) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(e.target) &&
+        searchToggleRef.current &&
+        !searchToggleRef.current.contains(e.target)
+      ) {
+        setIsSearchOpen(false);
+      }
+    };
+    if (isSearchOpen) {
+      document.addEventListener("mousedown", handleClickOutsideSearch);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutsideSearch);
+  }, [isSearchOpen]);
 
   useEffect(() => {
     if (headerRef.current) {
@@ -164,24 +184,34 @@ const Header = () => {
         <NavigationHeader />
 
         <section className="flex gap-6 items-center">
-          <div className="group">
-            <Link href={"/seller"} className={`${hoverClassname} text-sm lg:text-[17px]`}>
-              Become a Seller
-            </Link>
-            <div className="mt-1 h-[2px] w-0 bg-primary transition-all duration-300 ease-in-out group-hover:w-full"></div>
-          </div>
-          <div className="w-[2px] h-5 bg-primary"></div>
+          {user?.role?.toLowerCase() !== "seller" && user?.role?.toLowerCase() !== "admin" && (
+            <>
+              <div className="group">
+                <Link href={"/seller"} className={`${hoverClassname} text-sm lg:text-[17px]`}>
+                  Become a Seller
+                </Link>
+                <div className="mt-1 h-[2px] w-0 bg-primary transition-all duration-300 ease-in-out group-hover:w-full"></div>
+              </div>
+              <div className="w-[2px] h-5 bg-primary"></div>
+            </>
+          )}
           <div className="flex gap-4 items-center">
-            <HiMiniMagnifyingGlass onClick={() => setIsSearchOpen(!isSearchOpen)} className={`${hoverClassname} w-full h-6`} />
+            <span ref={searchToggleRef} className="inline-flex items-center">
+              <HiMiniMagnifyingGlass onClick={() => setIsSearchOpen(!isSearchOpen)} className={`${hoverClassname} w-6 h-6`} />
+            </span>
 
-            <FaRegHeart className={`${hoverClassname} w-full h-5`} />
+            <Link href={"/wishlist"} className={hoverClassname}>
+              <FaRegHeart className="w-5 h-5" />
+            </Link>
 
-            <LuShoppingCart onClick={() => dispatch(setIsCartOpen(true))} className={`${hoverClassname} w-full h-5`} />
+            <Link href={"/cart"} className={hoverClassname}>
+              <LuShoppingCart onClick={() => dispatch(setIsCartOpen(true))} className="w-5 h-5" />
+            </Link>
 
             {!isAuthenticated ? (
               <RiUser3Line
                 onClick={() => dispatch(setIsModelOpen(true))}
-                className={`${hoverClassname} w-full h-5 cursor-pointer`}
+                className={`${hoverClassname} w-5 h-5 cursor-pointer`}
               />
             ) : (
               <div className="relative" ref={profileRef}>
@@ -258,27 +288,35 @@ const Header = () => {
         </section>
 
         {/* DESKTOP SEARCH BAR */}
-        <div className={`absolute left-0 right-0 z-20 border-b border-gray-100 bg-white/80 backdrop-blur-md transition-all duration-300 ease-in-out overflow-hidden shadow-sm ${isSearchOpen ? "top-full opacity-100 h-16 pointer-events-auto" : "top-0 opacity-0 h-0 pointer-events-none"}`}>
-          <div className="max-w-4xl mx-auto h-full flex items-center px-6">
-            <form onSubmit={handleSearchSubmit} className="w-full flex items-center gap-3">
-              <HiMiniMagnifyingGlass className="text-gray-500 w-5 h-5 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search products by list, category, collection name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-sm text-gray-800 placeholder-gray-400 py-2 animate-pulse"
-                autoFocus={isSearchOpen}
-              />
-              {searchQuery && (
+        <div ref={searchRef} className={`absolute left-0 right-0 z-20 border-b border-gray-200 bg-[#F8F8F8] transition-all duration-300 ease-in-out overflow-hidden shadow-sm ${isSearchOpen ? "top-full opacity-100 h-20 pointer-events-auto" : "top-0 opacity-0 h-0 pointer-events-none"}`}>
+          <div className="max-w-7xl mx-auto h-full flex items-center justify-center px-6">
+            <form onSubmit={handleSearchSubmit} className="w-125 max-w-full flex items-center">
+              <div className="relative w-full flex items-center">
+                <HiMiniMagnifyingGlass className="absolute left-3.5 text-gray-400 w-4 h-4 pointer-events-none z-10" />
+                <input
+                  type="text"
+                  placeholder="Search products by list, category, collection name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-xl outline-none text-sm text-gray-700 placeholder:text-gray-400 pl-10 pr-28 py-2.5 transition focus:border-gray-400"
+                  autoFocus={isSearchOpen}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-24 text-xs font-bold text-gray-400 hover:text-black uppercase cursor-pointer z-10"
+                  >
+                    Clear
+                  </button>
+                )}
                 <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="text-xs font-bold text-gray-400 hover:text-black uppercase cursor-pointer"
+                  type="submit"
+                  className="absolute right-3 bg-black hover:bg-black text-white px-4 py-1.5 rounded-lg font-bold text-xs uppercase tracking-wider cursor-pointer"
                 >
-                  Clear
+                  Search
                 </button>
-              )}
+              </div>
             </form>
           </div>
         </div>
@@ -321,27 +359,35 @@ const Header = () => {
         </div>
 
         {/* MOBILE SEARCH BAR */}
-        <div className={`absolute left-0 right-0 z-20 border-b border-gray-100 bg-white/90 backdrop-blur-md transition-all duration-300 ease-in-out overflow-hidden shadow-sm ${isSearchOpen ? "top-full opacity-100 h-14 pointer-events-auto" : "top-0 opacity-0 h-0 pointer-events-none"}`}>
-          <div className="w-full h-full flex items-center px-4">
-            <form onSubmit={handleSearchSubmit} className="w-full flex items-center gap-2.5">
-              <HiMiniMagnifyingGlass className="text-gray-500 w-4 h-4 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-xs text-gray-800 placeholder-gray-400 py-1.5"
-                autoFocus={isSearchOpen}
-              />
-              {searchQuery && (
+        <div ref={searchRef} className={`absolute left-0 right-0 z-20 border-b border-gray-200 bg-[#F8F8F8] transition-all duration-300 ease-in-out overflow-hidden shadow-sm ${isSearchOpen ? "top-full opacity-100 h-16 pointer-events-auto" : "top-0 opacity-0 h-0 pointer-events-none"}`}>
+          <div className="w-full h-full flex items-center justify-center px-4">
+            <form onSubmit={handleSearchSubmit} className="w-full max-w-125 flex items-center">
+              <div className="relative w-full flex items-center">
+                <HiMiniMagnifyingGlass className="absolute left-3 text-gray-400 w-3.5 h-3.5 pointer-events-none z-10" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-xl outline-none text-xs text-gray-700 placeholder:text-gray-400 pl-8 pr-24 py-2 focus:border-gray-400"
+                  autoFocus={isSearchOpen}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-20 text-[10px] font-bold text-gray-400 hover:text-black uppercase cursor-pointer z-10"
+                  >
+                    Clear
+                  </button>
+                )}
                 <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="text-[10px] font-bold text-gray-400 hover:text-black uppercase cursor-pointer"
+                  type="submit"
+                  className="absolute right-3 bg-black hover:bg-black text-white px-3 py-1 rounded-md font-bold text-[11px] uppercase tracking-wider cursor-pointer"
                 >
-                  Clear
+                  Search
                 </button>
-              )}
+              </div>
             </form>
           </div>
         </div>
