@@ -43,25 +43,31 @@ const data = [
 
 const Category = () => {
   return (
-    <div className="container mx-auto py-10 px-16">
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+    <div className="container mx-auto pt-6 sm:pt-10 px-4 sm:px-8 md:px-12 lg:px-16">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 lg:gap-8 pt-4">
         {data.map((item, index) => (
           <div
             key={index}
             className="flex flex-col items-center"
           >
             {/* Card */}
-            <Link href={item.link} className="relative w-[200px] h-[180px] bg-light-cream rounded-t-full overflow-visible">
+            <Link 
+              href={item.link} 
+              className="relative w-[135px] min-[380px]:w-[155px] sm:w-[175px] md:w-[185px] lg:w-[200px] h-[120px] min-[380px]:h-[140px] sm:h-[155px] md:h-[165px] lg:h-[180px] bg-light-cream rounded-t-full overflow-visible group"
+            >
               <CustomImage
                 srcAttr={item.img}
                 altAttr={item.title}
                 titleAttr={item.title}
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[150px] h-[210px] object-contain"
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[100px] min-[380px]:w-[115px] sm:w-[130px] md:w-[140px] lg:w-[150px] h-[140px] min-[380px]:h-[165px] sm:h-[180px] md:h-[195px] lg:h-[210px] object-contain transition-transform duration-300 group-hover:scale-105"
               />
             </Link>
 
             {/* Text */}
-            <Link href={item.link} className="mt-6 text-center text-primary font-medium text-lg">
+            <Link 
+              href={item.link} 
+              className="mt-3 sm:mt-5 md:mt-6 text-center text-primary font-medium text-sm sm:text-base lg:text-lg hover:underline"
+            >
               {item.title}
             </Link>
           </div>

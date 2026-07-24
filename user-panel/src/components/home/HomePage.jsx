@@ -10,24 +10,30 @@ import { useEffect, useState } from "react";
 import api from "@/utils/axiosInstant";
 import ProductSlider from "@/components/productSlider";
 import fashionBanner from "@/assets/home/fashionBanner.webp";
-import electronicBannerForBigScreen from "@/assets/home/electronicBannerBigScreen.webp";
+import electronicBannerForBigScreen from "@/assets/home/electronicBannerForBigScreen.webp";
 import electronicBannerForSmallScreen from "@/assets/home/electronicBannerSmallScreen.webp";
 import CustomImage from "../customImage";
+import Link from "next/link";
+import { Button, LinkButton } from "../Buttons";
 
 const HomePage = () => {
   const [menProducts, setMenProducts] = useState([]);
   const [womenProducts, setWomenProducts] = useState([]);
+  const [beautyProducts, setBeautyProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchHomeSliders() {
       try {
-        const [menRes, womenRes] = await Promise.all([
+        const [menRes, womenRes, beautyRes] = await Promise.all([
           api.get("/product/get-filtered", {
             params: { collectionSlug: "men" },
           }),
           api.get("/product/get-filtered", {
             params: { collectionSlug: "women" },
+          }),
+          api.get("/product/get-filtered", {
+            params: { collectionSlug: "beauty" },
           }),
         ]);
         if (menRes.data?.success) {
@@ -35,6 +41,9 @@ const HomePage = () => {
         }
         if (womenRes.data?.success) {
           setWomenProducts(womenRes.data.products.slice(0, 5));
+        }
+        if (beautyRes.data?.success) {
+          setBeautyProducts(beautyRes.data.products.slice(0, 5));
         }
       } catch (err) {
         console.error("Error fetching home sliders:", err);
@@ -64,32 +73,32 @@ const HomePage = () => {
         />
       </section>
 
-      <div className="bg-[#F3F4F6] py-3 px-5">
-        <div className="py-2 bg-white flex justify-center items-center gap-4 rounded-md">
-          <div className="flex gap-2 items-center">
+      <div className="bg-[#F3F4F6] py-3 px-2 sm:px-5">
+        <div className="py-2.5 px-2 sm:px-4 bg-white flex flex-row justify-between sm:justify-center items-center gap-1 sm:gap-4 md:gap-6 lg:gap-8 rounded-md">
+          <div className="flex gap-1 sm:gap-2 items-center">
             <span>
-              <GiBoxUnpacking className="text-sm text-primary" />
+              <GiBoxUnpacking className="text-xs sm:text-sm text-primary shrink-0" />
             </span>
             <span>
-              <p className="text-sm">7 Days Easy Return</p>
-            </span>
-          </div>
-          <div className="bg-primary w-[1px] h-4 opacity-50"></div>
-          <div className="flex gap-2 items-center">
-            <span>
-              <RiMoneyRupeeCircleFill className="text-sm text-primary" />
-            </span>
-            <span>
-              <p className="text-sm">Cash on Delivery</p>
+              <p className="text-[10px] min-[380px]:text-xs sm:text-sm font-medium whitespace-nowrap">7 Days Easy Return</p>
             </span>
           </div>
-          <div className="bg-primary w-[1px] h-4 opacity-50"></div>
-          <div className="flex gap-2 items-center">
+          <div className="bg-primary w-[1px] h-3.5 sm:h-4 opacity-50 shrink-0"></div>
+          <div className="flex gap-1 sm:gap-2 items-center">
             <span>
-              <ImPriceTags className="text-sm text-primary" />
+              <RiMoneyRupeeCircleFill className="text-xs sm:text-sm text-primary shrink-0" />
             </span>
             <span>
-              <p className="text-sm">Lowest Price</p>
+              <p className="text-[10px] min-[380px]:text-xs sm:text-sm font-medium whitespace-nowrap">Cash on Delivery</p>
+            </span>
+          </div>
+          <div className="bg-primary w-[1px] h-3.5 sm:h-4 opacity-50 shrink-0"></div>
+          <div className="flex gap-1 sm:gap-2 items-center">
+            <span>
+              <ImPriceTags className="text-xs sm:text-sm text-primary shrink-0" />
+            </span>
+            <span>
+              <p className="text-[10px] min-[380px]:text-xs sm:text-sm font-medium whitespace-nowrap">Lowest Price</p>
             </span>
           </div>
         </div>
@@ -100,7 +109,7 @@ const HomePage = () => {
       </section>
 
       {womenProducts && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pb-10 animate-in fade-in duration-300">
+        <section className="px-4 sm:px-8 md:px-12 lg:px-16 mt-6 lg:mt-10 animate-in fade-in duration-300">
           <ProductSlider
             title="Latest Arrivals For Women"
             products={womenProducts}
@@ -109,8 +118,12 @@ const HomePage = () => {
         </section>
       )}
 
-      <section className="relative overflow-hidden">
-        <CustomImage srcAttr={fashionBanner} altAttr="Fashion Banner" titleAttr="Fashion Banner" />
+      <section className="relative overflow-hidden mt-6 lg:mt-10">
+        <CustomImage
+          srcAttr={fashionBanner}
+          altAttr="Fashion Banner"
+          titleAttr="Fashion Banner"
+        />
 
         <div className="absolute right-6 sm:right-12 md:right-20 top-1/2 -translate-y-1/2 select-none">
           <div className="flex flex-col space-y-2 sm:space-y-4 font-playfair text-white uppercase drop-shadow-md">
@@ -125,12 +138,56 @@ const HomePage = () => {
       </section>
 
       {menProducts && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pb-16 animate-in fade-in duration-300">
+        <section className="px-4 sm:px-8 md:px-12 lg:px-16 mt-6 lg:mt-10 animate-in fade-in duration-300">
           <ProductSlider
             title="Latest Arrivals For Men"
-            subtitle="Discover the new standard in menswear fashion essentials."
             products={menProducts}
             collectionSlug="men"
+          />
+        </section>
+      )}
+
+      <Link href="/collection/electonics" className="block relative overflow-hidden mt-6 lg:mt-10">
+        <CustomImage
+          srcAttr={electronicBannerForBigScreen}
+          altAttr="Electonic Banner"
+          titleAttr="Electonic Banner"
+          className={"hidden lg:block"}
+        />
+
+        <CustomImage
+          srcAttr={electronicBannerForSmallScreen}
+          altAttr="Electonic Banner"
+          titleAttr="Electonic Banner"
+          className={"lg:hidden"}
+        />
+
+        <div className="absolute right-6 sm:right-12 md:right-20 top-1/2 -translate-y-1/2 select-none">
+          <div className="flex flex-col space-y-2 sm:space-y-4  text-black max-w-lg drop-shadow-md">
+            <span className="text-xl sm:text-3xl font-playfair uppercase 
+            font-medium tracking-[0.25em] leading-snug">
+              Upgrade Your Tech Today With Velora
+            </span>
+            <span className="tracking-[0.15em] leading-tight">
+              Discover the latest electronics with premium quality, cutting-edge
+              performance, and unbeatable value.
+            </span>
+
+            <LinkButton
+            href="/collection/electonics"
+             className="!bg-transparent hover:!bg-black">
+              Explore Collection
+            </LinkButton>
+          </div>
+        </div>
+      </Link>
+
+      {beautyProducts && beautyProducts.length > 0 && (
+        <section className="px-4 sm:px-8 md:px-12 lg:px-16 my-6 lg:my-10 animate-in fade-in duration-300">
+          <ProductSlider
+            title="Latest Arrivals In Beauty"
+            products={beautyProducts}
+            collectionSlug="beauty"
           />
         </section>
       )}

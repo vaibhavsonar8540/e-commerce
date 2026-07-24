@@ -19,7 +19,8 @@ export default function ProductDetail({ product }) {
   const [selectedColor, setSelectedColor] = useState("");
   const [addingToCart, setAddingToCart] = useState(false);
   const [menArrivals, setMenArrivals] = useState([]);
-  const [loadingMen, setLoadingMen] = useState(true);
+  const [womenArrivals, setWomenArrivals] = useState([]);
+  const [loadingSliders, setLoadingSliders] = useState(true);
 
   // Initialize size and colors
   useEffect(() => {
@@ -41,27 +42,34 @@ export default function ProductDetail({ product }) {
     }
   }, [product]);
 
-  // Fetch Men's latest arrivals
+  // Fetch separate Men's and Women's latest arrivals
   useEffect(() => {
-    async function fetchMenArrivals() {
+    async function fetchArrivals() {
       try {
-        const response = await api.get("/product/get-filtered", {
-          params: { collectionSlug: "men" },
-        });
-        if (response.data?.success) {
-          const filtered = response.data.products
+        const [menRes, womenRes] = await Promise.all([
+          api.get("/product/get-filtered", { params: { collectionSlug: "men" } }),
+          api.get("/product/get-filtered", { params: { collectionSlug: "women" } }),
+        ]);
+        if (menRes.data?.success) {
+          const filteredMen = menRes.data.products
             .filter((p) => p._id !== product?._id)
             .slice(0, 5);
-          setMenArrivals(filtered);
+          setMenArrivals(filteredMen);
+        }
+        if (womenRes.data?.success) {
+          const filteredWomen = womenRes.data.products
+            .filter((p) => p._id !== product?._id)
+            .slice(0, 5);
+          setWomenArrivals(filteredWomen);
         }
       } catch (err) {
-        console.error("Error fetching men arrivals on details page:", err);
+        console.error("Error fetching arrivals on details page:", err);
       } finally {
-        setLoadingMen(false);
+        setLoadingSliders(false);
       }
     }
     if (product) {
-      fetchMenArrivals();
+      fetchArrivals();
     }
   }, [product]);
 
@@ -417,22 +425,37 @@ export default function ProductDetail({ product }) {
         </div>
       </div>
 
-      {/* Bottom Slider: Latest Arrivals For Men */}
-      <div className="pt-8 border-t border-gray-200">
-        {loadingMen ? (
+      {/* Bottom Sliders: Separated Arrivals for Men & Women */}
+      <div className="pt-8 border-t border-gray-200 space-y-12">
+        {loadingSliders ? (
           <div className="flex justify-center items-center py-6">
             <span className="w-6 h-6 border-2 border-gray-200 border-t-black rounded-full animate-spin"></span>
           </div>
-        ) : menArrivals.length > 0 ? (
-          <div>
-            <ProductSlider
-              title="Latest Arrivals For Men"
-              subtitle="Browse corresponding trends from our popular Men's classification."
-              products={menArrivals}
-              collectionSlug="men"
-            />
-          </div>
-        ) : null}
+        ) : (
+          <>
+            {menArrivals.length > 0 && (
+              <div>
+                <ProductSlider
+                  title="Latest Arrivals For Men"
+                  subtitle="Browse corresponding trends from our popular Men's classification."
+                  products={menArrivals}
+                  collectionSlug="men"
+                />
+              </div>
+            )}
+
+            {womenArrivals.length > 0 && (
+              <div className="pt-4 border-t border-gray-100">
+                <ProductSlider
+                  title="Latest Arrivals For Women"
+                  subtitle="Browse corresponding trends from our popular Women's classification."
+                  products={womenArrivals}
+                  collectionSlug="women"
+                />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

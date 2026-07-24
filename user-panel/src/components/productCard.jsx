@@ -124,7 +124,7 @@ const ProductCard = ({ data }) => {
         <div className="">
           <Link
             href={productId ? `/product/${productId}` : "#"}
-            className="line-clamp-2 text-sm font-bold text-gray-800 hover:text-primary transition capitalize tracking-wide"
+            className="line-clamp-1 text-sm font-bold text-gray-800 hover:text-primary transition capitalize tracking-wide"
           >
             {title}
           </Link>

@@ -79,7 +79,7 @@ export default function ProductSlider({ title, subtitle, products = [], collecti
       {/* Slider Header */}
       <div className="flex items-end justify-between border-b border-[#47230B]/10 pb-3 px-1">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#47230B] font-playfair tracking-tight capitalize">
+          <h2 className="text-lg md:text-2xl font-extrabold text-[#47230B] font-playfair tracking-tight capitalize">
             {title}
           </h2>
           {subtitle && (
