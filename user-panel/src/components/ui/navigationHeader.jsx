@@ -31,7 +31,15 @@ const closeMenu = () => {
     dispatch(fetchSUbCategories());
   }, [dispatch]);
 
-  if (loading) return <p className="text-sm text-gray-400">Loading...</p>;
+  if (loading && (!collection || collection.length === 0)) {
+    return (
+      <div className="flex gap-8 items-center">
+        <div className="h-4 w-16 bg-gray-200 animate-pulse rounded"></div>
+        <div className="h-4 w-20 bg-gray-200 animate-pulse rounded"></div>
+        <div className="h-4 w-16 bg-gray-200 animate-pulse rounded"></div>
+      </div>
+    );
+  }
 
   const filteredCategories = hoverCollection
     ? categories.filter((item) => item.collectionName?._id === hoverCollection._id)
@@ -49,7 +57,7 @@ const closeMenu = () => {
             <Link href={`/collection/${item.slug}`} className="text-primary font-medium uppercase tracking-wider text-sm">
               {item.name}
             </Link>
-            <div className="mt-1 h-[2px] w-0 bg-primary transition-all duration-300 ease-in-out group-hover:w-full"></div>
+            <div className="mt-1 h-0.5 w-0 bg-primary transition-all duration-300 ease-in-out group-hover:w-full"></div>
           </div>
         ))}
       </div>
@@ -73,7 +81,7 @@ const closeMenu = () => {
                     {/* Dynamic Category Link */}
                     <Link
                       href={`/collection/${hoverCollection.slug}/${cat.slug}`}
-                      className="font-semibold text-gray-900 text-base mb-3 !font-playfair hover:text-primary transition-colors"
+                      className="font-semibold text-gray-900 text-base mb-3 font-playfair! hover:text-primary transition-colors"
                     >
                       {cat.name}
                     </Link>

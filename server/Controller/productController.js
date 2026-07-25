@@ -183,28 +183,43 @@ const productController = {
   getFiltered: async (req, res) => {
     try {
       const { collectionSlug, categorySlug, subcategorySlug } = req.query;
-      const query = { status: "active" };
+      const query = { status: { $ne: "inactive" } };
 
       const CollectionValue = require("../Model/collection/collectionModel");
       const Category = require("../Model/collection/categoryModel");
       const SubCategory = require("../Model/collection/subCategoryModel");
 
       if (subcategorySlug) {
-        const sub = await SubCategory.findOne({ slug: subcategorySlug });
+        const sub = await SubCategory.findOne({
+          $or: [
+            { slug: subcategorySlug.toLowerCase() },
+            { name: { $regex: new RegExp(`^${subcategorySlug}$`, "i") } },
+          ],
+        });
         if (sub) {
           query.$or = [{ subCategory: sub._id }, { subcategory: sub._id }];
         } else {
           return res.status(200).json({ success: true, products: [] });
         }
       } else if (categorySlug) {
-        const cat = await Category.findOne({ slug: categorySlug });
+        const cat = await Category.findOne({
+          $or: [
+            { slug: categorySlug.toLowerCase() },
+            { name: { $regex: new RegExp(`^${categorySlug}$`, "i") } },
+          ],
+        });
         if (cat) {
           query.category = cat._id;
         } else {
           return res.status(200).json({ success: true, products: [] });
         }
       } else if (collectionSlug) {
-        const col = await CollectionValue.findOne({ slug: collectionSlug });
+        const col = await CollectionValue.findOne({
+          $or: [
+            { slug: collectionSlug.toLowerCase() },
+            { name: { $regex: new RegExp(`^${collectionSlug}$`, "i") } },
+          ],
+        });
         if (col) {
           query.collections = col._id;
         } else {
