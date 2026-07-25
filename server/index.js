@@ -45,6 +45,13 @@ app.use("/api/order", orderRoute);
 app.use("/api/filer", filerRoute);
 app.use("/api/contact", contactRoute);
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: true,
+    message: "Server is running smoothly!",
+  });
+});
+
 
 app.listen(port || 3000, async () => {
   try {
