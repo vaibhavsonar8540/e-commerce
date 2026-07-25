@@ -105,7 +105,7 @@ export default function Collection() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-300 shadow-sm h-[600px] overflow-visible">
+      <div className="bg-white rounded-xl border border-gray-300 shadow-sm h-[calc(100vh-240px)] min-h-[400px] overflow-y-auto custom-scrollbar">
         <table className="w-full text-left border-collapse">
           <thead className="sticky top-0 bg-gray-100 z-10">
             <tr>

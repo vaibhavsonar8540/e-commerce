@@ -13,6 +13,10 @@ import fashionBanner from "@/assets/home/fashionBanner.webp";
 import electronicBannerForBigScreen from "@/assets/home/electronicBannerForBigScreen.webp";
 import electronicBannerForSmallScreen from "@/assets/home/electronicBannerSmallScreen.webp";
 import CustomImage from "../customImage";
+import watch1 from "@/assets/home/watch1.webp"
+import watch2 from "@/assets/home/watch2.webp"
+import decor1 from "@/assets/home/decor1.webp"
+import decor2 from "@/assets/home/decor2.webp"
 import Link from "next/link";
 import { Button, LinkButton } from "../Buttons";
 
@@ -191,6 +195,42 @@ const HomePage = () => {
           />
         </section>
       )}
+
+      <section className="flex flex-col md:flex-row w-full mt-6 lg:mt-10">
+        <div className="relative w-full md:w-1/2 h-175 overflow-hidden group">
+          <CustomImage 
+            srcAttr={watch1}
+            altAttr={"Watch collection"}
+            titleAttr={"Watch collection"}
+            containerClassName="w-full h-full"
+            className="w-full h-full object-cover"
+          />
+
+          <LinkButton
+            href={"/collection/watches"}
+            className="absolute left-1/2 -translate-x-1/2 bottom-10 bg-white! border-none! text-black! font-semibold hover:bg-gray-100! transition-colors whitespace-nowrap"
+          >
+            Watch Collection
+          </LinkButton>
+        </div>
+
+        <div className="relative w-full md:w-1/2 h-175 overflow-hidden group">
+          <CustomImage 
+            srcAttr={decor1}
+            altAttr={"Home and Kitchen collection"}
+            titleAttr={"Home and Kitchen collection"}
+            containerClassName="w-full h-full"
+            className="w-full h-full object-cover"
+          />
+
+          <LinkButton
+            href={"/collection/home-and-kitchen"}
+            className="absolute left-1/2 -translate-x-1/2 bottom-10 bg-white! border-none! text-black! font-semibold hover:bg-gray-100! transition-colors whitespace-nowrap"
+          >
+            Home and Kitchen Collection
+          </LinkButton>
+        </div>
+      </section>
     </div>
   );
 };

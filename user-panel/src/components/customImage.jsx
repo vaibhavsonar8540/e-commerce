@@ -1,8 +1,8 @@
 import Image from 'next/image'
 
-const CustomImage = ({srcAttr, altAttr, className , titleAttr , width , height}) => {
+const CustomImage = ({srcAttr, altAttr, className , titleAttr , width , height, containerClassName = ""}) => {
   return (
-    <div>
+    <div className={containerClassName}>
         <Image 
             src={srcAttr}
             alt={altAttr}
