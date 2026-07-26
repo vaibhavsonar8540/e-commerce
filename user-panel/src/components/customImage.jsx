@@ -1,18 +1,23 @@
 import Image from 'next/image'
 
-const CustomImage = ({srcAttr, altAttr, className , titleAttr , width , height, containerClassName = ""}) => {
+const CustomImage = ({srcAttr, altAttr, className, titleAttr, width, height, containerClassName = ""}) => {
+  if (!srcAttr) return null;
+
+  const imageProps = {
+    src: srcAttr,
+    alt: altAttr || "",
+    title: titleAttr,
+    className: className,
+  };
+
+  if (width !== undefined) imageProps.width = width;
+  if (height !== undefined) imageProps.height = height;
+
   return (
     <div className={containerClassName}>
-        <Image 
-            src={srcAttr}
-            alt={altAttr}
-            title={titleAttr}
-            className={className}
-            width={width}
-            height={height}
-        />
+      <Image {...imageProps} />
     </div>
-  )
-}
+  );
+};
 
-export default CustomImage
+export default CustomImage;

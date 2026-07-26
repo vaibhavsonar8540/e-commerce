@@ -43,7 +43,7 @@ const OtherCollection = () => {
 
   return (
     <section className="w-full mt-6 lg:mt-10 px-4 sm:px-8 md:px-12 lg:px-16">
-      <div className="flex flex-col md:flex-row w-full min-h-[520px] sm:min-h-[600px] md:h-[650px] lg:h-[700px] gap-3 sm:gap-4 overflow-hidden">
+      <div className="flex flex-col md:flex-row w-full min-h-[520px] sm:min-h-[600px] md:h-[600px] lg:h-[700px] gap-3 sm:gap-4 overflow-hidden">
         {collections.map((item, index) => {
           const isActive = activeIndex === index;
           return (

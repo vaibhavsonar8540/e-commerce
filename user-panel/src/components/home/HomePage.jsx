@@ -1,6 +1,7 @@
 "use client";
 
 import heroBanner from "@/assets/home/heroBanner.webp";
+import heroBanner2 from "@/assets/home/hero.webp";
 import HeroBanner from "@/components/heroBanner";
 import KeyFeatures from "@/components/keyFeatures";
 import OtherCollection from "@/components/otherCollection";
@@ -10,6 +11,7 @@ import { useEffect, useState } from "react";
 import api from "@/utils/axiosInstant";
 import ProductSlider from "@/components/productSlider";
 import fashionBanner from "@/assets/home/fashionBanner.webp";
+import fashion2 from "@/assets/home/fashion2.webp";
 import electronicBannerForBigScreen from "@/assets/home/electronicBannerForBigScreen.webp";
 import electronicBannerForSmallScreen from "@/assets/home/electronicBannerSmallScreen.webp";
 import CustomImage from "../customImage";
@@ -59,12 +61,13 @@ const HomePage = () => {
       <section>
         <HeroBanner
           src={heroBanner}
+          mobileSrc={heroBanner2}
           title="Elevate Your Style"
           desc="Premium fashion and lifestyle essentials for every day."
           btnText="Explore Collections"
           btnClassName="font-medium !rounded-none text-xs sm:text-sm !py-2 !px-4 sm:!py-3 sm:!px-6"
           variant="whiteHover"
-          contentClass="absolute w-[80%] xss:w-[70%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[22%] top-1/2 -translate-y-1/2 right-4 sm:right-8 md:right-10 lg:right-14"
+          contentClass="absolute w-[90%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[22%] bottom-8 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto right-auto sm:right-8 md:right-10 lg:right-14 text-center sm:text-left"
           titleClass="text-white !font-playfair font-semibold text-lg xss:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight"
           descClass="text-white pt-1.5 sm:pt-3 pb-3 sm:pb-5 text-[11px] xss:text-xs sm:text-sm md:text-base font-medium line-clamp-2 sm:line-clamp-none"
           href="/collection/women"
@@ -94,6 +97,14 @@ const HomePage = () => {
           srcAttr={fashionBanner}
           altAttr="Fashion Banner"
           titleAttr="Fashion Banner"
+          containerClassName="hidden lg:block"
+        />
+
+        <CustomImage
+          srcAttr={fashion2}
+          altAttr="Fashion Banner"
+          titleAttr="Fashion Banner"
+          containerClassName="block lg:hidden"
         />
 
         <div className="absolute right-3 xss:right-6 sm:right-12 md:right-20 top-1/2 -translate-y-1/2 select-none max-w-[85%]">
@@ -118,37 +129,38 @@ const HomePage = () => {
         </section>
       )}
 
-      <Link href="/collection/electronics" className="block relative overflow-hidden mt-6 lg:mt-10">
+      <Link
+        href="/collection/electronics"
+        className="block relative overflow-hidden mt-6 lg:mt-10"
+      >
         <CustomImage
           srcAttr={electronicBannerForBigScreen}
           altAttr="Electronic Banner"
           titleAttr="Electronic Banner"
-          className={"hidden lg:block"}
+          containerClassName="hidden lg:block"
         />
 
         <CustomImage
           srcAttr={electronicBannerForSmallScreen}
           altAttr="Electronic Banner"
           titleAttr="Electronic Banner"
-          className={"lg:hidden"}
+          containerClassName="block lg:hidden"
         />
 
-        <div className="absolute right-3 xss:right-6 sm:right-12 md:right-20 top-1/2 -translate-y-1/2 select-none max-w-[60%] sm:max-w-md lg:max-w-lg">
-          <div className="flex flex-col space-y-1.5 sm:space-y-4 text-black drop-shadow-md">
-            <span className="text-xs xss:text-sm sm:text-2xl lg:text-3xl font-playfair uppercase font-medium tracking-[0.1em] sm:tracking-[0.25em] leading-tight sm:leading-snug">
+        <div className="absolute right-2 sm:right-12 md:right-20 top-1/2 -translate-y-1/2 select-none max-w-[50%] sm:max-w-md lg:max-w-lg">
+          <div className="flex flex-col items-end text-right md:items-start md:text-left space-y-1 sm:space-y-4 text-black drop-shadow-md">
+            <span className="text-[10px] xss:text-xs sm:text-2xl lg:text-3xl font-playfair uppercase font-medium tracking-[0.1em] sm:tracking-[0.25em] leading-tight sm:leading-snug">
               Upgrade Your Tech Today With Velora
             </span>
-            <span className="text-[10px] xss:text-xs sm:text-sm tracking-[0.05em] sm:tracking-[0.15em] leading-tight hidden xss:block text-gray-800">
-              Discover the latest electronics with premium quality, cutting-edge performance, and unbeatable value.
+            <span className="text-[9px] xss:text-[10px] sm:text-sm tracking-[0.05em] sm:tracking-[0.15em] leading-tight hidden sm:block text-gray-800">
+              Discover the latest electronics with premium quality, cutting-edge
+              performance, and unbeatable value.
             </span>
 
-            <div className="pt-1">
-              <LinkButton
-                href="/collection/electronics"
-                className="!bg-transparent hover:!bg-black !text-xs sm:!text-sm !py-1.5 !px-3 sm:!py-2 sm:!px-4"
-              >
+            <div className="pt-0.5 sm:pt-1">
+              <span className="inline-flex items-center justify-center bg-transparent border border-black text-black hover:bg-black hover:text-white transition-all duration-300 rounded-sm text-[10px] sm:text-sm py-1 px-2.5 sm:py-2 sm:px-4 font-medium">
                 Explore Collection
-              </LinkButton>
+              </span>
             </div>
           </div>
         </div>

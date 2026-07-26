@@ -88,8 +88,9 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       className={`${raleway.variable} ${playfairDisplay.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <SmoothScroll>
           <Providers>
             <SplashScreen />

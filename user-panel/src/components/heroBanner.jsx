@@ -12,24 +12,41 @@ const HeroBanner = ({
   btnClassName = "",
   href = "",
   src = "",
+  srcAttr = "",
+  mobileSrc = "",
   altAttr = "",
   titleAttr = "",
   contentClass = "",
   variant = "",
 }) => {
+  const desktopSrc = srcAttr || src;
+
   return (
     <div className={`relative ${className}`}>
-      <CustomImage
-        srcAttr={src}
-        altAttr={altAttr}
-        titleAttr={titleAttr}
-        className="w-full h-full object-cover"
-      />
+      {desktopSrc && (
+        <CustomImage
+          srcAttr={desktopSrc}
+          altAttr={altAttr}
+          titleAttr={titleAttr}
+          containerClassName={mobileSrc ? "hidden lg:block w-full h-full" : "w-full h-full"}
+          className="w-full h-full object-cover"
+        />
+      )}
 
-      <div className={`absolute ${contentClass}`}>
-        <h1 className={`text-3xl ${titleClass}`}>{title}</h1>
+      {mobileSrc && (
+        <CustomImage
+          srcAttr={mobileSrc}
+          altAttr={altAttr}
+          titleAttr={titleAttr}
+          containerClassName="block lg:hidden w-full h-full"
+          className="w-full h-full object-cover"
+        />
+      )}
 
-        <p className={`text-base ${descClass}`}>{desc}</p>
+      <div className={`${contentClass}`}>
+        <h1 className={`${titleClass}`}>{title}</h1>
+
+        <p className={`${descClass}`}>{desc}</p>
 
         {btnText && (
           <LinkButton className={btnClassName} href={href} variant={variant}>

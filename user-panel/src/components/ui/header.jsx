@@ -397,125 +397,146 @@ const Header = () => {
       {isMobileMenuOpen && (
         <div
           className="fixed inset-0 z-30 bg-white w-full h-full overflow-y-auto flex flex-col px-4 py-4 animate-in fade-in slide-in-from-left duration-200"
-          style={{ top: headerHeight ? `${headerHeight}px` : "53px" }}
+          style={{ top: "45px" }}
         >
           <nav className="flex flex-col gap-1 divide-y divide-gray-100">
-            {collection.map((item) => {
-              const dynamicCategories = categories.filter(
-                (cat) => cat.collectionName?._id === item._id,
-              );
+            {Array.isArray(collection) &&
+              collection.map((item) => {
+                if (!item) return null;
+                const dynamicCategories = Array.isArray(categories)
+                  ? categories.filter(
+                      (cat) =>
+                        (cat.collectionName?._id || cat.collectionName) ===
+                        item._id,
+                    )
+                  : [];
 
-              return (
-                <div key={item._id} className="py-3">
-                  <div className="flex justify-between items-center text-[15px] font-medium text-gray-800 uppercase tracking-wide">
-                    {/* Collection Link */}
-                    <Link
-                      href={`/collection/${item.slug}`}
-                      onClick={() => dispatch(setIsMobileMenuOpen(false))}
-                      className="hover:text-primary transition-colors"
-                    >
-                      {item.name}
-                    </Link>
-
-                    {dynamicCategories.length > 0 && (
-                      <span
-                        onClick={() => toggleCollection(item._id)}
-                        className="p-2 cursor-pointer"
+                return (
+                  <div key={item._id} className="py-3">
+                    <div className="flex justify-between items-center text-[15px] font-medium text-gray-800 uppercase tracking-wide">
+                      {/* Collection Link */}
+                      <Link
+                        href={`/collection/${item.slug || ""}`}
+                        onClick={() => dispatch(setIsMobileMenuOpen(false))}
+                        className="hover:text-primary transition-colors"
                       >
-                        {openCollectionId === item._id ? (
-                          <FaChevronUp className="w-3 h-3 text-gray-500" />
-                        ) : (
-                          <FaChevronDown className="w-3 h-3 text-gray-500" />
-                        )}
-                      </span>
-                    )}
-                  </div>
+                        {item.name}
+                      </Link>
 
-                  {/* LEVEL 2: CATEGORIES */}
-                  {openCollectionId === item._id &&
-                    dynamicCategories.length > 0 && (
-                      <div className="pl-3 mt-2 flex flex-col gap-1 border-l-2 border-primary/20">
-                        {dynamicCategories.map((cat) => {
-                          const dynamicSubs = subCategories.filter(
-                            (sub) => sub.category?._id === cat._id,
-                          );
+                      {dynamicCategories.length > 0 && (
+                        <span
+                          onClick={() => toggleCollection(item._id)}
+                          className="p-2 cursor-pointer"
+                        >
+                          {openCollectionId === item._id ? (
+                            <FaChevronUp className="w-3 h-3 text-gray-500" />
+                          ) : (
+                            <FaChevronDown className="w-3 h-3 text-gray-500" />
+                          )}
+                        </span>
+                      )}
+                    </div>
 
-                          const isExpanded = expandedCategoryIds.includes(
-                            cat._id,
-                          );
-                          // Filter logic: Pehle 5 dikhao, view all click hone par sabhi dikhao
-                          const visibleSubs = isExpanded
-                            ? dynamicSubs
-                            : dynamicSubs.slice(0, 5);
+                    {/* LEVEL 2: CATEGORIES */}
+                    {openCollectionId === item._id &&
+                      dynamicCategories.length > 0 && (
+                        <div className="pl-3 mt-2 flex flex-col gap-1 border-l-2 border-primary/20">
+                          {dynamicCategories.map((cat) => {
+                            if (!cat) return null;
+                            const dynamicSubs = Array.isArray(subCategories)
+                              ? subCategories.filter(
+                                  (sub) =>
+                                    (sub.category?._id || sub.category) ===
+                                    cat._id,
+                                )
+                              : [];
 
-                          return (
-                            <div key={cat._id} className="py-2">
-                              <div className="flex justify-between items-center text-sm font-medium text-gray-700">
-                                <Link
-                                  href={`/collection/${item.slug}/${cat.slug}`}
-                                  onClick={() =>
-                                    dispatch(setIsMobileMenuOpen(false))
-                                  }
-                                  className="hover:text-primary"
-                                >
-                                  {cat.name}
-                                </Link>
-                                {dynamicSubs.length > 0 && (
-                                  <span
-                                    onClick={() => toggleCategory(cat._id)}
-                                    className="p-2 cursor-pointer"
+                            const isExpanded = Array.isArray(
+                              expandedCategoryIds,
+                            )
+                              ? expandedCategoryIds.includes(cat._id)
+                              : false;
+                            // Filter logic: Pehle 5 dikhao, view all click hone par sabhi dikhao
+                            const visibleSubs = isExpanded
+                              ? dynamicSubs
+                              : dynamicSubs.slice(0, 5);
+
+                            return (
+                              <div key={cat._id} className="py-2">
+                                <div className="flex justify-between items-center text-sm font-medium text-gray-700">
+                                  <Link
+                                    href={`/collection/${item.slug || ""}/${cat.slug || ""}`}
+                                    onClick={() =>
+                                      dispatch(setIsMobileMenuOpen(false))
+                                    }
+                                    className="hover:text-primary"
                                   >
-                                    {openCategoryId === cat._id ? (
-                                      <FaChevronUp className="w-2.5 h-2.5 text-gray-400" />
-                                    ) : (
-                                      <FaChevronDown className="w-2.5 h-2.5 text-gray-400" />
-                                    )}
-                                  </span>
-                                )}
+                                    {cat.name}
+                                  </Link>
+                                  {dynamicSubs.length > 0 && (
+                                    <span
+                                      onClick={() => toggleCategory(cat._id)}
+                                      className="p-2 cursor-pointer"
+                                    >
+                                      {openCategoryId === cat._id ? (
+                                        <FaChevronUp className="w-2.5 h-2.5 text-gray-400" />
+                                      ) : (
+                                        <FaChevronDown className="w-2.5 h-2.5 text-gray-400" />
+                                      )}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* LEVEL 3: SUB-CATEGORIES */}
+                                {openCategoryId === cat._id &&
+                                  dynamicSubs.length > 0 && (
+                                    <div className="pl-4 mt-2 text-xs text-gray-500 space-y-2.5 bg-gray-50/70 p-2 rounded">
+                                      {dynamicSubs.length > 5 && (
+                                        <button
+                                          onClick={(e) =>
+                                            handleViewAllSubCategories(
+                                              e,
+                                              cat._id,
+                                            )
+                                          }
+                                          className="text-amber-700 underline font-semibold block text-left"
+                                        >
+                                          {isExpanded
+                                            ? "Show Less"
+                                            : "View All"}
+                                        </button>
+                                      )}
+
+                                      <ul className="space-y-2 pl-0.5">
+                                        {visibleSubs.map((sub) => {
+                                          if (!sub) return null;
+                                          return (
+                                            <li key={sub._id}>
+                                              <Link
+                                                href={`/collection/${item.slug || ""}/${cat.slug || ""}/${sub.slug || ""}`}
+                                                className="hover:text-primary text-gray-600 block py-0.5"
+                                                onClick={() =>
+                                                  dispatch(
+                                                    setIsMobileMenuOpen(false),
+                                                  )
+                                                }
+                                              >
+                                                {sub.name}
+                                              </Link>
+                                            </li>
+                                          );
+                                        })}
+                                      </ul>
+                                    </div>
+                                  )}
                               </div>
-
-                              {/* LEVEL 3: SUB-CATEGORIES */}
-                              {openCategoryId === cat._id &&
-                                dynamicSubs.length > 0 && (
-                                  <div className="pl-4 mt-2 text-xs text-gray-500 space-y-2.5 bg-gray-50/70 p-2 rounded">
-                                    {dynamicSubs.length > 5 && (
-                                      <button
-                                        onClick={(e) =>
-                                          handleViewAllSubCategories(e, cat._id)
-                                        }
-                                        className="text-amber-700 underline font-semibold block text-left"
-                                      >
-                                        {isExpanded ? "Show Less" : "View All"}
-                                      </button>
-                                    )}
-
-                                    <ul className="space-y-2 pl-0.5">
-                                      {visibleSubs.map((sub) => (
-                                        <li key={sub._id}>
-                                          <Link
-                                            href={`/collection/${item.slug}/${cat.slug}/${sub.slug}`}
-                                            className="hover:text-primary text-gray-600 block py-0.5"
-                                            onClick={() =>
-                                              dispatch(
-                                                setIsMobileMenuOpen(false),
-                                              )
-                                            }
-                                          >
-                                            {sub.name}
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                </div>
-              );
-            })}
+                            );
+                          })}
+                        </div>
+                      )}
+                  </div>
+                );
+              })}
           </nav>
         </div>
       )}
