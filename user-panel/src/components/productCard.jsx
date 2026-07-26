@@ -143,7 +143,7 @@ const ProductCard = ({ data }) => {
           <button
             type="button"
             onClick={handleAddToCart}
-            className="w-full text-xs font-bold py-2.5 px-4 bg-black hover:bg-gray-900 text-white rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 cursor-pointer shadow-md"
+            className="w-full text-xs font-bold py-2.5 px-3 sm:px-4 bg-black hover:bg-gray-900 text-white rounded-xl transition-all duration-300 opacity-100 translate-y-0 lg:opacity-0 lg:translate-y-1 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 cursor-pointer shadow-md"
           >
             Add To Cart
           </button>

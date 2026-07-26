@@ -12,6 +12,10 @@
   --font-raleway: var(--font-raleway);
   --font-sans: var(--font-raleway);
   --font-playfair: var(--font-playfair);
+
+  --breakpoint-xss: 400px;
+  --breakpoint-xs: 475px;
+  --breakpoint-3xl: 1720px;
 }
 
 :root {

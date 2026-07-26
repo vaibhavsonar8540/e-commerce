@@ -81,6 +81,8 @@ export const metadata = {
 };
 
 
+import SplashScreen from "@/components/splashScreen";
+
 export default function RootLayout({ children }) {
   return (
     <html
@@ -90,6 +92,7 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col">
         <SmoothScroll>
           <Providers>
+            <SplashScreen />
             <Header />
             <main className="grow flex flex-col w-full">
               {children}
