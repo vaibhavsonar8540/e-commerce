@@ -14,17 +14,17 @@ const contactRoute = require("./route/contactRoute");
 const app = express();
 app.use(express.json());
 
+const normalizeUrl = (url) => (url ? url.trim().replace(/\/$/, "") : "");
+
 const allowedOrigins = [
-  process.env.CLIENT_URL,
-  process.env.CLIENT_URL2,
-  process.env.ADMIN_URL,
+  normalizeUrl(process.env.CLIENT_URL),
+  normalizeUrl(process.env.ADMIN_URL),
   "http://localhost:3000",
-  "http://localhost:3001",
-  "http://localhost:3002",
   "http://localhost:3030",
   "http://localhost:3031",
   "http://localhost:3032",
   "http://localhost:5173",
+  "http://localhost:5174",
 ].filter(Boolean);
 
 app.use(
@@ -33,18 +33,20 @@ app.use(
       // Allow requests with no origin (like mobile apps, curl, or server-to-server)
       if (!origin) return callback(null, true);
 
+      const cleanOrigin = normalizeUrl(origin);
+
       // Check if origin matches allowedOrigins or local/deployment domains
       if (
-        allowedOrigins.includes(origin) ||
-        origin.startsWith("http://localhost:") ||
-        origin.endsWith(".vercel.app") ||
-        origin.endsWith(".onrender.com")
+        allowedOrigins.includes(cleanOrigin) ||
+        cleanOrigin.startsWith("http://localhost:") ||
+        cleanOrigin.endsWith(".vercel.app") ||
+        cleanOrigin.endsWith(".onrender.com")
       ) {
         return callback(null, true);
       }
 
       // Safe fallback allowing the request origin
-      return callback(null, origin);
+      return callback(null, true);
     },
     credentials: true,
   })
