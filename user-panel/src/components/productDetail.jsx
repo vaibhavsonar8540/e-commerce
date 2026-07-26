@@ -20,6 +20,7 @@ import { getMediaUrl, DEFAULT_PLACEHOLDER_IMAGE } from "@/utils/imageUrl";
 export default function ProductDetail({ product }) {
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
+  const { cart } = useSelector((state) => state.common);
 
   const [selectedImage, setSelectedImage] = useState(product?.thumbnail || "");
   const [selectedSize, setSelectedSize] = useState("");
@@ -96,6 +97,16 @@ export default function ProductDetail({ product }) {
     if (!isAuthenticated) {
       toast.info("Please sign-in to purchase items.");
       dispatch(setIsModelOpen(true));
+      return;
+    }
+
+    const isAlreadyInCart = cart?.items?.some(
+      (item) => (item.product?._id || item.product) === product?._id
+    );
+
+    if (isAlreadyInCart) {
+      toast.warning("Product is already in your cart!");
+      dispatch(setIsCartOpen(true));
       return;
     }
 

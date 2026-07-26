@@ -29,88 +29,98 @@ export default function Footer() {
     <footer className="bg-white border-t border-gray-100 mt-auto">
       {/* Main Footer Links */}
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
           
           {/* Column 1: Logo & Brand Info */}
           <div className="lg:col-span-2 space-y-6">
-            <Link href="/" className="inline-block">
-              <Image
-                src={logo}
-                alt="Velora Logo"
-                className="w-64 object-contain"
-                priority
-              />
-            </Link>
+            <div className="flex justify-center sm:justify-start">
+              <Link href="/" className="inline-block">
+                <Image
+                  src={logo}
+                  alt="Velora Logo"
+                  className="w-48 sm:w-64 object-contain"
+                  priority
+                />
+              </Link>
+            </div>
             <p className="text-sm text-gray-500 leading-relaxed max-w-sm">
               Velora is a boutique curation of modern lifestyles, offering refined essentials with seamless cross-category service and verified quality checkouts.
             </p>
             <div className="space-y-3 font-semibold text-xs text-gray-600">
               <div className="flex items-center gap-3">
-                <MapPin size={16} className="text-gray-400" />
+                <MapPin size={16} className="text-gray-400 shrink-0" />
                 <span>{contactAddress}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Phone size={16} className="text-gray-400" />
+                <Phone size={16} className="text-gray-400 shrink-0" />
                 <span>{contactPhone}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Mail size={16} className="text-gray-400" />
+                <Mail size={16} className="text-gray-400 shrink-0" />
                 <span>{contactEmail}</span>
               </div>
             </div>
           </div>
 
-          {/* Column 2: Shop Collections */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-wider text-gray-400">Collections</h4>
-            <ul className="space-y-2.5 text-sm font-semibold text-gray-600">
-              {displayedCollections.map((col) => (
-                <li key={col.slug}>
-                  <Link href={`/collection/${col.slug}`} className="hover:text-[#45220e] transition-colors">
-                    {col.name}
+          {/* Columns 2, 3, 4: Collections, Quick Links & Legal Details */}
+          <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-10">
+            {/* Collections */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-wider text-gray-400">Collections</h4>
+              <ul className="space-y-2.5 text-sm font-semibold text-gray-600">
+                {displayedCollections.map((col) => (
+                  <li key={col.slug}>
+                    <Link href={`/collection/${col.slug}`} className="hover:text-[#45220e] transition-colors">
+                      {col.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Quick Links */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-wider text-gray-400">Quick Links</h4>
+              <ul className="space-y-2.5 text-sm font-semibold text-gray-600">
+                <li>
+                  <Link href="/contact-us" className="hover:text-[#45220e] transition-colors">
+                    Contact Us
                   </Link>
                 </li>
-              ))}
-            </ul>
-          </div>
+                <li>
+                  <Link href="/sitemap" className="hover:text-[#45220e] transition-colors">
+                    Sitemap
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/seller" className="hover:text-[#45220e] transition-colors">
+                    Become a Seller
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Column 3: Quick Info & Sitemap */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-wider text-gray-400">Quick Links</h4>
-            <ul className="space-y-2.5 text-sm font-semibold text-gray-600">
-              <li>
-                <Link href="/contact-us" className="hover:text-[#45220e] transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/sitemap" className="hover:text-[#45220e] transition-colors">
-                  Sitemap
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Customer Policies */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-wider text-gray-400">Legal Details</h4>
-            <ul className="space-y-2.5 text-sm font-semibold text-gray-600">
-              <li>
-                <Link href="/return-policy" className="hover:text-[#45220e] transition-colors">
-                  Return Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy-policy" className="hover:text-[#45220e] transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms-and-conditions" className="hover:text-[#45220e] transition-colors">
-                  Terms & Conditions
-                </Link>
-              </li>
-            </ul>
+            {/* Legal Details */}
+            <div className="space-y-4 col-span-2 sm:col-span-1">
+              <h4 className="text-xs font-black uppercase tracking-wider text-gray-400">Legal Details</h4>
+              <ul className="space-y-2.5 text-sm font-semibold text-gray-600">
+                <li>
+                  <Link href="/return-policy" className="hover:text-[#45220e] transition-colors">
+                    Return Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy-policy" className="hover:text-[#45220e] transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms-and-conditions" className="hover:text-[#45220e] transition-colors">
+                    Terms & Conditions
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 

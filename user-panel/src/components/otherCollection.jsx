@@ -43,7 +43,7 @@ const OtherCollection = () => {
 
   return (
     <section className="w-full mt-6 lg:mt-10 px-4 sm:px-8 md:px-12 lg:px-16">
-      <div className="flex flex-col md:flex-row w-full min-h-[520px] sm:min-h-[600px] md:h-[600px] lg:h-[700px] gap-3 sm:gap-4 overflow-hidden">
+      <div className="flex flex-col md:flex-row w-full h-[600px] sm:h-[700px] md:h-[700px] lg:h-[700px] gap-3 sm:gap-4 overflow-hidden">
         {collections.map((item, index) => {
           const isActive = activeIndex === index;
           return (
@@ -53,8 +53,8 @@ const OtherCollection = () => {
               onMouseEnter={() => setActiveIndex(index)}
               className={`relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-500 ease-in-out group ${
                 isActive
-                  ? "flex-[2.5] min-h-[260px] md:min-h-0 h-full"
-                  : "flex-1 min-h-[90px] md:min-h-0 md:h-full opacity-80 hover:opacity-100"
+                  ? "flex-[2] md:flex-[2.5] h-full"
+                  : "flex-1 h-full opacity-80 hover:opacity-100"
               }`}
             >
               <CustomImage

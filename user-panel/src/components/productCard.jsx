@@ -4,7 +4,7 @@ import { FaRegHeart, FaHeart } from "react-icons/fa";
 
 import { useDispatch, useSelector } from "react-redux";
 import { addToCartAction, addToWishlistAction, removeFromWishlistAction } from "@/redux/action/commonAction";
-import { setIsModelOpen } from "@/redux/slices/commonSlice";
+import { setIsModelOpen, setIsCartOpen } from "@/redux/slices/commonSlice";
 import { toast } from "react-toastify";
 
 import { getMediaUrl, DEFAULT_PLACEHOLDER_IMAGE } from "@/utils/imageUrl";
@@ -16,7 +16,7 @@ const ProductCard = ({ data }) => {
   const productId = data._id || data.id || "";
   const title = data.productName || data.title || "Product";
 
-  const { wishlist } = useSelector((state) => state.common);
+  const { cart, wishlist } = useSelector((state) => state.common);
   const isWishlisted = wishlist?.some((item) => {
     const id = item._id || item;
     return id.toString() === productId.toString();
@@ -45,9 +45,20 @@ const ProductCard = ({ data }) => {
       return;
     }
 
+    const isAlreadyInCart = cart?.items?.some(
+      (item) => (item.product?._id || item.product) === productId
+    );
+
+    if (isAlreadyInCart) {
+      toast.warning("Product is already in your cart!");
+      dispatch(setIsCartOpen(true));
+      return;
+    }
+
     try {
       await dispatch(addToCartAction(productId, 1));
       toast.success("Added to cart!");
+      dispatch(setIsCartOpen(true));
     } catch (err) {
       toast.error(err?.response?.data?.message || "Error adding item to cart.");
     }
@@ -112,7 +123,7 @@ const ProductCard = ({ data }) => {
           src={imgUrl}
           alt={title}
           title={title}
-          className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+          className="h-full w-full object-contain"
           onError={(e) => {
             e.target.src = DEFAULT_PLACEHOLDER_IMAGE;
           }}

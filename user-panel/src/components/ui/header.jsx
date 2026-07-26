@@ -61,13 +61,25 @@ const Header = () => {
     isModelOpen,
     isMobileMenuOpen,
     headerHeight,
+    cart,
+    wishlist,
   } = useSelector((state) => state.common);
+
+  const cartCount = cart?.items?.length || (Array.isArray(cart) ? cart.length : 0);
+  const wishlistCount = Array.isArray(wishlist) ? wishlist.length : (wishlist?.items?.length || 0);
 
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
+  const profileMobileRef = useRef(null);
   const searchRef = useRef(null);
   const searchToggleRef = useRef(null);
+  const searchToggleMobileRef = useRef(null);
+
+  const toggleSearch = (e) => {
+    e.stopPropagation();
+    setIsSearchOpen((prev) => !prev);
+  };
 
   const [openCollectionId, setOpenCollectionId] = useState(null);
   const [openCategoryId, setOpenCategoryId] = useState(null);
@@ -79,7 +91,12 @@ const Header = () => {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target) &&
+        profileMobileRef.current &&
+        !profileMobileRef.current.contains(e.target)
+      ) {
         setIsProfileOpen(false);
       }
     };
@@ -93,7 +110,9 @@ const Header = () => {
         searchRef.current &&
         !searchRef.current.contains(e.target) &&
         searchToggleRef.current &&
-        !searchToggleRef.current.contains(e.target)
+        !searchToggleRef.current.contains(e.target) &&
+        searchToggleMobileRef.current &&
+        !searchToggleMobileRef.current.contains(e.target)
       ) {
         setIsSearchOpen(false);
       }
@@ -195,18 +214,42 @@ const Header = () => {
               <div className="w-[2px] h-5 bg-primary"></div>
             </>
           )}
-          <div className="flex gap-4 items-center">
-            <span ref={searchToggleRef} className="inline-flex items-center">
-              <HiMiniMagnifyingGlass onClick={() => setIsSearchOpen(!isSearchOpen)} className={`${hoverClassname} w-6 h-6`} />
-            </span>
+          <div className="flex gap-5 items-center">
+            <button
+              ref={searchToggleRef}
+              type="button"
+              onClick={toggleSearch}
+              className="inline-flex items-center cursor-pointer"
+              aria-label="Toggle Search Bar"
+            >
+              <HiMiniMagnifyingGlass className={`${hoverClassname} w-6 h-6`} />
+            </button>
 
-            <Link href={"/wishlist"} className={hoverClassname}>
-              <FaRegHeart className="w-5 h-5" />
-            </Link>
+            <div className="relative inline-flex items-center">
+              <Link href={"/wishlist"} className={hoverClassname}>
+                <FaRegHeart className="w-5 h-5" />
+              </Link>
+              {wishlistCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none shadow-xs pointer-events-none">
+                  {wishlistCount > 99 ? "99+" : wishlistCount}
+                </span>
+              )}
+            </div>
 
-            <Link href={"/cart"} className={hoverClassname}>
-              <LuShoppingCart onClick={() => dispatch(setIsCartOpen(true))} className="w-5 h-5" />
-            </Link>
+            <div className="relative inline-flex items-center">
+              <button
+                type="button"
+                onClick={() => dispatch(setIsCartOpen(true))}
+                className={`${hoverClassname} inline-flex items-center`}
+              >
+                <LuShoppingCart className="w-5 h-5" />
+              </button>
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none shadow-xs pointer-events-none">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </div>
 
             {!isAuthenticated ? (
               <RiUser3Line
@@ -349,13 +392,107 @@ const Header = () => {
           </Link>
         </div>
 
-        <div className="flex gap-4 items-center">
-          <HiMiniMagnifyingGlass onClick={() => setIsSearchOpen(!isSearchOpen)} className="w-5 h-5 text-gray-700 cursor-pointer" />
-          <RiUser3Line
-            onClick={() => dispatch(setIsModelOpen(true))}
-            className="w-5 h-5 text-gray-700 cursor-pointer"
-          />
-          <LuShoppingCart onClick={() => dispatch(setIsCartOpen(true))} className="w-5 h-5 text-gray-700 cursor-pointer" />
+        <div className="flex gap-5 items-center">
+          <button
+            ref={searchToggleMobileRef}
+            type="button"
+            onClick={toggleSearch}
+            className="inline-flex items-center cursor-pointer"
+            aria-label="Toggle Search Bar"
+          >
+            <HiMiniMagnifyingGlass className="w-5 h-5 text-gray-700" />
+          </button>
+
+          <div className="relative inline-flex items-center">
+            <button
+              type="button"
+              onClick={() => dispatch(setIsCartOpen(true))}
+              className="inline-flex items-center cursor-pointer text-gray-700"
+            >
+              <LuShoppingCart className="w-5 h-5" />
+            </button>
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none shadow-xs pointer-events-none">
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
+          </div>
+
+          {!isAuthenticated ? (
+            <RiUser3Line
+              onClick={() => dispatch(setIsModelOpen(true))}
+              className="w-5 h-5 text-gray-700 cursor-pointer"
+            />
+          ) : (
+            <div className="relative" ref={profileMobileRef}>
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center gap-1 cursor-pointer"
+              >
+                <RiUser3Line className="w-5 h-5 text-gray-700" />
+                <FaChevronDown
+                  className={`text-[10px] text-gray-700 transition-all duration-300 ${
+                    isProfileOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 top-9 w-48 rounded-[20px] border border-[#47230B]/20 bg-white shadow-xl overflow-hidden z-50 transition-all duration-200">
+                  <div className="px-4 py-3 border-b border-light-cream">
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Welcome</p>
+                    <h3 className="font-bold text-primary truncate leading-tight capitalize">{user?.fullname}</h3>
+                  </div>
+
+                  <div className="p-1.5 flex flex-col gap-0.5">
+                    <Link
+                      href="/profile"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="block px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-light-cream/70 hover:text-primary transition-colors"
+                    >
+                      Profile
+                    </Link>
+
+                    <Link
+                      href="/orders"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="block px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-light-cream/70 hover:text-primary transition-colors"
+                    >
+                      Your Orders
+                    </Link>
+
+                    {(user?.role === "admin" || user?.role === "seller") && (
+                      <>
+                        <Link
+                          href="/add-product"
+                          onClick={() => setIsProfileOpen(false)}
+                          className="block px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-light-cream/70 hover:text-primary transition-colors"
+                        >
+                          Add Product
+                        </Link>
+                        <Link
+                          href="/my-products"
+                          onClick={() => setIsProfileOpen(false)}
+                          className="block px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-light-cream/70 hover:text-primary transition-colors"
+                        >
+                          Your Products
+                        </Link>
+                      </>
+                    )}
+
+                    <div className="h-[1px] bg-light-cream/40 my-1 mx-1.5"></div>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-3.5 py-2 rounded-xl text-sm font-semibold text-red-650 hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* MOBILE SEARCH BAR */}
@@ -544,10 +681,13 @@ const Header = () => {
       {/* GLOBAL AUTH MODAL */}
       {isModelOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onClick={() => dispatch(setIsModelOpen(false))}
         >
-          <div onClick={(e) => e.stopPropagation()}>
+          <div
+            className="w-full max-w-[450px] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Authentication onClose={() => dispatch(setIsModelOpen(false))} />
           </div>
         </div>

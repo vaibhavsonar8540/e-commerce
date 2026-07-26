@@ -64,29 +64,31 @@ const Authentication = ({ onClose }) => {
 
   return (
     <Box
-  sx={{
-    position: "relative",
-    width: {
-      xs: "90%",
-      sm: "450px",
-    },
-    height:"450px",
-    bgcolor: "#fff",
-    borderRadius: "16px",
-    overflow: "hidden",
-    boxShadow: "0 25px 60px rgba(0,0,0,.3)",
-    display: "flex",
-    flexDirection: "column",
-  }}
->
+      sx={{
+        position: "relative",
+        width: "100%",
+        maxWidth: "450px",
+        height: { xs: "auto", sm: "480px" },
+        maxHeight: "90vh",
+        bgcolor: "#fff",
+        borderRadius: "20px",
+        overflow: "hidden",
+        boxShadow: "0 25px 60px rgba(0,0,0,.3)",
+        display: "flex",
+        flexDirection: "column",
+        mx: "auto",
+      }}
+    >
       {/* Close Button */}
       <IconButton
         onClick={onClose}
         sx={{
           position: "absolute",
-          top: 10,
-          right: 10,
-          zIndex: 10,
+          top: 12,
+          right: 12,
+          zIndex: 20,
+          color: "#6b7280",
+          "&:hover": { color: "#111827" },
         }}
       >
         <CloseIcon />
@@ -98,19 +100,19 @@ const Authentication = ({ onClose }) => {
           centered
           sx={{
             borderBottom: "1px solid #E5E7EB",
-
+            pr: { xs: "48px", sm: "56px" },
             "& .MuiTab-root": {
-              width: "45%",
-              maxWidth: "45%",
+              width: "50%",
+              maxWidth: "50%",
               textTransform: "none",
-              fontSize: "16px",
+              fontSize: { xs: "15px", sm: "16px" },
               fontWeight: 600,
-              minHeight: "60px",
+              minHeight: "56px",
             },
 
             "& .MuiTabs-indicator": {
               height: "3px",
-              backgroundColor: "#111827",
+              backgroundColor: "#45220e",
             },
 
             "& .Mui-selected": {
@@ -127,21 +129,22 @@ const Authentication = ({ onClose }) => {
           sx={{
             flex: 1,
             overflowY: "auto",
-            p: 3,
+            p: { xs: 2.5, sm: 3 },
           }}
         >
-          <div className="flex flex-col gap-5 py-2">
-            <h2 className="text-2xl font-bold text-primary text-center">
+          <div className="flex flex-col gap-4 py-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-primary text-center">
               Welcome Back
             </h2>
 
-            <p className="text-sm text-gray-500 text-center">
+            <p className="text-xs sm:text-sm text-gray-500 text-center -mt-2">
               Login to continue shopping
             </p>
 
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleLogin} className="flex flex-col gap-3.5 mt-1">
               <input
                 type="email"
+                required
                 value={loginValue.email}
                 onChange={(e) =>
                   setLoginValue({
@@ -150,11 +153,12 @@ const Authentication = ({ onClose }) => {
                   })
                 }
                 placeholder="Email Address"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 mb-3 outline-none focus:border-primary"
+                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 sm:py-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
               />
 
               <input
                 type="password"
+                required
                 value={loginValue.password}
                 onChange={(e) =>
                   setLoginValue({
@@ -163,12 +167,12 @@ const Authentication = ({ onClose }) => {
                   })
                 }
                 placeholder="Password"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 mb-5 outline-none focus:border-primary"
+                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 sm:py-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
               />
 
               <button
                 type="submit"
-                className="w-full rounded-lg bg-primary py-3 text-white font-semibold transition hover:opacity-90"
+                className="w-full rounded-xl bg-primary py-3 text-white font-semibold text-sm transition hover:opacity-90 active:scale-[0.99] cursor-pointer mt-1"
               >
                 Login
               </button>
@@ -181,36 +185,38 @@ const Authentication = ({ onClose }) => {
           sx={{
             flex: 1,
             overflowY: "auto",
-            p: 3,
+            p: { xs: 2.5, sm: 3 },
           }}
         >
-          <div className="flex flex-col gap-5 py-2">
-            <h2 className="text-2xl font-bold text-primary text-center">
+          <div className="flex flex-col gap-3 py-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-primary text-center">
               Create Account
             </h2>
 
-            <p className="text-sm text-gray-500 text-center">
+            <p className="text-xs sm:text-sm text-gray-500 text-center -mt-2">
               Join us and start shopping today
             </p>
 
-            <form className="flex flex-col gap-4" onSubmit={handleRegister}>
+            <form className="flex flex-col gap-3 mt-1" onSubmit={handleRegister}>
               <input
-  type="text"
-  placeholder="Full Name"
-  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
-  value={regValue.fullname}
-  onChange={(e) =>
-    setRegValue({
-      ...regValue,
-      fullname: e.target.value,
-    })
-  }
-/>
+                type="text"
+                required
+                placeholder="Full Name"
+                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                value={regValue.fullname}
+                onChange={(e) =>
+                  setRegValue({
+                    ...regValue,
+                    fullname: e.target.value,
+                  })
+                }
+              />
 
               <input
                 type="email"
+                required
                 placeholder="Email"
-  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                 value={regValue.email}
                 onChange={(e) =>
                   setRegValue({
@@ -222,8 +228,9 @@ const Authentication = ({ onClose }) => {
 
               <input
                 type="tel"
+                required
                 placeholder="Phone Number"
-  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                 value={regValue.phone}
                 onChange={(e) =>
                   setRegValue({
@@ -235,8 +242,9 @@ const Authentication = ({ onClose }) => {
 
               <input
                 type="password"
+                required
                 placeholder="Password"
-  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                 value={regValue.password}
                 onChange={(e) =>
                   setRegValue({
@@ -248,7 +256,7 @@ const Authentication = ({ onClose }) => {
 
               <button
                 type="submit"
-                className="w-full rounded-lg bg-primary py-3 text-white font-semibold transition hover:opacity-90"
+                className="w-full rounded-xl bg-primary py-3 text-white font-semibold text-sm transition hover:opacity-90 active:scale-[0.99] cursor-pointer mt-1"
               >
                 Create Account
               </button>

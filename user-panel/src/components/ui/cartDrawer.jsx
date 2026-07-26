@@ -6,10 +6,13 @@ import { setIsCartOpen, setIsModelOpen } from "@/redux/slices/commonSlice";
 import { fetchCart, updateCartQtyAction, removeFromCartAction } from "@/redux/action/commonAction";
 import { X, Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { getMediaUrl, DEFAULT_PLACEHOLDER_IMAGE } from "@/utils/imageUrl";
 
 export default function CartDrawer() {
   const dispatch = useDispatch();
+  const router = useRouter();
   const { isCartOpen, cart } = useSelector((state) => state.common);
   const { isAuthenticated } = useSelector((state) => state.auth);
 
@@ -21,6 +24,7 @@ export default function CartDrawer() {
 
   const handleUpdateQuantity = async (productId, currentQty, delta) => {
     const targetQty = currentQty + delta;
+    if (targetQty < 1) return;
     try {
       await dispatch(updateCartQtyAction(productId, targetQty));
     } catch (err) {
@@ -48,21 +52,21 @@ export default function CartDrawer() {
 
       {/* Cart drawer panel */}
       <div
-        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-white shadow-2xl flex flex-col justify-between transition-transform duration-300 ease-in-out transform ${
+        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-white border-l border-gray-200 flex flex-col justify-between transition-transform duration-300 ease-in-out transform ${
           isCartOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Drawer Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <ShoppingBag size={20} className="text-[#45220e]" />
-            <h2 className="text-lg font-bold text-gray-900 font-playfair">Your Shop Cart</h2>
+            <ShoppingBag size={22} className="text-[#45220e]" />
+            <h2 className="text-xl font-bold text-gray-900 font-playfair">Your Shop Cart</h2>
           </div>
           <button
             onClick={() => dispatch(setIsCartOpen(false))}
             className="p-1 px-2 text-gray-500 hover:text-black rounded-lg hover:bg-gray-50 cursor-pointer"
           >
-            <X size={20} />
+            <X size={22} />
           </button>
         </div>
 
@@ -88,7 +92,7 @@ export default function CartDrawer() {
           ) : !cart?.items || cart.items.length === 0 ? (
             /* High-fidelity Empty state illustration */
             <div className="flex flex-col items-center justify-center py-16 text-center space-y-6">
-              <div className="w-28 h-28 bg-[#f9ece5] rounded-full flex items-center justify-center text-[#45220e] shadow-inner mb-2 animate-pulse">
+              <div className="w-28 h-28 bg-[#f9ece5] rounded-full flex items-center justify-center text-[#45220e] mb-2">
                 {/* SVG Shopping basket icon */}
                 <svg className="w-14 h-14 stroke-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -103,7 +107,7 @@ export default function CartDrawer() {
               <div>
                 <button
                   onClick={() => dispatch(setIsCartOpen(false))}
-                  className="px-6 py-3 bg-[#45220e] hover:bg-[#34180a] text-white text-xs font-bold rounded-2xl cursor-pointer shadow-md hover:shadow-lg transition"
+                  className="px-6 py-3 bg-[#45220e] hover:bg-[#34180a] text-white text-xs font-bold rounded-2xl cursor-pointer"
                 >
                   Start Shop Discoveries
                 </button>
@@ -118,9 +122,9 @@ export default function CartDrawer() {
                 const priceText = prod.discountedPrice || prod.price;
 
                 return (
-                  <div key={prod._id || index} className="flex gap-4 p-3 border border-gray-100 rounded-2xl hover:shadow-sm transition">
+                  <div key={prod._id || index} className="flex gap-4 p-4 border border-gray-200 rounded-2xl bg-white">
                     {/* Thumbnail img */}
-                    <div className="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden shrink-0 border border-gray-100 flex items-center justify-center">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gray-50 rounded-xl overflow-hidden shrink-0 border border-gray-100 flex items-center justify-center p-1">
                       <img
                         src={getMediaUrl(prod.thumbnail)}
                         alt={prod.productName}
@@ -132,39 +136,41 @@ export default function CartDrawer() {
                     </div>
 
                     {/* Details Column */}
-                    <div className="flex-1 flex flex-col justify-between py-1 min-w-0">
+                    <div className="flex-1 flex flex-col justify-between py-0.5 min-w-0">
                       <div>
-                        <h4 className="text-sm font-extrabold text-[#45220e] truncate capitalize">{prod.productName}</h4>
-                        <p className="text-xs text-gray-400 font-semibold mt-0.5">₹{priceText}</p>
+                        <h4 className="text-base font-bold text-[#45220e] truncate capitalize">{prod.productName}</h4>
+                        <p className="text-sm font-bold text-gray-900 mt-1">₹{priceText}</p>
                       </div>
 
                       {/* Quantity select counter & Delete */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50/50">
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50">
                           <button
                             onClick={() => handleUpdateQuantity(prod._id, item.quantity, -1)}
-                            className="p-1 px-2 text-gray-500 hover:text-black cursor-pointer"
+                            className="p-2 px-3 text-gray-600 rounded-l-xl cursor-pointer"
+                            aria-label="Decrease quantity"
                           >
-                            <Minus size={12} />
+                            <Minus size={15} />
                           </button>
-                          <span className="text-xs font-bold text-gray-800 px-2 min-w-[20px] text-center">
+                          <span className="text-sm font-bold text-gray-900 px-3 min-w-[28px] text-center">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => handleUpdateQuantity(prod._id, item.quantity, 1)}
-                            className="p-1 px-2 text-gray-500 hover:text-black cursor-pointer"
+                            className="p-2 px-3 text-gray-600 rounded-r-xl cursor-pointer"
+                            aria-label="Increase quantity"
                           >
-                            <Plus size={12} />
+                            <Plus size={15} />
                           </button>
                         </div>
 
                         {/* Trash delete */}
                         <button
                           onClick={() => handleRemoveItem(prod._id)}
-                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                          className="p-2.5 text-red-500 rounded-xl cursor-pointer border border-red-100 bg-red-50/50"
                           title="Remove item"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
@@ -197,15 +203,25 @@ export default function CartDrawer() {
               </div>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 space-y-2.5">
               <button
                 onClick={() => {
                   dispatch(setIsCartOpen(false));
                   toast.info("Checkout process simulated.");
                 }}
-                className="w-full py-3.5 bg-black hover:bg-gray-900 text-white font-bold text-sm rounded-2xl shadow transition cursor-pointer"
+                className="w-full py-3.5 bg-black text-white font-bold text-sm rounded-2xl cursor-pointer"
               >
                 Proceed to Checkout
+              </button>
+
+              <button
+                onClick={() => {
+                  dispatch(setIsCartOpen(false));
+                  router.push("/cart");
+                }}
+                className="w-full py-3.5 bg-white text-[#45220e] border border-[#45220e] font-bold text-sm rounded-2xl cursor-pointer"
+              >
+                View Your Bag
               </button>
             </div>
           </div>
