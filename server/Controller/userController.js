@@ -219,12 +219,14 @@ getDashboardStats: async (req, res) => {
     const CollectionModel = require("../Model/collection/collectionModel");
     const CategoryModel = require("../Model/collection/categoryModel");
     const SubCategoryModel = require("../Model/collection/subCategoryModel");
+    const ContactModel = require("../Model/contactModel");
     
     const userCount = await User.countDocuments({ role: "user" });
     const sellerCount = await User.countDocuments({ role: "seller" });
     const collectionCount = await CollectionModel.countDocuments();
     const categoryCount = await CategoryModel.countDocuments();
     const subCategoryCount = await SubCategoryModel.countDocuments();
+    const contactCount = await ContactModel.countDocuments();
 
     return res.status(200).json({
       success: true,
@@ -233,7 +235,8 @@ getDashboardStats: async (req, res) => {
         sellers: sellerCount,
         collections: collectionCount,
         categories: categoryCount,
-        subcategories: subCategoryCount
+        subcategories: subCategoryCount,
+        contacts: contactCount
       }
     });
   } catch (error) {

@@ -5,7 +5,7 @@ const categoryModel = require("../Model/collection/categoryModel");
 const SubcategoriesModel = require("../Model/collection/categoryModel")
 
 
-const filerController = {
+const filterController = {
   // 1. Search User by Email
   searchUserByEmail: async (req, res) => {
     try {
@@ -136,4 +136,4 @@ const filerController = {
   }
 };
 
-module.exports = filerController;
+module.exports = filterController;

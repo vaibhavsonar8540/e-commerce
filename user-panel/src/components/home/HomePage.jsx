@@ -2,9 +2,8 @@
 
 import heroBanner from "@/assets/home/heroBanner.webp";
 import HeroBanner from "@/components/heroBanner";
-import { GiBoxUnpacking } from "react-icons/gi";
-import { RiMoneyRupeeCircleFill } from "react-icons/ri";
-import { ImPriceTags } from "react-icons/im";
+import KeyFeatures from "@/components/keyFeatures";
+import OtherCollection from "@/components/otherCollection";
 import Category from "./category";
 import { useEffect, useState } from "react";
 import api from "@/utils/axiosInstant";
@@ -13,23 +12,19 @@ import fashionBanner from "@/assets/home/fashionBanner.webp";
 import electronicBannerForBigScreen from "@/assets/home/electronicBannerForBigScreen.webp";
 import electronicBannerForSmallScreen from "@/assets/home/electronicBannerSmallScreen.webp";
 import CustomImage from "../customImage";
-import watch1 from "@/assets/home/watch1.webp"
-import watch2 from "@/assets/home/watch2.webp"
-import decor1 from "@/assets/home/decor1.webp"
-import decor2 from "@/assets/home/decor2.webp"
 import Link from "next/link";
 import { Button, LinkButton } from "../Buttons";
 
 const HomePage = () => {
   const [menProducts, setMenProducts] = useState([]);
   const [womenProducts, setWomenProducts] = useState([]);
-  const [beautyProducts, setBeautyProducts] = useState([]);
+  const [electronicsProducts, setElectronicsProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchHomeSliders() {
       try {
-        const [menRes, womenRes, beautyRes] = await Promise.all([
+        const [menRes, womenRes, electronicsRes] = await Promise.all([
           api.get("/product/get-filtered", {
             params: { collectionSlug: "men" },
           }),
@@ -37,7 +32,7 @@ const HomePage = () => {
             params: { collectionSlug: "women" },
           }),
           api.get("/product/get-filtered", {
-            params: { collectionSlug: "beauty" },
+            params: { collectionSlug: "electronics" },
           }),
         ]);
         if (menRes.data?.success) {
@@ -46,8 +41,8 @@ const HomePage = () => {
         if (womenRes.data?.success) {
           setWomenProducts(womenRes.data.products.slice(0, 5));
         }
-        if (beautyRes.data?.success) {
-          setBeautyProducts(beautyRes.data.products.slice(0, 5));
+        if (electronicsRes.data?.success) {
+          setElectronicsProducts(electronicsRes.data.products.slice(0, 5));
         }
       } catch (err) {
         console.error("Error fetching home sliders:", err);
@@ -76,37 +71,6 @@ const HomePage = () => {
           titleAttr="home"
         />
       </section>
-
-      <div className="bg-[#F3F4F6] py-3 px-2 sm:px-5">
-        <div className="py-2.5 px-2 sm:px-4 bg-white flex flex-row justify-between sm:justify-center items-center gap-1 sm:gap-4 md:gap-6 lg:gap-8 rounded-md">
-          <div className="flex gap-1 sm:gap-2 items-center">
-            <span>
-              <GiBoxUnpacking className="text-xs sm:text-sm text-primary shrink-0" />
-            </span>
-            <span>
-              <p className="text-[10px] min-[380px]:text-xs sm:text-sm font-medium whitespace-nowrap">7 Days Easy Return</p>
-            </span>
-          </div>
-          <div className="bg-primary w-[1px] h-3.5 sm:h-4 opacity-50 shrink-0"></div>
-          <div className="flex gap-1 sm:gap-2 items-center">
-            <span>
-              <RiMoneyRupeeCircleFill className="text-xs sm:text-sm text-primary shrink-0" />
-            </span>
-            <span>
-              <p className="text-[10px] min-[380px]:text-xs sm:text-sm font-medium whitespace-nowrap">Cash on Delivery</p>
-            </span>
-          </div>
-          <div className="bg-primary w-[1px] h-3.5 sm:h-4 opacity-50 shrink-0"></div>
-          <div className="flex gap-1 sm:gap-2 items-center">
-            <span>
-              <ImPriceTags className="text-xs sm:text-sm text-primary shrink-0" />
-            </span>
-            <span>
-              <p className="text-[10px] min-[380px]:text-xs sm:text-sm font-medium whitespace-nowrap">Lowest Price</p>
-            </span>
-          </div>
-        </div>
-      </div>
 
       <section>
         <Category />
@@ -151,18 +115,18 @@ const HomePage = () => {
         </section>
       )}
 
-      <Link href="/collection/electonics" className="block relative overflow-hidden mt-6 lg:mt-10">
+      <Link href="/collection/electronics" className="block relative overflow-hidden mt-6 lg:mt-10">
         <CustomImage
           srcAttr={electronicBannerForBigScreen}
-          altAttr="Electonic Banner"
-          titleAttr="Electonic Banner"
+          altAttr="Electronic Banner"
+          titleAttr="Electronic Banner"
           className={"hidden lg:block"}
         />
 
         <CustomImage
           srcAttr={electronicBannerForSmallScreen}
-          altAttr="Electonic Banner"
-          titleAttr="Electonic Banner"
+          altAttr="Electronic Banner"
+          titleAttr="Electronic Banner"
           className={"lg:hidden"}
         />
 
@@ -178,7 +142,7 @@ const HomePage = () => {
             </span>
 
             <LinkButton
-            href="/collection/electonics"
+            href="/collection/electronics"
              className="!bg-transparent hover:!bg-black">
               Explore Collection
             </LinkButton>
@@ -186,51 +150,19 @@ const HomePage = () => {
         </div>
       </Link>
 
-      {beautyProducts && beautyProducts.length > 0 && (
+      {electronicsProducts && electronicsProducts.length > 0 && (
         <section className="px-4 sm:px-8 md:px-12 lg:px-16 my-6 lg:my-10 animate-in fade-in duration-300">
           <ProductSlider
-            title="Latest Arrivals In Beauty"
-            products={beautyProducts}
-            collectionSlug="beauty"
+            title="Latest Arrivals In Electronics"
+            products={electronicsProducts}
+            collectionSlug="electronics"
           />
         </section>
       )}
 
-      <section className="flex flex-col md:flex-row w-full mt-6 lg:mt-10">
-        <div className="relative w-full md:w-1/2 h-175 overflow-hidden group">
-          <CustomImage 
-            srcAttr={watch1}
-            altAttr={"Watch collection"}
-            titleAttr={"Watch collection"}
-            containerClassName="w-full h-full"
-            className="w-full h-full object-cover"
-          />
+      <OtherCollection />
 
-          <LinkButton
-            href={"/collection/watches"}
-            className="absolute left-1/2 -translate-x-1/2 bottom-10 bg-white! border-none! text-black! font-semibold hover:bg-gray-100! transition-colors whitespace-nowrap"
-          >
-            Watch Collection
-          </LinkButton>
-        </div>
-
-        <div className="relative w-full md:w-1/2 h-175 overflow-hidden group">
-          <CustomImage 
-            srcAttr={decor1}
-            altAttr={"Home and Kitchen collection"}
-            titleAttr={"Home and Kitchen collection"}
-            containerClassName="w-full h-full"
-            className="w-full h-full object-cover"
-          />
-
-          <LinkButton
-            href={"/collection/home-and-kitchen"}
-            className="absolute left-1/2 -translate-x-1/2 bottom-10 bg-white! border-none! text-black! font-semibold hover:bg-gray-100! transition-colors whitespace-nowrap"
-          >
-            Home and Kitchen Collection
-          </LinkButton>
-        </div>
-      </section>
+      <KeyFeatures />
     </div>
   );
 };

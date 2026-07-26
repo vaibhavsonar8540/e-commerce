@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  Users,
+  MessageSquare,
   Store,
   Layers3,
   Grid2X2,
@@ -13,7 +13,7 @@ import api from "@/utils/axiosInstant";
 
 export default function Dashboard() {
   const [counts, setCounts] = useState({
-    users: 0,
+    contacts: 0,
     sellers: 0,
     collections: 0,
     categories: 0,
@@ -42,6 +42,15 @@ export default function Dashboard() {
 
   const stats = [
     {
+      title: "Contact Requests",
+      count: counts.contacts || 0,
+      href: "/contact-requests",
+      icon: MessageSquare,
+      bg: "bg-gradient-to-br from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 border border-indigo-200/50 shadow-sm hover:shadow-md",
+      iconBg: "bg-indigo-600 text-white shadow-lg shadow-indigo-200",
+      text: "text-indigo-700",
+    },
+    {
       title: "Sellers",
       count: counts.sellers,
       href: "/sellers",
@@ -51,18 +60,9 @@ export default function Dashboard() {
       text: "text-blue-700",
     },
     {
-      title: "Users",
-      count: counts.users,
-      href: "/users",
-      icon: Users,
-      bg: "bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border border-purple-200/50 shadow-sm hover:shadow-md",
-      iconBg: "bg-purple-600 text-white shadow-lg shadow-purple-200",
-      text: "text-purple-700",
-    },
-    {
       title: "Collections",
       count: counts.collections,
-      href: "/collections",
+      href: "/Navigations/collection",
       icon: Layers3,
       bg: "bg-gradient-to-br from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-200 border border-amber-200/50 shadow-sm hover:shadow-md",
       iconBg: "bg-amber-600 text-white shadow-lg shadow-amber-200",
@@ -71,7 +71,7 @@ export default function Dashboard() {
     {
       title: "Categories",
       count: counts.categories,
-      href: "/categories",
+      href: "/Navigations/category",
       icon: Grid2X2,
       bg: "bg-gradient-to-br from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 border border-emerald-200/50 shadow-sm hover:shadow-md",
       iconBg: "bg-emerald-600 text-white shadow-lg shadow-emerald-200",
@@ -80,7 +80,7 @@ export default function Dashboard() {
     {
       title: "Sub Categories",
       count: counts.subcategories,
-      href: "/subcategories",
+      href: "/Navigations/sub-category",
       icon: ListTree,
       bg: "bg-gradient-to-br from-rose-50 to-rose-100 hover:from-rose-100 hover:to-rose-200 border border-rose-200/50 shadow-sm hover:shadow-md",
       iconBg: "bg-rose-600 text-white shadow-lg shadow-rose-200",

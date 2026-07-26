@@ -19,12 +19,8 @@ const normalizeUrl = (url) => (url ? url.trim().replace(/\/$/, "") : "");
 const allowedOrigins = [
   normalizeUrl(process.env.CLIENT_URL),
   normalizeUrl(process.env.ADMIN_URL),
-  "http://localhost:3000",
-  "http://localhost:3030",
   "http://localhost:3031",
   "http://localhost:3032",
-  "http://localhost:5173",
-  "http://localhost:5174",
 ].filter(Boolean);
 
 app.use(
@@ -63,7 +59,7 @@ app.use("/api/collection", collectionRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/wishlist", wishlistRoute);
 app.use("/api/order", orderRoute);
-app.use("/api/filer", filerRoute);
+app.use("/api/search", filerRoute);
 app.use("/api/contact", contactRoute);
 
 app.get("/", (req, res) => {
