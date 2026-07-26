@@ -4,6 +4,7 @@ import heroBanner from "@/assets/home/heroBanner.webp";
 import HeroBanner from "@/components/heroBanner";
 import KeyFeatures from "@/components/keyFeatures";
 import OtherCollection from "@/components/otherCollection";
+import MarqueeComponent from "@/components/marqueeComponent";
 import Category from "./category";
 import { useEffect, useState } from "react";
 import api from "@/utils/axiosInstant";
@@ -71,6 +72,8 @@ const HomePage = () => {
           titleAttr="home"
         />
       </section>
+
+      <MarqueeComponent />
 
       <section>
         <Category />
