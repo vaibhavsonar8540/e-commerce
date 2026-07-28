@@ -11,6 +11,7 @@ import {
   Layers3,
   Grid2x2,
   ListTree,
+  Ticket,
   LogOut,
 } from "lucide-react";
 import CustomImage from "../customImage";
@@ -47,6 +48,11 @@ const menu = [
     name: "Sub Category",
     href: "/Navigations/sub-category",
     icon: ListTree,
+  },
+  {
+    name: "Coupon Code",
+    href: "/Navigations/coupon-code",
+    icon: Ticket,
   },
 ];
 

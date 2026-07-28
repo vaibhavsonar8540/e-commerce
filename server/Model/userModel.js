@@ -72,6 +72,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+
+    userBuyCount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

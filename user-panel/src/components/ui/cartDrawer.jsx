@@ -207,7 +207,7 @@ export default function CartDrawer() {
               <button
                 onClick={() => {
                   dispatch(setIsCartOpen(false));
-                  toast.info("Checkout process simulated.");
+                  router.push("/order");
                 }}
                 className="w-full py-3.5 bg-black text-white font-bold text-sm rounded-2xl cursor-pointer"
               >

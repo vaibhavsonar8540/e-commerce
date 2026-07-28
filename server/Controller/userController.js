@@ -1,6 +1,7 @@
 const User = require("../Model/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../utils/sendEmail");
 require("dotenv").config()
 
 const userController = {
@@ -130,7 +131,8 @@ const userController = {
           fullname: isExistUser.fullname,
           email: isExistUser.email,
           phone: isExistUser.phone,
-          role: isExistUser.role
+          role: isExistUser.role,
+          userBuyCount: isExistUser.userBuyCount || 0,
         },
       });
     } catch (error) {
@@ -176,7 +178,8 @@ getMe: async (req, res) => {
         fullname: user.fullname,
         email: user.email,
         phone: user.phone,
-        role: user.role
+        role: user.role,
+        userBuyCount: user.userBuyCount || 0,
       },
     });
   } catch (error) {
@@ -437,6 +440,116 @@ getDashboardStats: async (req, res) => {
           address: user.address
         },
         token
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  sendOrderOtp: async (req, res) => {
+    try {
+      const { email, phone } = req.body;
+      if (!email && !phone) {
+        return res.status(400).json({ success: false, message: "Email or phone number is required to send OTP." });
+      }
+
+      // Generate 6 digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiry = new Date(Date.now() + 10 * 60 * 1000);
+
+      // Search user by req.user._id if authenticated, or by email / phone
+      let user = null;
+      if (req.user?._id) {
+        user = await User.findById(req.user._id);
+      }
+      if (!user && email) {
+        user = await User.findOne({ email });
+      }
+      if (!user && phone) {
+        user = await User.findOne({ phone });
+      }
+
+      if (user) {
+        user.loginOtp = otp;
+        user.otpExpiry = expiry;
+        await user.save();
+      }
+
+      // Send email via Nodemailer helper
+      let emailResult = null;
+      if (email) {
+        emailResult = await sendEmail({
+          to: email,
+          subject: "Verify OTP for Checkout - Velora",
+          text: `Your verification OTP is: ${otp}. You are one step away for buying product!`,
+          html: `
+            <div style="font-family: Arial, sans-serif; padding: 24px; color: #111; max-width: 550px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; background-color: #ffffff;">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="font-size: 24px; font-weight: 800; color: #000; margin: 0;">Velora Store</h2>
+                <p style="color: #666; font-size: 13px; margin-top: 4px;">Checkout Verification</p>
+              </div>
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+              <h3 style="font-size: 18px; color: #10b981; margin-top: 0;">Verify OTP for Checkout</h3>
+              <p style="font-size: 14px; color: #444; line-height: 1.5;">
+                You are one step away for buying product. Use the 6-digit OTP code below to verify your order:
+              </p>
+              <div style="background-color: #f8fafc; border: 1px border #e2e8f0; text-align: center; padding: 18px; border-radius: 12px; margin: 24px 0;">
+                <span style="font-family: monospace; font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #0f172a;">${otp}</span>
+              </div>
+              <p style="font-size: 12px; color: #888; text-align: center;">This OTP is valid for 10 minutes. Please do not share this code with anyone.</p>
+            </div>
+          `,
+        });
+      }
+
+      console.log(`\n========================================\n[ORDER OTP] Sent to ${email || phone}: ${otp}\n========================================\n`);
+
+      return res.status(200).json({
+        success: true,
+        message: emailResult?.success
+          ? `OTP sent successfully to ${email}.`
+          : `Verification OTP generated: ${otp}`,
+        otp,
+        previewUrl: emailResult?.previewUrl,
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  verifyOrderOtp: async (req, res) => {
+    try {
+      const { email, phone, otp } = req.body;
+      if (!otp) {
+        return res.status(400).json({ success: false, message: "OTP code is required." });
+      }
+
+      let user = null;
+      if (req.user?._id) {
+        user = await User.findById(req.user._id);
+      }
+      if (!user && email) {
+        user = await User.findOne({ email });
+      }
+      if (!user && phone) {
+        user = await User.findOne({ phone });
+      }
+
+      if (user && user.loginOtp) {
+        if (user.loginOtp !== otp) {
+          return res.status(400).json({ success: false, message: "Invalid OTP code." });
+        }
+        if (user.otpExpiry && new Date() > user.otpExpiry) {
+          return res.status(400).json({ success: false, message: "OTP code has expired." });
+        }
+        user.loginOtp = null;
+        user.otpExpiry = null;
+        await user.save();
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP verified successfully.",
       });
     } catch (error) {
       return res.status(500).json({ success: false, message: error.message });

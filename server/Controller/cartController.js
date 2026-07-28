@@ -95,10 +95,6 @@ const cartController = {
                 });
             }
 
-            // Fetch the user to verify their order count status
-            const user = await User.findById(userId);
-            const isFirstBuy = user && user.orderCount === 0;
-
             let subTotal = 0;
             const itemsWithTotals = [];
 
@@ -118,13 +114,8 @@ const cartController = {
                 });
             }
 
-            // Apply 10% discount logic if it's their first order
-            let discountAmount = 0;
-            if (isFirstBuy) {
-                discountAmount = subTotal * 0.10; // 10% calculation
-            }
-
-            const grandTotal = subTotal - discountAmount;
+            const discountAmount = 0;
+            const grandTotal = subTotal;
 
             return res.status(200).json({
                 success: true,
@@ -135,7 +126,6 @@ const cartController = {
                     subTotal: subTotal,
                     discountApplied: discountAmount,
                     grandTotal: grandTotal,
-                    isFirstOrderEligible: isFirstBuy
                 }
             });
 

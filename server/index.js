@@ -11,6 +11,7 @@ const wishlistRoute = require("./route/wishlistRoute");
 const orderRoute = require("./route/orderRoute");
 const filerRoute = require("./route/filerRoute");
 const contactRoute = require("./route/contactRoute");
+const couponRoute = require("./route/couponRoute");
 const app = express();
 app.use(express.json());
 
@@ -61,6 +62,7 @@ app.use("/api/wishlist", wishlistRoute);
 app.use("/api/order", orderRoute);
 app.use("/api/search", filerRoute);
 app.use("/api/contact", contactRoute);
+app.use("/api/coupon", couponRoute);
 
 app.get("/", (req, res) => {
   res.status(200).json({

@@ -214,12 +214,12 @@ export default function CartPage() {
               </div>
 
               <div className="pt-2">
-                <button
-                  onClick={() => toast.success("Proceeding to checkout!")}
-                  className="w-full py-3.5 bg-black hover:bg-gray-950 text-white font-bold rounded-2xl transition shadow-md hover:shadow-lg text-sm text-center cursor-pointer flex items-center justify-center gap-2"
+                <Link
+                  href="/order"
+                  className="w-full py-3.5 bg-black hover:bg-gray-950 text-white font-bold rounded-2xl transition shadow-md hover:shadow-lg text-sm text-center cursor-pointer flex items-center justify-center gap-2 block"
                 >
-                  <span>Proceed to Checkout</span>
-                </button>
+                  <span>Proceed to Order</span>
+                </Link>
               </div>
             </div>
           </div>

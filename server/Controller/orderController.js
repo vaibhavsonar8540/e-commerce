@@ -69,10 +69,9 @@ const orderController = {
                 });
             }
 
-            // Check first buy eligibility on server side to apply 10% reduction safely
-            if (user.orderCount === 0) {
-                const discount = totalAmount * 0.10;
-                totalAmount = totalAmount - discount; 
+            const discount = Number(req.body.discountAmount) || 0;
+            if (discount > 0) {
+                totalAmount = Math.max(0, totalAmount - discount);
             }
 
             // Create the Order with the final totalAmount
@@ -95,10 +94,10 @@ const orderController = {
                 );
             }
 
-            // Increment user's order count by +1 to lock out future first-buyer discounts
+            // Increment user's buy count by +1 after order placement
             await User.findByIdAndUpdate(
                 userId,
-                { $inc: { orderCount: 1 } },
+                { $inc: { userBuyCount: 1, orderCount: 1 } },
                 { session }
             );
 
@@ -170,10 +169,10 @@ const orderController = {
                 await Product.findByIdAndUpdate(item.productid, { $inc: { stock: item.quantity } }, { session });
             }
 
-            // Decrement orderCount ONLY if it is currently greater than 0
+            // Decrement orderCount and userBuyCount ONLY if currently greater than 0
             await User.findOneAndUpdate(
-                { _id: userId, orderCount: { $gt: 0 } }, 
-                { $inc: { orderCount: -1 } },
+                { _id: userId, userBuyCount: { $gt: 0 } }, 
+                { $inc: { userBuyCount: -1, orderCount: -1 } },
                 { session }
             );
 
@@ -215,10 +214,10 @@ const orderController = {
                 await Product.findByIdAndUpdate(item.productid, { $inc: { stock: item.quantity } }, { session });
             }
 
-            // Decrement orderCount safely ensuring it stays >= 0
+            // Decrement orderCount and userBuyCount safely ensuring it stays >= 0
             await User.findOneAndUpdate(
-                { _id: userId, orderCount: { $gt: 0 } }, 
-                { $inc: { orderCount: -1 } },
+                { _id: userId, userBuyCount: { $gt: 0 } }, 
+                { $inc: { userBuyCount: -1, orderCount: -1 } },
                 { session }
             );
 

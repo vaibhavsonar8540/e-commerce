@@ -1,6 +1,7 @@
 const express = require("express")
 const userController = require("../Controller/userController")
 const CheckAuth = require("../Middleware/checkAuth")
+const OptionalAuth = require("../Middleware/optionalAuth")
 const CheckRole = require("../Middleware/authorization")
 const userRoute = express.Router()
 
@@ -17,5 +18,9 @@ userRoute.get("/dashboard-stats", CheckAuth, CheckRole, userController.getDashbo
 userRoute.post("/send-seller-otp", userController.sendSellerOtp)
 userRoute.post("/verify-seller-otp", userController.verifySellerOtp)
 userRoute.post("/register-seller", userController.registerSeller)
+
+// Order OTP verification
+userRoute.post("/send-order-otp", OptionalAuth, userController.sendOrderOtp)
+userRoute.post("/verify-order-otp", OptionalAuth, userController.verifyOrderOtp)
 
 module.exports = userRoute
