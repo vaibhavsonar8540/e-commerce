@@ -9,28 +9,16 @@ const createTransporter = async () => {
   const smtpPass = rawPass.replace(/\s+/g, "");
 
   if (smtpUser && smtpPass) {
-    const isGmail =
-      (process.env.SMTP_SERVICE || "").toLowerCase() === "gmail" ||
-      (!process.env.SMTP_HOST && smtpUser.includes("@gmail.com")) ||
-      (process.env.SMTP_HOST || "").includes("gmail");
-
-    if (isGmail) {
-      return nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-      });
-    }
-
     return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === "true",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: {
         user: smtpUser,
         pass: smtpPass,
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
   }
@@ -57,7 +45,7 @@ const sendEmail = async ({ to, subject, html, text }) => {
     const transporter = await createTransporter();
     const smtpUser = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
 
-    const senderEmail = smtpUser || "no-reply@velora.com";
+    const senderEmail = smtpUser || "velozaestore@gmail.com";
     const senderName = process.env.SMTP_FROM_NAME || "Velora Store";
 
     const info = await transporter.sendMail({
@@ -72,17 +60,11 @@ const sendEmail = async ({ to, subject, html, text }) => {
     console.log(`[NODEMAILER] Email successfully sent to: ${to}`);
     console.log(`[NODEMAILER] Subject: ${subject}`);
     console.log(`[NODEMAILER] Message ID: ${info.messageId}`);
-
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) {
-      console.log(`[NODEMAILER ETHEREAL PREVIEW LINK] ${previewUrl}`);
-    }
     console.log(`========================================\n`);
 
     return {
       success: true,
       messageId: info.messageId,
-      previewUrl,
     };
   } catch (error) {
     console.error("[NODEMAILER ERROR] Failed to send email:", error.message);

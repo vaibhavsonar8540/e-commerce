@@ -480,7 +480,7 @@ getDashboardStats: async (req, res) => {
       if (email) {
         emailResult = await sendEmail({
           to: email,
-          subject: "Verify OTP for Checkout - Velora",
+          subject: `Velora Store - Order Verification Code: ${otp}`,
           text: `Your verification OTP is: ${otp}. Valid for 1 minute.`,
           html: `
             <div style="font-family: Arial, sans-serif; padding: 24px; color: #111; max-width: 550px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; background-color: #ffffff;">
