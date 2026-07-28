@@ -315,35 +315,21 @@ getDashboardStats: async (req, res) => {
       user.otpExpiry = expiry;
       await user.save();
 
-      console.log(`\n========================================\n[SELLER OTP] OTP for ${email} is: ${otp}\n========================================\n`);
-
-      // Attempt to send email if nodemailer is installed (optional fallback)
+      // Send email via Nodemailer helper
       try {
-        const nodemailer = require("nodemailer");
-        const transporter = nodemailer.createTransport({
-          host: "smtp.ethereal.email",
-          port: 587,
-          secure: false,
-          auth: {
-            user: process.env.SMTP_USER || "test",
-            pass: process.env.SMTP_PASS || "test"
-          }
-        });
-        await transporter.sendMail({
-          from: '"Veloza Seller Portal" <no-reply@veloza.com>',
+        await sendEmail({
           to: email,
-          subject: "Seller Onboarding Verification OTP",
-          text: `Your verification OTP is: ${otp}. It is valid for 10 minutes.`,
-          html: `<p>Your verification OTP is: <strong>${otp}</strong>. It is valid for 10 minutes.</p>`
+          subject: `Velora Seller Portal - Verification Code: ${otp}`,
+          text: `Your seller verification OTP is: ${otp}. Valid for 10 minutes.`,
+          html: `<p>Your seller verification OTP is: <strong>${otp}</strong>. Valid for 10 minutes.</p>`,
         });
       } catch (err) {
-        // Nodemailer not installed or transport error; silent fallback to console log
+        console.error("[SELLER OTP EMAIL ERROR]", err);
       }
 
       return res.status(200).json({
         success: true,
-        message: "OTP sent successfully to your email. (Please check console/terminal logs during local testing)",
-        otp // return OTP in response for easy testing
+        message: "OTP sent successfully to your email.",
       });
     } catch (error) {
       return res.status(500).json({ success: false, message: error.message });
@@ -502,7 +488,7 @@ getDashboardStats: async (req, res) => {
         });
       }
 
-      console.log(`\n========================================\n[ORDER OTP] Generated for ${email || phone}: ${otp}\n========================================\n`);
+      console.log(`[ORDER OTP] Email dispatched to ${email || phone}`);
 
       if (emailResult && !emailResult.success) {
         return res.status(500).json({
