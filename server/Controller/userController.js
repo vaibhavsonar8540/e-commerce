@@ -475,9 +475,10 @@ getDashboardStats: async (req, res) => {
         await user.save();
       }
 
-      // Send email via Nodemailer helper asynchronously
+      // Send email via Nodemailer helper
+      let emailResult = null;
       if (email) {
-        sendEmail({
+        emailResult = await sendEmail({
           to: email,
           subject: "Verify OTP for Checkout - Velora",
           text: `Your verification OTP is: ${otp}. Valid for 1 minute.`,
@@ -498,10 +499,17 @@ getDashboardStats: async (req, res) => {
               <p style="font-size: 12px; color: #ef4444; font-weight: 700; text-align: center;">This OTP is valid for 1 minute only. Please do not share this code with anyone.</p>
             </div>
           `,
-        }).catch(err => console.error("[ORDER OTP EMAIL ERROR]", err));
+        });
       }
 
       console.log(`\n========================================\n[ORDER OTP] Generated for ${email || phone}: ${otp}\n========================================\n`);
+
+      if (emailResult && !emailResult.success) {
+        return res.status(500).json({
+          success: false,
+          message: `Failed to deliver email: ${emailResult.error}`,
+        });
+      }
 
       return res.status(200).json({
         success: true,
