@@ -1,18 +1,36 @@
 const nodemailer = require("nodemailer");
 
 /**
- * Creates and returns a Nodemailer transporter instance.
+ * Sends an email using Nodemailer from process.env.EMAIL_USER to user's entered email.
+ * Supports both object signature ({ to, subject, text, html }) and positional signature (to, subject, text, html).
  */
-const createTransporter = async () => {
-  const smtpUser = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
-  const rawPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || "";
-  const smtpPass = rawPass.replace(/\s+/g, "");
+const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
+  try {
+    let to, subject, text, html;
 
-  if (smtpUser && smtpPass) {
-    return nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
+    if (typeof options === "object" && options !== null && !Array.isArray(options)) {
+      to = options.to;
+      subject = options.subject;
+      text = options.text;
+      html = options.html;
+    } else {
+      to = options;
+      subject = subjectArg;
+      text = textArg;
+      html = htmlArg;
+    }
+
+    const smtpUser = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
+    const rawPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || "";
+    // Strip spaces from App Password (e.g. "eeyp ngcj nbov bmic" -> "eeypngcjnbovbmic")
+    const smtpPass = rawPass.replace(/\s+/g, "");
+
+    if (!smtpUser || !smtpPass) {
+      throw new Error("Missing EMAIL_USER or EMAIL_PASS in environment configuration.");
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
       auth: {
         user: smtpUser,
         pass: smtpPass,
@@ -21,45 +39,18 @@ const createTransporter = async () => {
         rejectUnauthorized: false,
       },
     });
-  }
-
-  // Fallback: Generate real working Ethereal SMTP test account
-  console.log("[NODEMAILER] No custom SMTP credentials in .env. Creating Ethereal test account...");
-  const testAccount = await nodemailer.createTestAccount();
-  return nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false,
-    auth: {
-      user: testAccount.user,
-      pass: testAccount.pass,
-    },
-  });
-};
-
-/**
- * Sends an email using Nodemailer.
- */
-const sendEmail = async ({ to, subject, html, text }) => {
-  try {
-    const transporter = await createTransporter();
-    const smtpUser = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
-
-    const senderEmail = smtpUser || "velozaestore@gmail.com";
-    const senderName = process.env.SMTP_FROM_NAME || "Velora Store";
 
     const info = await transporter.sendMail({
-      from: `"${senderName}" <${senderEmail}>`,
+      from: `"Velora Store" <${smtpUser}>`,
       to,
       subject,
       text: text || "Your verification OTP code for checkout.",
-      html: html || `<p>Your verification code is ready.</p>`,
+      html: html || `<p>${text || "Your verification code is ready."}</p>`,
     });
 
     console.log(`\n========================================`);
-    console.log(`[NODEMAILER] Email successfully sent to: ${to}`);
-    console.log(`[NODEMAILER] Subject: ${subject}`);
-    console.log(`[NODEMAILER] Message ID: ${info.messageId}`);
+    console.log(`[NODEMAILER SUCCESS] Email sent to: ${to}`);
+    console.log(`[NODEMAILER SUCCESS] Message ID: ${info.messageId}`);
     console.log(`========================================\n`);
 
     return {

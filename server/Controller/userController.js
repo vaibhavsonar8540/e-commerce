@@ -455,6 +455,15 @@ getDashboardStats: async (req, res) => {
         user = await User.findOne({ phone });
       }
 
+      if (!user && email) {
+        // Create user record if not existing so OTP can be stored and verified
+        user = new User({
+          email,
+          fullname: email.split("@")[0],
+          phone: phone || "",
+        });
+      }
+
       if (user) {
         user.loginOtp = otp;
         user.otpExpiry = expiry;
