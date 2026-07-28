@@ -63,12 +63,38 @@ export default function OrderPage() {
   const [sentOtp, setSentOtp] = useState("");
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [submittingOrder, setSubmittingOrder] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(60);
 
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchCart());
     }
   }, [dispatch, isAuthenticated]);
+
+  // Lock page scroll when OTP modal is open
+  useEffect(() => {
+    if (showOtpModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showOtpModal]);
+
+  // 60-second countdown timer for OTP expiration
+  useEffect(() => {
+    let interval = null;
+    if (showOtpModal && otpTimer > 0) {
+      interval = setInterval(() => {
+        setOtpTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (otpTimer === 0) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [showOtpModal, otpTimer]);
 
   // Pre-fill user data
   useEffect(() => {
@@ -150,7 +176,7 @@ export default function OrderPage() {
     toast.info("Coupon code removed.");
   };
 
-  // Form Submit -> Send OTP
+  // Form Submit -> Send OTP & Open Modal Immediately
   const handleSubmitForm = async (e) => {
     e.preventDefault();
 
@@ -174,7 +200,12 @@ export default function OrderPage() {
       return;
     }
 
+    // Open modal immediately for instant UI response, reset input & timer
+    setOtpInput("");
+    setOtpTimer(60);
+    setShowOtpModal(true);
     setVerifyingOtp(true);
+
     try {
       const res = await api.post("/user/send-order-otp", {
         email: formData.email,
@@ -182,11 +213,7 @@ export default function OrderPage() {
       });
 
       if (res.data?.success) {
-        const generatedOtp = res.data.otp || "";
-        setSentOtp(generatedOtp);
-        setOtpInput(generatedOtp); // Auto-fill for seamless user experience
-        setShowOtpModal(true);
-        toast.success(`OTP generated: ${generatedOtp}`, { autoClose: 8000 });
+        toast.success(`OTP code sent to ${formData.email}! Please check your inbox.`);
       }
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to send OTP. Please try again.");
@@ -691,78 +718,71 @@ export default function OrderPage() {
         )}
       </div>
 
-      {/* OTP VERIFICATION MODAL OVERLAY */}
+      {/* OTP VERIFICATION MODAL OVERLAY WITH BLUR & SCROLL LOCK */}
       {showOtpModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full p-5 sm:p-8 relative space-y-5 border border-gray-100 mx-2 animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative space-y-6 border border-gray-100 mx-2 animate-in fade-in zoom-in-95 duration-200">
+            {/* Close Button */}
             <button
               onClick={() => setShowOtpModal(false)}
-              className="absolute right-3.5 top-3.5 text-gray-400 hover:text-gray-600 p-1 transition cursor-pointer"
+              className="absolute right-4 top-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100 transition cursor-pointer"
+              title="Close"
             >
               <X size={20} />
             </button>
 
+            {/* Header / Lock Icon */}
             <div className="text-center space-y-3">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner border border-emerald-100">
-                <Lock size={24} className="sm:w-6 sm:h-6" />
+              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner border border-emerald-100">
+                <Lock size={26} />
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 font-playfair">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 font-playfair">
                   Verify OTP for Checkout
                 </h3>
-                <p className="text-xs font-medium text-emerald-700 max-w-xs mx-auto mt-1">
+                <p className="text-xs font-semibold text-emerald-600 max-w-xs mx-auto mt-1">
                   You are one step away for buying product
                 </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">
-                  Code sent to <span className="font-semibold text-gray-700">{formData.email || formData.phone}</span>
+                <p className="text-xs text-gray-400 mt-1">
+                  Code sent to <span className="font-bold text-gray-800">{formData.email || formData.phone}</span>
                 </p>
-              </div>
 
-              {sentOtp && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 text-center space-y-1.5 shadow-xs">
-                  <span className="text-[11px] uppercase tracking-wider font-extrabold text-emerald-800 block">
-                    Your Verification OTP Code:
-                  </span>
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="font-mono font-black text-2xl tracking-[0.3em] text-emerald-900 bg-white px-4 py-1 rounded-xl border border-emerald-200 shadow-inner">
-                      {sentOtp}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOtpInput(sentOtp);
-                        toast.info("OTP auto-filled!");
-                      }}
-                      className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition shadow-xs cursor-pointer shrink-0"
-                    >
-                      Auto-Fill
-                    </button>
-                  </div>
-                </div>
-              )}
+                {/* Live 1-minute (60s) countdown timer */}
+                {otpTimer > 0 ? (
+                  <p className="text-xs font-semibold text-amber-600 mt-1">
+                    OTP expires in: <span className="font-mono font-bold text-amber-700">00:{otpTimer < 10 ? `0${otpTimer}` : otpTimer}</span>
+                  </p>
+                ) : (
+                  <p className="text-xs font-bold text-red-500 mt-1">
+                    OTP Expired! Please click "Resend OTP" below.
+                  </p>
+                )}
+              </div>
             </div>
 
-            <form onSubmit={handleVerifyOtpAndCheckout} className="space-y-4">
+            {/* OTP Form without autofill display */}
+            <form onSubmit={handleVerifyOtpAndCheckout} className="space-y-5">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 text-center mb-1">
-                  Enter 6-Digit Verification Code
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 text-center mb-2">
+                  ENTER 6-DIGIT VERIFICATION CODE
                 </label>
                 <input
                   type="text"
                   maxLength={6}
                   required
                   autoFocus
+                  autoComplete="one-time-code"
                   placeholder="------"
                   value={otpInput}
                   onChange={(e) => setOtpInput(e.target.value)}
-                  className="w-full text-center tracking-[0.4em] font-mono font-bold text-2xl border-2 border-gray-300 rounded-2xl py-3 outline-none focus:border-black transition"
+                  className="w-full text-center tracking-[0.5em] font-mono font-extrabold text-2xl sm:text-3xl border-2 border-gray-200 rounded-2xl py-3.5 outline-none focus:border-black transition bg-gray-50/50 focus:bg-white"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={submittingOrder}
-                className="w-full py-3.5 bg-black hover:bg-gray-900 text-white font-bold rounded-2xl transition shadow-lg text-xs sm:text-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-4 bg-black hover:bg-gray-900 text-white font-bold rounded-2xl transition shadow-lg hover:shadow-xl text-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {submittingOrder ? (
                   <span>Verifying & Placing Order...</span>
@@ -773,6 +793,17 @@ export default function OrderPage() {
                   </>
                 )}
               </button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleSubmitForm}
+                  disabled={verifyingOtp}
+                  className="text-xs font-semibold text-gray-500 hover:text-black transition cursor-pointer underline disabled:opacity-50"
+                >
+                  {verifyingOtp ? "Resending..." : "Didn't receive email? Resend OTP"}
+                </button>
+              </div>
             </form>
           </div>
         </div>

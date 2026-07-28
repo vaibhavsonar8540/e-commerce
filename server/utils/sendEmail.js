@@ -1,57 +1,68 @@
 const nodemailer = require("nodemailer");
 
-/**
- * Sends an email using Nodemailer.
- * Uses configured SMTP environment variables or automatically falls back
- * to a generated Ethereal test account (with real test email preview links).
- */
-const sendEmail = async ({ to, subject, html, text }) => {
-  try {
-    let transporter;
+let cachedTransporter = null;
 
-    const smtpUser = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
-    const rawPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || "";
-    // Strip spaces from App Password (e.g. "eeyp ngcj nbov bmic" -> "eeypngcjnbovbmic")
-    const smtpPass = rawPass.replace(/\s+/g, "");
+const getTransporter = async () => {
+  if (cachedTransporter) return cachedTransporter;
 
-    if (smtpUser && smtpPass) {
-      const isGmail = (process.env.SMTP_SERVICE || "").toLowerCase() === "gmail" || 
-                      (!process.env.SMTP_HOST && smtpUser.includes("@gmail.com")) ||
-                      (process.env.SMTP_HOST || "").includes("gmail");
+  const smtpUser = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
+  const rawPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || "";
+  // Strip spaces from App Password (e.g. "eeyp ngcj nbov bmic" -> "eeypngcjnbovbmic")
+  const smtpPass = rawPass.replace(/\s+/g, "");
 
-      if (isGmail) {
-        transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: smtpUser,
-            pass: smtpPass,
-          },
-        });
-      } else {
-        transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: Number(process.env.SMTP_PORT) || 587,
-          secure: process.env.SMTP_SECURE === "true",
-          auth: {
-            user: smtpUser,
-            pass: smtpPass,
-          },
-        });
-      }
-    } else {
-      // Fallback: Generate real working Ethereal SMTP test account
-      console.log("[NODEMAILER] No custom SMTP credentials in .env. Creating Ethereal test account...");
-      const testAccount = await nodemailer.createTestAccount();
-      transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
+  if (smtpUser && smtpPass) {
+    const isGmail = (process.env.SMTP_SERVICE || "").toLowerCase() === "gmail" || 
+                    (!process.env.SMTP_HOST && smtpUser.includes("@gmail.com")) ||
+                    (process.env.SMTP_HOST || "").includes("gmail");
+
+    if (isGmail) {
+      cachedTransporter = nodemailer.createTransport({
+        service: "gmail",
+        pool: true,
+        maxConnections: 5,
         auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
+    } else {
+      cachedTransporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === "true",
+        pool: true,
+        maxConnections: 5,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
         },
       });
     }
+  } else {
+    console.log("[NODEMAILER] No custom SMTP credentials in .env. Creating Ethereal test account...");
+    const testAccount = await nodemailer.createTestAccount();
+    cachedTransporter = nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+  }
+  return cachedTransporter;
+};
+
+/**
+ * Sends an email using Nodemailer.
+ * Uses configured SMTP environment variables or automatically falls back
+ * to a generated Ethereal test account.
+ */
+const sendEmail = async ({ to, subject, html, text }) => {
+  try {
+    const transporter = await getTransporter();
+    const smtpUser = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
 
     const senderEmail = smtpUser || "no-reply@velora.com";
     const senderName = process.env.SMTP_FROM_NAME || "Velora Store";

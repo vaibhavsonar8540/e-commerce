@@ -453,9 +453,9 @@ getDashboardStats: async (req, res) => {
         return res.status(400).json({ success: false, message: "Email or phone number is required to send OTP." });
       }
 
-      // Generate 6 digit OTP
+      // Generate 6 digit OTP valid for 1 minute
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiry = new Date(Date.now() + 10 * 60 * 1000);
+      const expiry = new Date(Date.now() + 1 * 60 * 1000);
 
       // Search user by req.user._id if authenticated, or by email / phone
       let user = null;
@@ -475,13 +475,12 @@ getDashboardStats: async (req, res) => {
         await user.save();
       }
 
-      // Send email via Nodemailer helper
-      let emailResult = null;
+      // Send email via Nodemailer helper asynchronously
       if (email) {
-        emailResult = await sendEmail({
+        sendEmail({
           to: email,
           subject: "Verify OTP for Checkout - Velora",
-          text: `Your verification OTP is: ${otp}. You are one step away for buying product!`,
+          text: `Your verification OTP is: ${otp}. Valid for 1 minute.`,
           html: `
             <div style="font-family: Arial, sans-serif; padding: 24px; color: #111; max-width: 550px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; background-color: #ffffff;">
               <div style="text-align: center; margin-bottom: 20px;">
@@ -496,21 +495,17 @@ getDashboardStats: async (req, res) => {
               <div style="background-color: #f8fafc; border: 1px border #e2e8f0; text-align: center; padding: 18px; border-radius: 12px; margin: 24px 0;">
                 <span style="font-family: monospace; font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #0f172a;">${otp}</span>
               </div>
-              <p style="font-size: 12px; color: #888; text-align: center;">This OTP is valid for 10 minutes. Please do not share this code with anyone.</p>
+              <p style="font-size: 12px; color: #ef4444; font-weight: 700; text-align: center;">This OTP is valid for 1 minute only. Please do not share this code with anyone.</p>
             </div>
           `,
-        });
+        }).catch(err => console.error("[ORDER OTP EMAIL ERROR]", err));
       }
 
-      console.log(`\n========================================\n[ORDER OTP] Sent to ${email || phone}: ${otp}\n========================================\n`);
+      console.log(`\n========================================\n[ORDER OTP] Generated for ${email || phone}: ${otp}\n========================================\n`);
 
       return res.status(200).json({
         success: true,
-        message: emailResult?.success
-          ? `OTP sent successfully to ${email}.`
-          : `Verification OTP generated: ${otp}`,
-        otp,
-        previewUrl: emailResult?.previewUrl,
+        message: `OTP sent successfully to ${email}.`,
       });
     } catch (error) {
       return res.status(500).json({ success: false, message: error.message });
