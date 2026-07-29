@@ -1,8 +1,8 @@
 const nodemailer = require("nodemailer");
 
 /**
- * Sends an email using Nodemailer from process.env.EMAIL_USER to user's entered email.
- * Supports both object signature ({ to, subject, text, html }) and positional signature (to, subject, text, html).
+ * Sends an email using Nodemailer from process.env.EMAIL_USER to user's entered email address.
+ * Supports both object parameter ({ to, subject, text, html }) and positional parameters (to, subject, text, html).
  */
 const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
   try {
@@ -20,10 +20,17 @@ const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
       html = htmlArg;
     }
 
-    const smtpUser = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
-    const rawPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || "";
+    if (!to) {
+      throw new Error("Recipient email address is required.");
+    }
+
+    const smtpUser = (process.env.EMAIL_USER || process.env.SMTP_USER || "").trim();
+    const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || "";
     // Strip spaces from App Password (e.g. "eeyp ngcj nbov bmic" -> "eeypngcjnbovbmic")
     const smtpPass = rawPass.replace(/\s+/g, "");
+
+    console.log(smtpUser , "user")
+    console.log(smtpPass , "pass")
 
     if (!smtpUser || !smtpPass) {
       throw new Error("Missing EMAIL_USER or EMAIL_PASS in environment configuration.");
@@ -43,8 +50,8 @@ const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
     const info = await transporter.sendMail({
       from: `"Velora Store" <${smtpUser}>`,
       to,
-      subject,
-      text: text || "Your verification OTP code for checkout.",
+      subject: subject || "Velora Store Verification Code",
+      text: text || "Your OTP verification code.",
       html: html || `<p>${text || "Your verification code is ready."}</p>`,
     });
 
@@ -67,3 +74,4 @@ const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
 };
 
 module.exports = sendEmail;
+

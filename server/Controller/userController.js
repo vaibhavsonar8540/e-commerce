@@ -488,7 +488,7 @@ getDashboardStats: async (req, res) => {
               <p style="font-size: 14px; color: #444; line-height: 1.5;">
                 You are one step away for buying product. Use the 6-digit OTP code below to verify your order:
               </p>
-              <div style="background-color: #f8fafc; border: 1px border #e2e8f0; text-align: center; padding: 18px; border-radius: 12px; margin: 24px 0;">
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; text-align: center; padding: 18px; border-radius: 12px; margin: 24px 0;">
                 <span style="font-family: monospace; font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #0f172a;">${otp}</span>
               </div>
               <p style="font-size: 12px; color: #ef4444; font-weight: 700; text-align: center;">This OTP is valid for 1 minute only. Please do not share this code with anyone.</p>
