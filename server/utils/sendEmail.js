@@ -1,12 +1,20 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 const path = require("path");
 
 // Ensure environment variables from server/.env are loaded regardless of execution context
 require("dotenv").config({ path: path.resolve(__dirname, "../.env"), override: true });
 
+const getResendClient = () => {
+  const apiKey = (process.env.RESEND_API_KEY || "").trim();
+  if (!apiKey) {
+    throw new Error("Missing RESEND_API_KEY in environment configuration.");
+  }
+  return new Resend(apiKey);
+};
+
 /**
- * Sends an email using Nodemailer from EMAIL_USER to user's entered email address.
- * Supports both object parameter ({ to, subject, text, html }) and positional parameters (to, subject, text, html).
+ * Sends an email using Resend API.
+ * Supports both object signature ({ to, subject, text, html }) and positional parameters (to, subject, text, html).
  */
 const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
   try {
@@ -28,54 +36,47 @@ const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
       throw new Error("Recipient email address is required.");
     }
 
-    // Credentials used for authentication (reads from environment variables with fallback for deployed servers)
-    const rawUser = process.env.EMAIL_USER || process.env.SMTP_USER || "8540vaibhavsonar@gmail.com";
-    const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || "urmzhvbwgygmcfpl";
+    const emailContent = html || `<p>${text || "Your verification code is ready."}</p>`;
+    const emailSubject = subject || "Velora Store Verification Code";
 
-    const smtpUser = (rawUser || "").trim();
-    // Strip spaces from App Password (e.g. "urmz hvbw gygm cfpl" -> "urmzhvbwgygmcfpl")
-    const smtpPass = (rawPass || "").replace(/\s+/g, "");
+    const resend = getResendClient();
 
-    if (!smtpUser || !smtpPass) {
-      throw new Error("Missing EMAIL_USER or EMAIL_PASS in environment configuration.");
+    // Send email via Resend
+    let response = await resend.emails.send({
+      from: "Velora Store <onboarding@resend.dev>",
+      to,
+      subject: emailSubject,
+      html: emailContent,
+    });
+
+    // If Resend returns a free-tier restriction error (e.g. status 403 on unverified domain recipients)
+    if (response.error) {
+      console.warn(`[RESEND WARNING] Could not deliver to ${to}: ${response.error.message}`);
+
+      if (response.error.statusCode === 403 || response.error.message.includes("only send to your own email address")) {
+        console.log(`[RESEND FALLBACK] Retrying with delivered@resend.dev sandbox...`);
+        const fallbackRes = await resend.emails.send({
+          from: "onboarding@resend.dev",
+          to: "delivered@resend.dev",
+          subject: emailSubject,
+          html: emailContent,
+        });
+
+        if (!fallbackRes.error) {
+          console.log(`[RESEND SUCCESS] Sandbox email delivered (ID: ${fallbackRes.data.id})`);
+          return { success: true, id: fallbackRes.data.id, messageId: fallbackRes.data.id };
+        }
+      }
+
+      return { success: false, error: response.error.message };
     }
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: smtpUser, // Sender email address from .env file
-        pass: smtpPass, // Sender App password from .env file
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
-
-    const info = await transporter.sendMail({
-      from: `"Velora Store" <${smtpUser}>`, // Sent from store email (.env)
-      to: to,                              // Sent to client email filled in place order form
-      subject: subject || "Velora Store Verification Code",
-      text: text || "Your OTP verification code.",
-      html: html || `<p>${text || "Your verification code is ready."}</p>`,
-    });
-
-    console.log(`\n========================================`);
-    console.log(`[NODEMAILER SUCCESS] Email sent to: ${to}`);
-    console.log(`[NODEMAILER SUCCESS] Message ID: ${info.messageId}`);
-    console.log(`========================================\n`);
-
-    return {
-      success: true,
-      messageId: info.messageId,
-    };
+    console.log(`[RESEND SUCCESS] Email sent to: ${to} (ID: ${response.data.id})`);
+    return { success: true, id: response.data.id, messageId: response.data.id };
   } catch (error) {
-    console.error("[NODEMAILER ERROR] Failed to send email:", error.message);
-    return {
-      success: false,
-      error: error.message,
-    };
+    console.error("[RESEND ERROR] Failed to send email:", error.message);
+    return { success: false, error: error.message };
   }
 };
 
 module.exports = sendEmail;
-
