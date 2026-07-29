@@ -9,6 +9,7 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env"), override: t
  * Supports both object parameter ({ to, subject, text, html }) and positional parameters (to, subject, text, html).
  */
 const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
+  {console.log(options , "options")}
   try {
     let to, subject, text, html;
 
@@ -28,12 +29,13 @@ const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
       throw new Error("Recipient email address is required.");
     }
 
-    const rawUser = process.env.EMAIL_USER || process.env.SMTP_USER || "8540vaibhavsonar@gmail.com";
-    const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || "urmzhvbwgygmcfpl";
+    // Credentials used for authentication (from server/.env file)
+    const rawUser = process.env.EMAIL_USER || process.env.SMTP_USER || "";
+    const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || "";
 
-    const smtpUser = rawUser.trim();
+    const smtpUser = (rawUser || "").trim();
     // Strip spaces from App Password (e.g. "urmz hvbw gygm cfpl" -> "urmzhvbwgygmcfpl")
-    const smtpPass = rawPass.replace(/\s+/g, "");
+    const smtpPass = (rawPass || "").replace(/\s+/g, "");
 
     if (!smtpUser || !smtpPass) {
       throw new Error("Missing EMAIL_USER or EMAIL_PASS in environment configuration.");
@@ -42,8 +44,8 @@ const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: smtpUser,
-        pass: smtpPass,
+        user: smtpUser, // Sender email address from .env file
+        pass: smtpPass, // Sender App password from .env file
       },
       tls: {
         rejectUnauthorized: false,
@@ -51,8 +53,8 @@ const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
     });
 
     const info = await transporter.sendMail({
-      from: `"Velora Store" <${smtpUser}>`,
-      to,
+      from: `"Velora Store" <${smtpUser}>`, // Sent from store email (.env)
+      to: to,                              // Sent to client email filled in place order form
       subject: subject || "Velora Store Verification Code",
       text: text || "Your OTP verification code.",
       html: html || `<p>${text || "Your verification code is ready."}</p>`,
