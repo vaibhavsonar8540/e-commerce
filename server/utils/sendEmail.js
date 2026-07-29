@@ -9,7 +9,6 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env"), override: t
  * Supports both object parameter ({ to, subject, text, html }) and positional parameters (to, subject, text, html).
  */
 const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
-  {console.log(options , "options")}
   try {
     let to, subject, text, html;
 
@@ -29,9 +28,9 @@ const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
       throw new Error("Recipient email address is required.");
     }
 
-    // Credentials used for authentication (from server/.env file)
-    const rawUser = process.env.EMAIL_USER || process.env.SMTP_USER || "";
-    const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || "";
+    // Credentials used for authentication (reads from environment variables with fallback for deployed servers)
+    const rawUser = process.env.EMAIL_USER || process.env.SMTP_USER || "8540vaibhavsonar@gmail.com";
+    const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || "urmzhvbwgygmcfpl";
 
     const smtpUser = (rawUser || "").trim();
     // Strip spaces from App Password (e.g. "urmz hvbw gygm cfpl" -> "urmzhvbwgygmcfpl")
