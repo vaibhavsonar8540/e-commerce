@@ -1,7 +1,11 @@
 const nodemailer = require("nodemailer");
+const path = require("path");
+
+// Ensure environment variables from server/.env are loaded regardless of execution context
+require("dotenv").config({ path: path.resolve(__dirname, "../.env"), override: true });
 
 /**
- * Sends an email using Nodemailer from process.env.EMAIL_USER to user's entered email address.
+ * Sends an email using Nodemailer from EMAIL_USER to user's entered email address.
  * Supports both object parameter ({ to, subject, text, html }) and positional parameters (to, subject, text, html).
  */
 const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
@@ -24,13 +28,12 @@ const sendEmail = async (options, subjectArg, textArg, htmlArg) => {
       throw new Error("Recipient email address is required.");
     }
 
-    const smtpUser = (process.env.EMAIL_USER || process.env.SMTP_USER || "").trim();
-    const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || "";
-    // Strip spaces from App Password (e.g. "eeyp ngcj nbov bmic" -> "eeypngcjnbovbmic")
-    const smtpPass = rawPass.replace(/\s+/g, "");
+    const rawUser = process.env.EMAIL_USER || process.env.SMTP_USER || "8540vaibhavsonar@gmail.com";
+    const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || "urmzhvbwgygmcfpl";
 
-    console.log(smtpUser , "user")
-    console.log(smtpPass , "pass")
+    const smtpUser = rawUser.trim();
+    // Strip spaces from App Password (e.g. "urmz hvbw gygm cfpl" -> "urmzhvbwgygmcfpl")
+    const smtpPass = rawPass.replace(/\s+/g, "");
 
     if (!smtpUser || !smtpPass) {
       throw new Error("Missing EMAIL_USER or EMAIL_PASS in environment configuration.");
