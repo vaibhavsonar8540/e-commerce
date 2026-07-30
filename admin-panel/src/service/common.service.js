@@ -14,9 +14,6 @@ export const createCollData = async (payload) => {
 
 export const getCollection = async () => {
     const res = await api.get("/collection/collections");
-
-    console.log(res.data , "server collection");
-
     return res.data.collections;
 };
 

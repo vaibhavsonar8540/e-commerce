@@ -22,7 +22,6 @@ export const fetchCollection = () => async (dispatch) => {
     try {
         dispatch(setLoading(true));
         const data = await getCollection();
-        console.log(data , "collection")
         dispatch(setCollection(data));
     } catch (error) {
         console.log(error);
