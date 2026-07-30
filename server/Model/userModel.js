@@ -46,16 +46,6 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
-    // OTP fields for login verification
-    loginOtp: {
-      type: String,
-      default: null,
-    },
-
-    otpExpiry: {
-      type: Date,
-      default: null,
-    },
 
     // Seller fields
     businessName: {

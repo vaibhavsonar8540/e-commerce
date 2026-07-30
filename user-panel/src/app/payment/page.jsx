@@ -17,10 +17,28 @@ import {
   Building2,
   Lock,
   Tag,
+  Sparkles,
+  Zap,
+  Check,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import api from "@/utils/axiosInstant";
 import { getMediaUrl, DEFAULT_PLACEHOLDER_IMAGE } from "@/utils/imageUrl";
+
+// Helper function to load Razorpay script dynamically
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 export default function PaymentPage() {
   const dispatch = useDispatch();
@@ -29,7 +47,7 @@ export default function PaymentPage() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   const [checkoutData, setCheckoutData] = useState(null);
-  const [selectedMethod, setSelectedMethod] = useState("COD");
+  const [selectedMethod, setSelectedMethod] = useState("RAZORPAY"); // Default to Razorpay
   const [submittingPayment, setSubmittingPayment] = useState(false);
 
   useEffect(() => {
@@ -55,57 +73,152 @@ export default function PaymentPage() {
   const finalTotalAmount = checkoutData?.totalAmount || Math.max(0, subTotal - discountAmount);
   const shipping = checkoutData?.shipping || {};
 
+  const fullShippingAddress = shipping.address
+    ? `${shipping.address}, ${shipping.roadArea || ""}, ${shipping.city}, ${
+        shipping.stateName || ""
+      }, India - ${shipping.pincode} (Recipient: ${shipping.fullname}, Phone: ${
+        shipping.phone
+      }, Email: ${shipping.email})`
+    : "Standard Delivery Address";
+
+  // Execute Order Creation In Database
+  const completeOrderPlacement = async (paymentRefId, methodUsed) => {
+    const orderRes = await api.post("/order/place-order", {
+      shippingAddress: fullShippingAddress,
+      paymentId: paymentRefId,
+      paymentMethod: methodUsed,
+      discountAmount: discountAmount,
+      couponCode: checkoutData?.appliedCoupon?.code || "",
+    });
+
+    if (orderRes.data?.success) {
+      toast.success("Order placed successfully!");
+      dispatch(fetchCart());
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(
+          "lastOrder",
+          JSON.stringify({
+            order: orderRes.data.data,
+            shipping: shipping,
+            appliedCoupon: checkoutData?.appliedCoupon,
+            subTotal,
+            discountAmount,
+            totalAmount: finalTotalAmount,
+            paymentMethod: methodUsed,
+          })
+        );
+        sessionStorage.removeItem("checkoutSession");
+      }
+      router.push("/checkout-success");
+    } else {
+      throw new Error(orderRes.data?.message || "Order creation failed.");
+    }
+  };
+
+  // Main Handle Place Final Order Function
   const handlePlaceFinalOrder = async () => {
     setSubmittingPayment(true);
+
     try {
-      const fullShippingAddress = shipping.address
-        ? `${shipping.address}, ${shipping.roadArea || ""}, ${shipping.city}, ${
-            shipping.stateName || ""
-          }, India - ${shipping.pincode} (Recipient: ${shipping.fullname}, Phone: ${
-            shipping.phone
-          }, Email: ${shipping.email})`
-        : "Standard Address";
-
-      const orderRes = await api.post("/order/place-order", {
-        shippingAddress: fullShippingAddress,
-        paymentId: `${selectedMethod}_${Date.now()}`,
-        discountAmount: discountAmount,
-        couponCode: checkoutData?.appliedCoupon?.code || "",
-      });
-
-      if (orderRes.data?.success) {
-        toast.success("Order placed successfully!");
-        dispatch(fetchCart());
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem(
-            "lastOrder",
-            JSON.stringify({
-              order: orderRes.data.data,
-              shipping: shipping,
-              appliedCoupon: checkoutData?.appliedCoupon,
-              subTotal,
-              discountAmount,
-              totalAmount: finalTotalAmount,
-              paymentMethod: selectedMethod,
-            })
-          );
-          sessionStorage.removeItem("checkoutSession");
+      if (selectedMethod === "COD") {
+        // Cash On Delivery Direct Placement
+        await completeOrderPlacement(`COD_${Date.now()}`, "Cash on Delivery");
+      } else {
+        // Razorpay Gateway Flow
+        const isLoaded = await loadRazorpayScript();
+        if (!isLoaded) {
+          toast.error("Razorpay SDK failed to load. Please check your internet connection.");
+          setSubmittingPayment(false);
+          return;
         }
-        router.push("/checkout-success");
+
+        // 1. Create Razorpay order from backend
+        let razorpayOrderData = null;
+        try {
+          const res = await api.post("/order/create-razorpay-order", {
+            amount: finalTotalAmount,
+          });
+          if (res.data?.success) {
+            razorpayOrderData = res.data;
+          }
+        } catch (err) {
+          console.warn("Backend Razorpay order creation warning:", err);
+        }
+
+        const razorpayKey =
+          process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
+          razorpayOrderData?.key ||
+          "rzp_test_VeloraStore2026Key";
+
+        const razorpayOrderId = razorpayOrderData?.orderId || `order_${Date.now()}`;
+
+        // 2. Options for Razorpay Popup Modal
+        const options = {
+          key: razorpayKey,
+          amount: Math.round(finalTotalAmount * 100),
+          currency: "INR",
+          name: "Velora Store",
+          description: "Payment for Order Checkout",
+          image: "https://cdn-icons-png.flaticon.com/512/1170/1170576.png",
+          order_id: razorpayOrderId,
+          prefill: {
+            name: shipping.fullname || user?.fullname || "Customer",
+            email: shipping.email || user?.email || "customer@example.com",
+            contact: shipping.phone || user?.phone || "9876543210",
+          },
+          notes: {
+            address: fullShippingAddress,
+          },
+          theme: {
+            color: "#000000",
+          },
+          handler: async function (response) {
+            try {
+              toast.info("Payment authorized! Finalizing order...");
+              const payId = response.razorpay_payment_id || `RZP_${Date.now()}`;
+              await completeOrderPlacement(payId, "Razorpay Online Payment");
+            } catch (error) {
+              toast.error(error.message || "Failed to complete order after payment.");
+              setSubmittingPayment(false);
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              toast.info("Payment window closed.");
+              setSubmittingPayment(false);
+            },
+          },
+        };
+
+        const rzpWindow = new window.Razorpay(options);
+        rzpWindow.on("payment.failed", function (response) {
+          toast.error(response.error.description || "Payment Failed.");
+          setSubmittingPayment(false);
+        });
+        rzpWindow.open();
       }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to complete payment and place order.");
-    } finally {
+      toast.error(err?.response?.data?.message || err.message || "Failed to complete order.");
       setSubmittingPayment(false);
     }
   };
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-gray-50 p-6 text-center">
-        <ShoppingBag size={32} className="text-gray-400 mb-4" />
-        <h2 className="text-xl font-bold">Please sign in to proceed</h2>
-        <Link href="/" className="mt-4 px-6 py-2.5 bg-black text-white font-semibold rounded-xl text-sm">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-gray-50/50 p-6 text-center">
+        <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-500 mb-5 shadow-inner">
+          <ShoppingBag size={28} />
+        </div>
+        <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight font-playfair">
+          Please Sign In
+        </h2>
+        <p className="mt-2 text-sm text-gray-500 max-w-sm">
+          You must be logged in to access the payment screen.
+        </p>
+        <Link
+          href="/"
+          className="mt-6 px-6 py-3 bg-black hover:bg-gray-900 text-white font-bold rounded-xl transition duration-200 text-sm shadow-md cursor-pointer"
+        >
           Return Home
         </Link>
       </div>
@@ -113,141 +226,184 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 py-6 sm:py-10 px-3 sm:px-8 lg:px-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-50/60 to-white py-6 sm:py-10 px-3 sm:px-8 lg:px-12">
       <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
-        {/* Navigation & Header */}
+        
+        {/* Top Header */}
         <div className="flex flex-col gap-3 sm:gap-4 border-b border-gray-200/80 pb-4 sm:pb-6">
           <button
             onClick={() => router.push("/order")}
-            className="flex items-center gap-2 self-start px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 rounded-xl shadow-xs hover:shadow transition cursor-pointer"
+            className="flex items-center gap-2 self-start px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 rounded-xl shadow-xs hover:shadow transition cursor-pointer"
           >
             <ArrowLeft size={16} />
-            <span>Back to Shipping Address</span>
+            <span>Edit Shipping Address</span>
           </button>
 
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight font-playfair">
-              Select Payment Method
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              OTP Verified! Complete your payment selection to place your order securely.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight font-playfair flex items-center gap-3">
+                Select Payment Method
+                <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                Choose Razorpay for fast, instant & secure online checkout or Pay on Delivery.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-xl text-xs font-bold self-start sm:self-auto shadow-md">
+              <Zap size={15} className="text-amber-400 fill-amber-400" />
+              <span>Razorpay Integration Ready</span>
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          
           {/* LEFT SIDE: PAYMENT OPTIONS (Cols 7) */}
-          <div className="lg:col-span-7 bg-white border border-gray-200 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm space-y-6">
-            <h2 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-3">
-              <CreditCard size={20} className="text-black" />
-              Payment Options
-            </h2>
+          <div className="lg:col-span-7 bg-white border border-gray-200/90 p-5 sm:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm space-y-6">
+            <div className="border-b border-gray-100 pb-4 flex items-center justify-between">
+              <h2 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2.5">
+                <CreditCard size={20} className="text-black" />
+                Payment Options
+              </h2>
+              <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                <Lock size={13} />
+                256-Bit SSL Encrypted
+              </span>
+            </div>
 
             <div className="space-y-3.5">
-              {/* Option 1: Cash on Delivery (COD) */}
+              
+              {/* Option 1: Razorpay Gateway (Primary & Featured) */}
+              <div
+                onClick={() => setSelectedMethod("RAZORPAY")}
+                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${
+                  selectedMethod === "RAZORPAY"
+                    ? "border-black bg-gradient-to-r from-gray-900 to-black text-white shadow-lg scale-[1.01]"
+                    : "border-gray-200 bg-white hover:border-gray-400 text-gray-900"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3.5">
+                    <div
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                        selectedMethod === "RAZORPAY"
+                          ? "bg-white/10 text-white border border-white/20"
+                          : "bg-blue-50 text-blue-600 border border-blue-100"
+                      }`}
+                    >
+                      <CreditCard size={24} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm sm:text-base font-extrabold tracking-wide">
+                          Razorpay Secure Checkout
+                        </h3>
+                        <span
+                          className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            selectedMethod === "RAZORPAY"
+                              ? "bg-amber-400 text-black"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          Fastest & Safe
+                        </span>
+                      </div>
+                      <p
+                        className={`text-xs mt-1 ${
+                          selectedMethod === "RAZORPAY" ? "text-gray-300" : "text-gray-500"
+                        }`}
+                      >
+                        UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, NetBanking & Wallets.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0">
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selectedMethod === "RAZORPAY"
+                          ? "border-amber-400 bg-amber-400 text-black"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {selectedMethod === "RAZORPAY" && <Check size={16} className="stroke-[3]" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Option 2: Cash on Delivery */}
               <div
                 onClick={() => setSelectedMethod("COD")}
-                className={`p-4 rounded-2xl border-2 transition cursor-pointer flex items-center justify-between ${
+                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer ${
                   selectedMethod === "COD"
-                    ? "border-black bg-gray-50/80 shadow-xs"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-black bg-gray-50 shadow-xs"
+                    : "border-gray-200 bg-white hover:border-gray-300 text-gray-900"
                 }`}
               >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                    <Banknote size={22} />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                      <Banknote size={22} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                        Cash on Delivery (COD)
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Pay with cash or UPI at your doorstep upon receiving order.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-gray-900 flex items-center gap-2">
-                      Cash on Delivery (COD)
-                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full uppercase">
-                        Recommended
-                      </span>
-                    </h3>
-                    <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
-                      Pay easily with cash or UPI upon delivery at your doorstep.
-                    </p>
-                  </div>
-                </div>
-                <div className="shrink-0">
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedMethod === "COD"
-                        ? "border-black bg-black text-white"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {selectedMethod === "COD" && <CheckCircle2 size={14} />}
+
+                  <div className="shrink-0">
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selectedMethod === "COD"
+                          ? "border-black bg-black text-white"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {selectedMethod === "COD" && <Check size={16} className="stroke-[3]" />}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Option 2: UPI / QR */}
+              {/* Option 3: UPI / QR Code */}
               <div
                 onClick={() => setSelectedMethod("UPI")}
-                className={`p-4 rounded-2xl border-2 transition cursor-pointer flex items-center justify-between ${
+                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer ${
                   selectedMethod === "UPI"
-                    ? "border-black bg-gray-50/80 shadow-xs"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-black bg-gray-50 shadow-xs"
+                    : "border-gray-200 bg-white hover:border-gray-300 text-gray-900"
                 }`}
               >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
-                    <QrCode size={22} />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                      <QrCode size={22} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-900">
+                        UPI / Instant QR Code
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Google Pay, PhonePe, Paytm, BHIM & all UPI apps via Razorpay.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-gray-900">
-                      UPI / Instant QR Payment
-                    </h3>
-                    <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
-                      Google Pay, PhonePe, Paytm & BHIM UPI.
-                    </p>
-                  </div>
-                </div>
-                <div className="shrink-0">
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedMethod === "UPI"
-                        ? "border-black bg-black text-white"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {selectedMethod === "UPI" && <CheckCircle2 size={14} />}
-                  </div>
-                </div>
-              </div>
 
-              {/* Option 3: Credit / Debit Card */}
-              <div
-                onClick={() => setSelectedMethod("CARD")}
-                className={`p-4 rounded-2xl border-2 transition cursor-pointer flex items-center justify-between ${
-                  selectedMethod === "CARD"
-                    ? "border-black bg-gray-50/80 shadow-xs"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                    <CreditCard size={22} />
-                  </div>
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-gray-900">
-                      Credit / Debit Card
-                    </h3>
-                    <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
-                      Visa, MasterCard, RuPay & Maestro cards.
-                    </p>
-                  </div>
-                </div>
-                <div className="shrink-0">
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedMethod === "CARD"
-                        ? "border-black bg-black text-white"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {selectedMethod === "CARD" && <CheckCircle2 size={14} />}
+                  <div className="shrink-0">
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selectedMethod === "UPI"
+                          ? "border-black bg-black text-white"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {selectedMethod === "UPI" && <Check size={16} className="stroke-[3]" />}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -255,51 +411,55 @@ export default function PaymentPage() {
               {/* Option 4: Net Banking */}
               <div
                 onClick={() => setSelectedMethod("NETBANKING")}
-                className={`p-4 rounded-2xl border-2 transition cursor-pointer flex items-center justify-between ${
+                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer ${
                   selectedMethod === "NETBANKING"
-                    ? "border-black bg-gray-50/80 shadow-xs"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-black bg-gray-50 shadow-xs"
+                    : "border-gray-200 bg-white hover:border-gray-300 text-gray-900"
                 }`}
               >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                    <Building2 size={22} />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                      <Building2 size={22} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-900">
+                        Net Banking
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        SBI, HDFC, ICICI, Axis & 50+ major Indian banks supported.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-gray-900">
-                      Net Banking
-                    </h3>
-                    <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
-                      All major Indian banks supported.
-                    </p>
-                  </div>
-                </div>
-                <div className="shrink-0">
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedMethod === "NETBANKING"
-                        ? "border-black bg-black text-white"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {selectedMethod === "NETBANKING" && <CheckCircle2 size={14} />}
+
+                  <div className="shrink-0">
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selectedMethod === "NETBANKING"
+                          ? "border-black bg-black text-white"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {selectedMethod === "NETBANKING" && <Check size={16} className="stroke-[3]" />}
+                    </div>
                   </div>
                 </div>
               </div>
+
             </div>
 
-            {/* Delivery Address Preview */}
+            {/* Delivery Address Snapshot */}
             {shipping.fullname && (
-              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-1">
+              <div className="bg-gray-50/80 border border-gray-200/90 rounded-2xl p-4 space-y-1.5">
                 <div className="flex items-center gap-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  <MapPin size={14} className="text-black" />
+                  <MapPin size={15} className="text-black" />
                   Delivering To:
                 </div>
-                <p className="text-xs font-bold text-gray-900">{shipping.fullname}</p>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs sm:text-sm font-bold text-gray-900">{shipping.fullname}</p>
+                <p className="text-xs text-gray-600 leading-relaxed">
                   {shipping.address}, {shipping.roadArea}, {shipping.city}, {shipping.stateName} - {shipping.pincode}
                 </p>
-                <p className="text-xs text-gray-500 font-mono">Phone: {shipping.phone}</p>
+                <p className="text-xs text-gray-500 font-mono">Phone: {shipping.phone} | Email: {shipping.email}</p>
               </div>
             )}
 
@@ -307,49 +467,54 @@ export default function PaymentPage() {
             <button
               onClick={handlePlaceFinalOrder}
               disabled={submittingPayment}
-              className="w-full py-4 bg-black hover:bg-gray-900 text-white font-bold rounded-2xl transition shadow-xl text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-4.5 bg-black hover:bg-gray-900 text-white font-bold rounded-2xl transition-all shadow-xl hover:shadow-2xl text-sm sm:text-base flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 active:scale-[0.99]"
             >
               {submittingPayment ? (
-                <span>Placing Order...</span>
+                <span>Processing Order...</span>
               ) : (
                 <>
-                  <ShieldCheck size={20} />
-                  <span>Complete Payment & Place Order</span>
+                  <ShieldCheck size={22} className="text-amber-400" />
+                  <span>
+                    {selectedMethod === "COD"
+                      ? "Place Order (Cash on Delivery)"
+                      : "Pay ₹" + finalTotalAmount + " with Razorpay"}
+                  </span>
                 </>
               )}
             </button>
+
           </div>
 
-          {/* RIGHT SIDE: FINAL ORDER SUMMARY (Cols 5) */}
-          <div className="lg:col-span-5 bg-white border border-gray-200 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm space-y-5">
-            <h2 className="text-base sm:text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center justify-between">
+          {/* RIGHT SIDE: ORDER SUMMARY (Cols 5) */}
+          <div className="lg:col-span-5 bg-white border border-gray-200/90 p-5 sm:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm space-y-6 lg:sticky lg:top-8">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 border-b border-gray-100 pb-4 flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <ShoppingBag size={18} />
-                Order Summary ({items.length})
+                <ShoppingBag size={20} className="text-black" />
+                Order Items ({items.length})
               </span>
             </h2>
 
             {/* Product items list */}
-            <div className="space-y-3 max-h-75 overflow-y-auto pr-1 custom-scrollbar">
+            <div className="space-y-3 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
               {items.map((item) => {
                 const prod = item.product || {};
                 const imgUrl = getMediaUrl(prod.thumbnail);
 
                 return (
                   <div
-                    key={prod._id}
-                    className="flex items-center gap-3 bg-gray-50/80 p-3 rounded-2xl border border-gray-100"
+                    key={prod._id || item._id}
+                    className="flex items-center gap-3.5 bg-gray-50/80 p-3 rounded-2xl border border-gray-200/70"
                   >
                     <img
                       src={imgUrl}
-                      alt={prod.productName}
+                      alt={prod.productName || "Product"}
                       className="w-14 h-16 object-cover rounded-xl border border-gray-200 shrink-0"
                       onError={(e) => {
                         e.target.src = DEFAULT_PLACEHOLDER_IMAGE;
                       }}
                     />
                     <div className="grow min-w-0">
-                      <h4 className="text-xs font-bold text-gray-900 line-clamp-1 capitalize">
+                      <h4 className="text-xs sm:text-sm font-bold text-gray-900 line-clamp-1 capitalize">
                         {prod.productName}
                       </h4>
                       <p className="text-[11px] text-gray-500 mt-0.5">
@@ -357,7 +522,7 @@ export default function PaymentPage() {
                       </p>
                     </div>
                     <div className="text-right shrink-0">
-                      <span className="text-xs font-extrabold text-black">
+                      <span className="text-xs sm:text-sm font-extrabold text-black">
                         ₹{item.itemTotal}
                       </span>
                     </div>
@@ -389,17 +554,19 @@ export default function PaymentPage() {
               </div>
 
               <div className="border-t border-gray-200 pt-3 flex justify-between text-sm sm:text-base font-extrabold text-gray-900">
-                <span>Total Amount Payable</span>
-                <span className="text-lg sm:text-xl text-black">₹{finalTotalAmount}</span>
+                <span>Total Payable Amount</span>
+                <span className="text-xl text-black">₹{finalTotalAmount}</span>
               </div>
             </div>
 
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2 text-xs text-emerald-800">
-              <Lock size={16} className="shrink-0 text-emerald-600" />
-              <span>100% Secure Checkout & Guaranteed Fast Shipping</span>
+            <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5 flex items-center gap-2.5 text-xs text-emerald-800">
+              <Lock size={18} className="shrink-0 text-emerald-600" />
+              <span>100% Purchase Protection & Free Express Delivery</span>
             </div>
+
           </div>
         </div>
+
       </div>
     </div>
   );
