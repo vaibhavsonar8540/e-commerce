@@ -22,8 +22,7 @@ import {
   ArrowRight,
   CreditCard,
 } from "lucide-react";
-import { toast } from "react-[#000]" ? toast : null; // standard react-toastify
-import { toast as toastify } from "react-toastify";
+import { toast } from "react-toastify";
 import { State, City } from "country-state-city";
 import api from "@/utils/axiosInstant";
 import { getMediaUrl, DEFAULT_PLACEHOLDER_IMAGE } from "@/utils/imageUrl";
@@ -110,11 +109,11 @@ export default function OrderPage() {
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
     if (!couponCode.trim()) {
-      toastify.error("Please enter a coupon code.");
+      toast.error("Please enter a coupon code.");
       return;
     }
     if (subTotal <= 0) {
-      toastify.error("Cart subtotal must be greater than 0 to apply coupon.");
+      toast.error("Cart subtotal must be greater than 0 to apply coupon.");
       return;
     }
 
@@ -127,11 +126,11 @@ export default function OrderPage() {
 
       if (res.data?.success) {
         setAppliedCoupon(res.data.data);
-        toastify.success(res.data.message || "Coupon applied successfully!");
+        toast.success(res.data.message || "Coupon applied successfully!");
       }
     } catch (err) {
       setAppliedCoupon(null);
-      toastify.error(err?.response?.data?.message || "Invalid or inapplicable coupon code.");
+      toast.error(err?.response?.data?.message || "Invalid or inapplicable coupon code.");
     } finally {
       setApplyingCoupon(false);
     }
@@ -140,7 +139,7 @@ export default function OrderPage() {
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponCode("");
-    toastify.info("Coupon code removed.");
+    toast.info("Coupon code removed.");
   };
 
   // Form Submit -> Validate & Open Payment Screen
@@ -157,12 +156,12 @@ export default function OrderPage() {
       !formData.roadArea.trim() ||
       !formData.pincode.trim()
     ) {
-      toastify.error("All shipping fields marked with (*) are required.");
+      toast.error("All shipping fields marked with (*) are required.");
       return;
     }
 
     if (items.length === 0) {
-      toastify.error("Your cart is empty. Please add items to place an order.");
+      toast.error("Your cart is empty. Please add items to place an order.");
       return;
     }
 
@@ -182,7 +181,7 @@ export default function OrderPage() {
       );
     }
 
-    toastify.success("Shipping address saved! Opening payment screen...");
+    toast.success("Shipping address saved! Opening payment screen...");
     
     // Smooth transition to payment screen
     setTimeout(() => {
