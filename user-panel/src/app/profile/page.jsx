@@ -61,7 +61,7 @@ export default function ProfilePage() {
         setProducts(response.data.products || []);
       }
     } catch (err) {
-      console.error("Error fetching store products:", err);
+      // catch silently
     } finally {
       setLoadingProducts(false);
     }
@@ -103,7 +103,6 @@ export default function ProfilePage() {
         toast.error("Failed to update profile details.");
       }
     } catch (err) {
-      console.error(err);
       toast.error(err?.response?.data?.message || "An error occurred while updating profile.");
     } finally {
       setUpdating(false);
@@ -136,7 +135,6 @@ export default function ProfilePage() {
           toast.error(response.data?.message || "Failed to delete product.");
         }
       } catch (err) {
-        console.error(err);
         toast.error("Error deleting product.");
       }
     }
@@ -174,7 +172,6 @@ export default function ProfilePage() {
         toast.error(response.data?.message || "Failed to update product details.");
       }
     } catch (err) {
-      console.error(err);
       toast.error("Failed to edit product.");
     } finally {
       setEditingProductSubmitting(false);

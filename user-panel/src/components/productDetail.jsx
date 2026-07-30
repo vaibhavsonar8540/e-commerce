@@ -81,7 +81,7 @@ export default function ProductDetail({ product }) {
           setWomenArrivals(filteredWomen);
         }
       } catch (err) {
-        console.error("Error fetching arrivals on details page:", err);
+        // catch silently
       } finally {
         setLoadingSliders(false);
       }

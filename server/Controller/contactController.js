@@ -34,7 +34,6 @@ const contactController = {
         data: newContact,
       });
     } catch (error) {
-      console.error("Error in contact submission:", error);
       return res.status(500).json({
         success: false,
         message: "An internal server error occurred while processing your message.",
@@ -46,7 +45,7 @@ const contactController = {
   // Fetch all contact requests
   getAllContacts: async (req, res) => {
     try {
-      const contacts = await Contact.find().sort({ createdAt: -1 });
+      const contacts = await Contact.find().sort({ createdAt: -1 }).lean();
 
       return res.status(200).json({
         success: true,
@@ -54,7 +53,6 @@ const contactController = {
         data: contacts,
       });
     } catch (error) {
-      console.error("Error in fetching contact requests:", error);
       return res.status(500).json({
         success: false,
         message: "An internal server error occurred while fetching contact requests.",

@@ -1,11 +1,10 @@
-import { createProduct } from "@/service/productService"
+import { createProduct } from "@/service/productService";
 
-export const addProduct = (payload) => async(dispatch) => {
+export const addProduct = (payload) => async (dispatch) => {
     try {
-        const data = await createProduct(payload)
-        return data
+        const data = await createProduct(payload);
+        return data;
     } catch (error) {
-        console.log(error)
-        throw error
+        throw error;
     }
-}
+};

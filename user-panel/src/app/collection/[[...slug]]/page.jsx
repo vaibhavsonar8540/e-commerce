@@ -117,7 +117,6 @@ export default function CollectionPage({ params }) {
           setErrorMessage("Failed to filter catalog products.");
         }
       } catch (err) {
-        console.error(err);
         setErrorMessage("Network error: Unable to retrieve collection details.");
       } finally {
         setLoading(false);

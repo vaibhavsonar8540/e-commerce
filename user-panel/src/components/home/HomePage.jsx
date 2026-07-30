@@ -48,7 +48,7 @@ const HomePage = () => {
           setElectronicsProducts(electronicsRes.data.products.slice(0, 5));
         }
       } catch (err) {
-        console.error("Error fetching home sliders:", err);
+        // catch silently
       } finally {
         setLoading(false);
       }

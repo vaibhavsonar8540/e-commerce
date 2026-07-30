@@ -157,7 +157,6 @@ export default function AddProducts() {
           toast.error(data?.message || "Failed to create product.");
         }
       } catch (error) {
-        console.error("Error creating product:", error);
         toast.error(error?.response?.data?.message || error.message || "Something went wrong.");
       }
     },
@@ -173,7 +172,6 @@ export default function AddProducts() {
           formik.setFieldValue("subcategory", "");
         })
         .catch((err) => {
-          console.error("Error fetching categories:", err);
           setFilteredCategories([]);
         });
     } else {
@@ -192,7 +190,6 @@ export default function AddProducts() {
           formik.setFieldValue("subcategory", "");
         })
         .catch((err) => {
-          console.error("Error fetching subcategories:", err);
           setFilteredSubcategories([]);
         });
     } else {

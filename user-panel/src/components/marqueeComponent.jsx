@@ -55,7 +55,7 @@ const MarqueeComponent = () => {
           }
         })
         .catch((err) => {
-          console.error("Error fetching coupons for marquee:", err);
+          // catch silently
         });
     }
   }, [hasUserBuyCount]);

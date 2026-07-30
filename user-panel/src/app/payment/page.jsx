@@ -61,7 +61,7 @@ export default function PaymentPage() {
         try {
           setCheckoutData(JSON.parse(savedSession));
         } catch (e) {
-          console.error("Failed to parse checkout session", e);
+          // catch silently
         }
       }
     }

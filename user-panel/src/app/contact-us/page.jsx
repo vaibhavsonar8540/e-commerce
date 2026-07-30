@@ -63,7 +63,6 @@ export default function ContactUs() {
         toast.error(response.data?.message || "Something went wrong. Please check your data.");
       }
     } catch (error) {
-      console.error(error);
       const errMsg = error.response?.data?.message || "Failed to submit message. Please try again.";
       toast.error(errMsg);
     } finally {

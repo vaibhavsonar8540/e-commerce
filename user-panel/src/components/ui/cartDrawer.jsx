@@ -28,7 +28,7 @@ export default function CartDrawer() {
     try {
       await dispatch(updateCartQtyAction(productId, targetQty));
     } catch (err) {
-      console.error(err);
+      // catch silently
     }
   };
 
@@ -36,7 +36,7 @@ export default function CartDrawer() {
     try {
       await dispatch(removeFromCartAction(productId));
     } catch (err) {
-      console.error(err);
+      // catch silently
     }
   };
 

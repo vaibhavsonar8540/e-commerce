@@ -85,10 +85,9 @@ const productController = {
         data: newProduct,
       });
     } catch (error) {
-      console.error("Create Product Error:", error);
       return res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: `${error.message}\nStack: ${error.stack}`,
+        message: error.message || "Internal server error.",
       });
     }
   },
@@ -96,10 +95,9 @@ const productController = {
   get: async (req, res) => {
     // this is for getting all products of all seller
     try {
-      const products = await Product.find().populate(
-        "seller",
-        "fullname email phone businessName address gstin",
-      );
+      const products = await Product.find()
+        .populate("seller", "fullname email phone businessName address gstin")
+        .lean();
 
       return res.status(HTTP_CODES.OK).json({
         success: true,
@@ -123,7 +121,8 @@ const productController = {
       })
         .sort({ totalSales: -1 }) // Highest sales first
         .limit(10) // Top 10 products
-        .populate("seller", "fullname email phone businessName address gstin");
+        .populate("seller", "fullname email phone businessName address gstin")
+        .lean();
 
       return res.status(HTTP_CODES.OK).json({
         success: true,
@@ -144,7 +143,9 @@ const productController = {
     try {
       const products = await Product.find({
         seller: req.user._id,
-      }).populate("seller", "fullname email phone businessName address gstin");
+      })
+        .populate("seller", "fullname email phone businessName address gstin")
+        .lean();
 
       return res.status(HTTP_CODES.OK).json({
         success: true,
@@ -160,25 +161,26 @@ const productController = {
 
   // latest arrivals
   getNewArrivals: async (req, res) => {
-  try {
-    const products = await Product.find({
-      status: "active",
-    })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .populate("seller", "fullname email phone businessName address gstin");
+    try {
+      const products = await Product.find({
+        status: "active",
+      })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("seller", "fullname email phone businessName address gstin")
+        .lean();
 
-    return res.status(HTTP_CODES.OK).json({
-      success: true,
-      products,
-    });
-  } catch (error) {
-    return res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: error.message,
-    });
-  }
-},
+      return res.status(HTTP_CODES.OK).json({
+        success: true,
+        products,
+      });
+    } catch (error) {
+      return res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  },
 
   getFiltered: async (req, res) => {
     try {
@@ -195,7 +197,7 @@ const productController = {
             { slug: subcategorySlug.toLowerCase() },
             { name: { $regex: new RegExp(`^${subcategorySlug}$`, "i") } },
           ],
-        });
+        }).lean();
         if (sub) {
           query.$or = [{ subCategory: sub._id }, { subcategory: sub._id }];
         } else {
@@ -207,7 +209,7 @@ const productController = {
             { slug: categorySlug.toLowerCase() },
             { name: { $regex: new RegExp(`^${categorySlug}$`, "i") } },
           ],
-        });
+        }).lean();
         if (cat) {
           query.category = cat._id;
         } else {
@@ -219,7 +221,7 @@ const productController = {
             { slug: collectionSlug.toLowerCase() },
             { name: { $regex: new RegExp(`^${collectionSlug}$`, "i") } },
           ],
-        });
+        }).lean();
         if (col) {
           query.collections = col._id;
         } else {
@@ -231,7 +233,8 @@ const productController = {
         .populate("seller", "fullname email phone businessName address gstin")
         .populate("collections", "name slug")
         .populate("category", "name slug")
-        .populate("subCategory", "name slug");
+        .populate("subCategory", "name slug")
+        .lean();
 
       return res.status(200).json({
         success: true,
@@ -253,7 +256,8 @@ const productController = {
         .populate("seller", "fullname email phone businessName address gstin")
         .populate("collections", "name slug")
         .populate("category", "name slug")
-        .populate("subCategory", "name slug");
+        .populate("subCategory", "name slug")
+        .lean();
 
       if (!product) {
         return res.status(404).json({

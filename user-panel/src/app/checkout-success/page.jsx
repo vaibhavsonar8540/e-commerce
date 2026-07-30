@@ -14,7 +14,7 @@ export default function CheckoutSuccessPage() {
         try {
           setOrderInfo(JSON.parse(saved));
         } catch (e) {
-          console.error(e);
+          // catch error silently
         }
       }
     }

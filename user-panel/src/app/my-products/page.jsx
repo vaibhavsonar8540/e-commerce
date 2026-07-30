@@ -31,7 +31,6 @@ export default function MyProductsPage() {
         setError("Could not retrieve your products directory.");
       }
     } catch (err) {
-      console.error(err);
       setError(err?.response?.data?.message || "Server Error: Unable to fetch products.");
       toast.error(err?.response?.data?.message || "Failed to load products list.");
     } finally {

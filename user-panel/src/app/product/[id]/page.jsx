@@ -26,7 +26,6 @@ export default function ProductDetailPage({ params }) {
           setErrorMsg("Failed to retrieve product details.");
         }
       } catch (err) {
-        console.error(err);
         setErrorMsg("Product not found or network connection issues.");
       } finally {
         setLoading(false);

@@ -158,7 +158,7 @@ const collectionController = {
   // GET Collections
   getCollections: async (req, res) => {
     try {
-      const collections = await CollectionValue.find().sort({ order: 1 });
+      const collections = await CollectionValue.find().sort({ order: 1 }).lean();
       return res.status(HTTP_CODES.OK).json({
         success: true,
         collections,
@@ -183,7 +183,8 @@ const collectionController = {
       const categories = await category
         .find(query)
         .populate("collectionName", "name slug")
-        .sort({ order: 1 });
+        .sort({ order: 1 })
+        .lean();
 
       return res.status(HTTP_CODES.OK).json({
         success: true,
@@ -213,7 +214,8 @@ const collectionController = {
           select: "name slug collection",
           populate: { path: "collectionName", select: "name slug" },
         })
-        .sort({ order: 1 });
+        .sort({ order: 1 })
+        .lean();
 
       return res.status(HTTP_CODES.OK).json({
         success: true,
