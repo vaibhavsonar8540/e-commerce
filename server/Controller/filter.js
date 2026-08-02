@@ -2,7 +2,7 @@ const User = require("../Model/userModel");
 const Product = require("../Model/productModel");
 const CollectionValue = require("../Model/collection/collectionModel");
 const categoryModel = require("../Model/collection/categoryModel");
-const SubcategoriesModel = require("../Model/collection/categoryModel")
+const SubcategoriesModel = require("../Model/collection/subCategoryModel");
 
 
 const filterController = {
@@ -37,36 +37,46 @@ const filterController = {
     }
   },
 
-  // 2. Search Product by Name, Collection, Category, and Subcategory
+  // 2. Search Product by Name, Collection, Category, Subcategory, Description, Brand
   searchProduct: async (req, res) => {
     try {
       const { query } = req.query;
 
-      if (!query) {
-        return res.status(400).json({
-          success: false,
-          message: "Search query param is required."
+      if (!query || !query.trim()) {
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          products: []
         });
       }
 
-      const matchRegex = { $regex: query, $options: "i" };
+      const cleanQuery = query.trim();
+      const matchRegex = { $regex: cleanQuery, $options: "i" };
 
-      // Look up matching Collections
-      const matchingCollections = await CollectionValue.find({ name: matchRegex });
+      // Look up matching Collections by name or slug
+      const matchingCollections = await CollectionValue.find({
+        $or: [{ name: matchRegex }, { slug: matchRegex }]
+      });
       const collectionIds = matchingCollections.map(c => c._id);
 
-      // Look up matching Categories
-      const matchingCategories = await categoryModel.find({ name: matchRegex });
+      // Look up matching Categories by name or slug
+      const matchingCategories = await categoryModel.find({
+        $or: [{ name: matchRegex }, { slug: matchRegex }]
+      });
       const categoryIds = matchingCategories.map(c => c._id);
 
-      // Look up matching Subcategories
-      const matchingSubCategories = await SubcategoriesModel.find({ name: matchRegex });
+      // Look up matching Subcategories by name or slug
+      const matchingSubCategories = await SubcategoriesModel.find({
+        $or: [{ name: matchRegex }, { slug: matchRegex }]
+      });
       const subCategoryIds = matchingSubCategories.map(sc => sc._id);
 
-      // Match products where product name matches or any of the foreign keys point to matched categories/collections
+      // Match products where product name, description, brand match OR foreign keys match
       const products = await Product.find({
         $or: [
           { productName: matchRegex },
+          { description: matchRegex },
+          { brand: matchRegex },
           { collections: { $in: collectionIds } },
           { category: { $in: categoryIds } },
           { subCategory: { $in: subCategoryIds } }

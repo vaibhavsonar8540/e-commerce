@@ -17,12 +17,12 @@ import {
   setIsModelOpen,
   setIsMobileMenuOpen,
   setIsCartOpen,
+  setFlashMessage,
 } from "@/redux/slices/commonSlice";
 import { Authentication } from "../DynamicComponents";
 import Cookies from "js-cookie";
 import { logout } from "@/redux/slices/authSlice";
 import CartDrawer from "./cartDrawer";
-import { toast } from "react-toastify";
 
 const Header = () => {
   const headerRef = useRef();
@@ -63,6 +63,7 @@ const Header = () => {
     headerHeight,
     cart,
     wishlist,
+    flashMessage,
   } = useSelector((state) => state.common);
 
   const cartCount = cart?.items?.length || (Array.isArray(cart) ? cart.length : 0);
@@ -72,11 +73,16 @@ const Header = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
   const profileMobileRef = useRef(null);
-  const searchRef = useRef(null);
+
+  const searchDesktopRef = useRef(null);
+  const searchMobileRef = useRef(null);
   const searchToggleRef = useRef(null);
   const searchToggleMobileRef = useRef(null);
+  const searchInputDesktopRef = useRef(null);
+  const searchInputMobileRef = useRef(null);
 
   const toggleSearch = (e) => {
+    e.preventDefault();
     e.stopPropagation();
     setIsSearchOpen((prev) => !prev);
   };
@@ -88,6 +94,16 @@ const Header = () => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
 
   const hoverClassname = "text-primary cursor-pointer";
+
+  // Flash message auto-hide effect (2.5 seconds)
+  useEffect(() => {
+    if (flashMessage) {
+      const timer = setTimeout(() => {
+        dispatch(setFlashMessage(null));
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [flashMessage, dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -106,21 +122,34 @@ const Header = () => {
 
   useEffect(() => {
     const handleClickOutsideSearch = (e) => {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(e.target) &&
-        searchToggleRef.current &&
-        !searchToggleRef.current.contains(e.target) &&
-        searchToggleMobileRef.current &&
-        !searchToggleMobileRef.current.contains(e.target)
-      ) {
+      const isInsideDesktop = searchDesktopRef.current && searchDesktopRef.current.contains(e.target);
+      const isInsideMobile = searchMobileRef.current && searchMobileRef.current.contains(e.target);
+      const isToggleDesktop = searchToggleRef.current && searchToggleRef.current.contains(e.target);
+      const isToggleMobile = searchToggleMobileRef.current && searchToggleMobileRef.current.contains(e.target);
+
+      if (!isInsideDesktop && !isInsideMobile && !isToggleDesktop && !isToggleMobile) {
         setIsSearchOpen(false);
       }
     };
+
     if (isSearchOpen) {
       document.addEventListener("mousedown", handleClickOutsideSearch);
+      document.addEventListener("touchstart", handleClickOutsideSearch);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutsideSearch);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutsideSearch);
+      document.removeEventListener("touchstart", handleClickOutsideSearch);
+    };
+  }, [isSearchOpen]);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      const timer = setTimeout(() => {
+        if (searchInputDesktopRef.current) searchInputDesktopRef.current.focus();
+        if (searchInputMobileRef.current) searchInputMobileRef.current.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
   }, [isSearchOpen]);
 
   useEffect(() => {
@@ -173,18 +202,27 @@ const Header = () => {
 
   const handleLogout = () => {
     Cookies.remove("token");
-
     dispatch(logout());
-
     setIsProfileOpen(false);
-
-    toast.success("Logged out successfully");
-
+    dispatch(setFlashMessage({ type: "success", message: "Logged out successfully" }));
     router.push("/");
   };
 
   return (
     <>
+      {/* FLASH MESSAGE BANNER (Disappears in 2-3 seconds) */}
+      {flashMessage && (
+        <div
+          className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold flex items-center gap-3 transition-all duration-300 ${
+            flashMessage.type === "error"
+              ? "bg-red-600 text-white border-red-700"
+              : "bg-[#45220e] text-white border-[#34180a]"
+          }`}
+        >
+          <span>{flashMessage.message}</span>
+        </div>
+      )}
+
       {/* DESKTOP HEADER */}
       <header
         ref={headerRef}
@@ -331,31 +369,33 @@ const Header = () => {
         </section>
 
         {/* DESKTOP SEARCH BAR */}
-        <div ref={searchRef} className={`absolute left-0 right-0 z-20 border-b border-gray-200 bg-[#F8F8F8] transition-all duration-300 ease-in-out overflow-hidden shadow-sm ${isSearchOpen ? "top-full opacity-100 h-20 pointer-events-auto" : "top-0 opacity-0 h-0 pointer-events-none"}`}>
+        <div ref={searchDesktopRef} className={`absolute left-0 right-0 z-20 border-b border-gray-200 bg-[#F8F8F8] transition-all duration-300 ease-in-out overflow-hidden shadow-sm ${isSearchOpen ? "top-full opacity-100 h-20 pointer-events-auto" : "top-0 opacity-0 h-0 pointer-events-none"}`}>
           <div className="max-w-7xl mx-auto h-full flex items-center justify-center px-6">
             <form onSubmit={handleSearchSubmit} className="w-125 max-w-full flex items-center">
               <div className="relative w-full flex items-center">
                 <HiMiniMagnifyingGlass className="absolute left-3.5 text-gray-400 w-4 h-4 pointer-events-none z-10" />
                 <input
+                  ref={searchInputDesktopRef}
                   type="text"
-                  placeholder="Search products by list, category, collection name..."
+                  placeholder="Search products by collection, category, subcategory, name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-xl outline-none text-sm text-gray-700 placeholder:text-gray-400 pl-10 pr-28 py-2.5 transition focus:border-gray-400"
-                  autoFocus={isSearchOpen}
+                  className="w-full bg-white border border-gray-200 rounded-xl outline-none text-sm text-gray-700 placeholder:text-gray-400 pl-10 pr-32 py-2.5 transition focus:border-gray-400"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-24 text-xs font-bold text-gray-400 hover:text-black uppercase cursor-pointer z-10"
+                    className="absolute right-24 p-1 rounded-full text-gray-400 hover:text-black hover:bg-gray-100 transition cursor-pointer z-10 flex items-center justify-center"
+                    title="Clear search"
+                    aria-label="Clear search"
                   >
-                    Clear
+                    <HiX className="w-4 h-4" />
                   </button>
                 )}
                 <button
                   type="submit"
-                  className="absolute right-3 bg-black hover:bg-black text-white px-4 py-1.5 rounded-lg font-bold text-xs uppercase tracking-wider cursor-pointer"
+                  className="absolute right-2.5 bg-black hover:bg-gray-900 text-white px-4 py-1.5 rounded-lg font-bold text-xs uppercase tracking-wider cursor-pointer z-10"
                 >
                   Search
                 </button>
@@ -496,31 +536,33 @@ const Header = () => {
         </div>
 
         {/* MOBILE SEARCH BAR */}
-        <div ref={searchRef} className={`absolute left-0 right-0 z-20 border-b border-gray-200 bg-[#F8F8F8] transition-all duration-300 ease-in-out overflow-hidden shadow-sm ${isSearchOpen ? "top-full opacity-100 h-16 pointer-events-auto" : "top-0 opacity-0 h-0 pointer-events-none"}`}>
+        <div ref={searchMobileRef} className={`absolute left-0 right-0 z-20 border-b border-gray-200 bg-[#F8F8F8] transition-all duration-300 ease-in-out overflow-hidden shadow-sm ${isSearchOpen ? "top-full opacity-100 h-16 pointer-events-auto" : "top-0 opacity-0 h-0 pointer-events-none"}`}>
           <div className="w-full h-full flex items-center justify-center px-4">
             <form onSubmit={handleSearchSubmit} className="w-full max-w-125 flex items-center">
               <div className="relative w-full flex items-center">
                 <HiMiniMagnifyingGlass className="absolute left-3 text-gray-400 w-3.5 h-3.5 pointer-events-none z-10" />
                 <input
+                  ref={searchInputMobileRef}
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search products by collection, category, subcategory..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-xl outline-none text-xs text-gray-700 placeholder:text-gray-400 pl-8 pr-24 py-2 focus:border-gray-400"
-                  autoFocus={isSearchOpen}
+                  className="w-full bg-white border border-gray-200 rounded-xl outline-none text-xs text-gray-700 placeholder:text-gray-400 pl-8 pr-28 py-2 focus:border-gray-400"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-20 text-[10px] font-bold text-gray-400 hover:text-black uppercase cursor-pointer z-10"
+                    className="absolute right-22 p-1 rounded-full text-gray-400 hover:text-black hover:bg-gray-100 transition cursor-pointer z-10 flex items-center justify-center"
+                    title="Clear search"
+                    aria-label="Clear search"
                   >
-                    Clear
+                    <HiX className="w-3.5 h-3.5" />
                   </button>
                 )}
                 <button
                   type="submit"
-                  className="absolute right-3 bg-black hover:bg-black text-white px-3 py-1 rounded-md font-bold text-[11px] uppercase tracking-wider cursor-pointer"
+                  className="absolute right-2 bg-black hover:bg-gray-900 text-white px-3 py-1 rounded-md font-bold text-[11px] uppercase tracking-wider cursor-pointer z-10"
                 >
                   Search
                 </button>

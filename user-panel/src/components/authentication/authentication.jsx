@@ -45,7 +45,7 @@ const Authentication = ({ onClose }) => {
       setTimeout(() => {
         onClose(); // Modal Close
         router.push("/"); // Redirect
-      }, 900);
+      }, 2500);
     } catch (error) {
       setRegFlash({
         type: "error",
@@ -64,7 +64,7 @@ const Authentication = ({ onClose }) => {
       setTimeout(() => {
         onClose(); // Modal Close
         router.push("/"); // Redirect
-      }, 900);
+      }, 2500);
     } catch (error) {
       setLoginFlash({
         type: "error",

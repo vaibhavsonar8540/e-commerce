@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setIsModelOpen } from "@/redux/slices/commonSlice";
+import { setIsModelOpen, setFlashMessage } from "@/redux/slices/commonSlice";
 import { User, Mail, Phone, Calendar, LogOut, Edit2, Save, X, Key, Store, ArrowLeft, Trash2 } from "lucide-react";
 import { logout, updateUser } from "@/redux/slices/authSlice";
 import api from "@/utils/axiosInstant";
@@ -76,7 +76,7 @@ export default function ProfilePage() {
   const handleLogout = () => {
     Cookies.remove("token");
     dispatch(logout());
-    toast.success("Logged out successfully");
+    dispatch(setFlashMessage({ type: "success", message: "Logged out successfully" }));
     router.push("/");
   };
 

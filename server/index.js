@@ -61,6 +61,7 @@ app.use("/api/cart", cartRoute);
 app.use("/api/wishlist", wishlistRoute);
 app.use("/api/order", orderRoute);
 app.use("/api/search", filerRoute);
+app.use("/api/filer", filerRoute);
 app.use("/api/contact", contactRoute);
 app.use("/api/coupon", couponRoute);
 

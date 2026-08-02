@@ -12,7 +12,8 @@ const initialState = {
   isModelOpen : false,
   isCartOpen : false,
   cart: { items: [], subTotal: 0, discountApplied: 0, grandTotal: 0 },
-  wishlist: []
+  wishlist: [],
+  flashMessage: null
 };
 
 const commonSlice = createSlice({
@@ -74,6 +75,10 @@ const commonSlice = createSlice({
       state.wishlist = action.payload
     },
 
+    setFlashMessage : (state, action) => {
+      state.flashMessage = action.payload;
+    },
+
     // Optional: Reset Common State
     resetCommonState: () => initialState,
   },
@@ -92,6 +97,7 @@ export const {
   setIsCartOpen,
   setCart,
   setWishlist,
+  setFlashMessage,
   resetCommonState,
 } = commonSlice.actions;
 
