@@ -4,8 +4,7 @@ import { FaRegHeart, FaHeart } from "react-icons/fa";
 
 import { useDispatch, useSelector } from "react-redux";
 import { addToCartAction, addToWishlistAction, removeFromWishlistAction } from "@/redux/action/commonAction";
-import { setIsModelOpen } from "@/redux/slices/commonSlice";
-import { toast } from "react-toastify";
+import { setIsModelOpen, setFlashMessage } from "@/redux/slices/commonSlice";
 
 import { getMediaUrl, DEFAULT_PLACEHOLDER_IMAGE } from "@/utils/imageUrl";
 import { getImgAltTitle } from "@/utils/imgAltTitle";
@@ -37,12 +36,12 @@ const ProductCard = ({ data }) => {
     e.stopPropagation();
 
     if (!productId) {
-      toast.error("Invalid product details.");
+      dispatch(setFlashMessage({ type: "error", message: "Invalid product details." }));
       return;
     }
 
     if (!isAuthenticated) {
-      toast.info("Please sign-in to purchase items.");
+      dispatch(setFlashMessage({ type: "info", message: "Please sign-in to purchase items." }));
       dispatch(setIsModelOpen(true));
       return;
     }
@@ -52,15 +51,15 @@ const ProductCard = ({ data }) => {
     );
 
     if (isAlreadyInCart) {
-      toast.warning("Product is already in your cart!");
+      dispatch(setFlashMessage({ type: "warning", message: "Product is already in your cart!" }));
       return;
     }
 
     try {
       await dispatch(addToCartAction(productId, 1));
-      toast.success("Added to cart!");
+      dispatch(setFlashMessage({ type: "success", message: "Added to cart!" }));
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error adding item to cart.");
+      dispatch(setFlashMessage({ type: "error", message: err?.response?.data?.message || "Error adding item to cart." }));
     }
   };
 
@@ -69,12 +68,12 @@ const ProductCard = ({ data }) => {
     e.stopPropagation();
 
     if (!productId) {
-      toast.error("Invalid product details.");
+      dispatch(setFlashMessage({ type: "error", message: "Invalid product details." }));
       return;
     }
 
     if (!isAuthenticated) {
-      toast.info("Please sign-in to save items to wishlist.");
+      dispatch(setFlashMessage({ type: "info", message: "Please sign-in to save items to wishlist." }));
       dispatch(setIsModelOpen(true));
       return;
     }
@@ -82,11 +81,13 @@ const ProductCard = ({ data }) => {
     try {
       if (isWishlisted) {
         await dispatch(removeFromWishlistAction(productId));
+        dispatch(setFlashMessage({ type: "success", message: "Removed from wishlist!" }));
       } else {
         await dispatch(addToWishlistAction(productId));
+        dispatch(setFlashMessage({ type: "success", message: "Added to wishlist!" }));
       }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error updating wishlist.");
+      dispatch(setFlashMessage({ type: "error", message: err?.response?.data?.message || "Error updating wishlist." }));
     }
   };
 

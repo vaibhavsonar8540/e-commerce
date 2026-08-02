@@ -18,51 +18,32 @@ import CustomImage from "../customImage";
 import Link from "next/link";
 import { Button, LinkButton } from "../Buttons";
 
+// Carousel images from assets/corosaul
+import electronicLg from "@/assets/corosaul/electronic-lg.webp";
+import electronicSmall from "@/assets/corosaul/electronic-small.webp";
+import fashionLg from "@/assets/corosaul/fashion-lg.webp";
+import fashionSmall from "@/assets/corosaul/fashion-small.webp";
+import homeDecoreLg from "@/assets/corosaul/home-decore-lg.webp";
+import homeDecoreSmall from "@/assets/corosaul/home-decore-small.webp";
+
 const heroSlides = [
   {
-    src: heroBanner,
-    mobileSrc: heroBanner2,
-    title: "Elevate Your Style",
-    desc: "Premium fashion and lifestyle essentials for every day.",
-    btnText: "Explore Collections",
+    src: fashionLg,
+    mobileSrc: fashionSmall,
+    altAttr: "Fashion Collection",
     href: "/collection/women",
-    variant: "whiteHover",
-    btnClassName: "font-medium !rounded-none text-xs sm:text-sm !py-2 !px-4 sm:!py-3 sm:!px-6",
-    contentClass: "absolute w-[90%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[22%] bottom-8 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto right-auto sm:right-8 md:right-10 lg:right-14 text-center sm:text-left",
-    titleClass: "text-white !font-playfair font-semibold text-lg xss:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight",
-    descClass: "text-white pt-1.5 sm:pt-3 pb-3 sm:pb-5 text-[11px] xss:text-xs sm:text-sm md:text-base font-medium line-clamp-2 sm:line-clamp-none",
-    altAttr: "home",
-    titleAttr: "home",
   },
   {
-    src: fashionBanner,
-    mobileSrc: fashion2,
-    title: "Discover Your Signature Style",
-    desc: "Upgrade your wardrobe with contemporary trends and premium fabrics.",
-    btnText: "Shop Men's Collection",
-    href: "/collection/men",
-    variant: "whiteHover",
-    btnClassName: "font-medium !rounded-none text-xs sm:text-sm !py-2 !px-4 sm:!py-3 sm:!px-6",
-    contentClass: "absolute w-[90%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[25%] bottom-8 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto right-auto sm:right-8 md:right-10 lg:right-14 text-center sm:text-left",
-    titleClass: "text-white !font-playfair font-semibold text-lg xss:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight",
-    descClass: "text-white pt-1.5 sm:pt-3 pb-3 sm:pb-5 text-[11px] xss:text-xs sm:text-sm md:text-base font-medium line-clamp-2 sm:line-clamp-none",
-    altAttr: "fashion",
-    titleAttr: "fashion",
-  },
-  {
-    src: electronicBannerForBigScreen,
-    mobileSrc: electronicBannerForSmallScreen,
-    title: "Upgrade Your Tech Today",
-    desc: "Discover the latest electronics with premium quality and unbeatable value.",
-    btnText: "Explore Tech",
+    src: electronicLg,
+    mobileSrc: electronicSmall,
+    altAttr: "Electronics Collection",
     href: "/collection/electronics",
-    variant: "whiteHover",
-    btnClassName: "font-medium !rounded-none text-xs sm:text-sm !py-2 !px-4 sm:!py-3 sm:!px-6",
-    contentClass: "absolute w-[90%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[25%] bottom-8 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto right-auto sm:right-8 md:right-10 lg:right-14 text-center sm:text-left",
-    titleClass: "text-white !font-playfair font-semibold text-lg xss:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight",
-    descClass: "text-white pt-1.5 sm:pt-3 pb-3 sm:pb-5 text-[11px] xss:text-xs sm:text-sm md:text-base font-medium line-clamp-2 sm:line-clamp-none",
-    altAttr: "electronics",
-    titleAttr: "electronics",
+  },
+  {
+    src: homeDecoreLg,
+    mobileSrc: homeDecoreSmall,
+    altAttr: "Home & Decor Collection",
+    href: "/collection/home-and-kitchen",
   },
 ];
 
@@ -106,7 +87,7 @@ const HomePage = () => {
 
   return (
     <div>
-      <section>
+      <section className="bg-gray-100">
         <HeroCarousel slides={heroSlides} autoPlayInterval={4500} />
       </section>
 

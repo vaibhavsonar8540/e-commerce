@@ -3,7 +3,7 @@
 import logo from "@/../public/images/logo.png";
 import CustomImage from "../customImage";
 import { HiMiniMagnifyingGlass } from "react-icons/hi2";
-import { FaRegHeart, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaRegHeart, FaChevronDown, FaChevronUp, FaExclamationTriangle, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaStore } from "react-icons/fa";
 import { RiUser3Line } from "react-icons/ri";
 import { LuShoppingCart } from "react-icons/lu";
 import { HiOutlineMenuAlt3, HiX } from "react-icons/hi";
@@ -210,16 +210,50 @@ const Header = () => {
 
   return (
     <>
-      {/* FLASH MESSAGE BANNER (Disappears in 2-3 seconds) */}
+      {/* FLASH MESSAGE BANNER (Floating banner for all screens) */}
       {flashMessage && (
         <div
-          className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold flex items-center gap-3 transition-all duration-300 ${
-            flashMessage.type === "error"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[92%] sm:w-auto min-w-[300px] max-w-md px-4 py-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-3 transition-all duration-300 ${
+            typeof flashMessage === "object" && flashMessage?.type === "warning"
+              ? "bg-[#f59e0b] text-black border-amber-600"
+              : typeof flashMessage === "object" && flashMessage?.type === "error"
               ? "bg-red-600 text-white border-red-700"
+              : typeof flashMessage === "object" && flashMessage?.type === "success"
+              ? "bg-emerald-600 text-white border-emerald-700"
               : "bg-[#45220e] text-white border-[#34180a]"
           }`}
         >
-          <span>{flashMessage.message}</span>
+          <div className="flex items-center gap-3 pr-6">
+            {typeof flashMessage === "object" && flashMessage?.type === "warning" ? (
+              <div className="bg-black text-[#f59e0b] p-1.5 rounded-xl shrink-0">
+                <FaExclamationTriangle className="w-4 h-4" />
+              </div>
+            ) : typeof flashMessage === "object" && flashMessage?.type === "error" ? (
+              <div className="bg-white/20 text-white p-1.5 rounded-xl shrink-0">
+                <FaExclamationCircle className="w-4 h-4" />
+              </div>
+            ) : typeof flashMessage === "object" && flashMessage?.type === "success" ? (
+              <div className="bg-white/20 text-white p-1.5 rounded-xl shrink-0">
+                <FaCheckCircle className="w-4 h-4" />
+              </div>
+            ) : (
+              <div className="bg-white/20 text-white p-1.5 rounded-xl shrink-0">
+                <FaInfoCircle className="w-4 h-4" />
+              </div>
+            )}
+            <span className="text-xs sm:text-sm font-extrabold leading-snug">
+              {typeof flashMessage === "object" ? flashMessage.message : flashMessage}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => dispatch(setFlashMessage(null))}
+            className="absolute top-2.5 right-2.5 p-1 rounded-full hover:bg-black/10 transition cursor-pointer"
+            aria-label="Close"
+          >
+            <HiX className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -716,6 +750,39 @@ const Header = () => {
                   </div>
                 );
               })}
+
+            {/* WISHLIST (Without icon, at the end of collections list) */}
+            <div className="py-3">
+              <div className="flex justify-between items-center text-[15px] font-medium text-gray-800 uppercase tracking-wide">
+                <Link
+                  href="/wishlist"
+                  onClick={() => dispatch(setIsMobileMenuOpen(false))}
+                  className="hover:text-primary transition-colors"
+                >
+                  Wishlist
+                </Link>
+                {wishlistCount > 0 && (
+                  <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {wishlistCount}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* BECOME A SELLER (Below Wishlist at the bottom) */}
+            {user?.role?.toLowerCase() !== "seller" && user?.role?.toLowerCase() !== "admin" && (
+              <div className="py-3">
+                <div className="flex justify-between items-center text-[15px] font-medium text-gray-800 uppercase tracking-wide">
+                  <Link
+                    href="/seller"
+                    onClick={() => dispatch(setIsMobileMenuOpen(false))}
+                    className="hover:text-primary transition-colors"
+                  >
+                    Become a Seller
+                  </Link>
+                </div>
+              </div>
+            )}
           </nav>
         </div>
       )}

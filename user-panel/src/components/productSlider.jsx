@@ -79,21 +79,21 @@ export default function ProductSlider({ title, subtitle, products = [], collecti
       {/* Slider Header */}
       <div className="flex items-end justify-between border-b border-[#47230B]/10 pb-3 px-1">
         <div>
-          <h2 className="text-lg md:text-2xl font-extrabold text-[#47230B] font-playfair tracking-tight capitalize">
+          <h2 className="text-base sm:text-lg md:text-2xl font-extrabold text-[#47230B] font-playfair tracking-tight capitalize">
             {title}
           </h2>
           {subtitle && (
-            <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
+            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">{subtitle}</p>
           )}
         </div>
 
         {/* See More Link (Replaced old arrow buttons) */}
         <Link
           href={targetUrl}
-          className="text-sm font-bold text-[#47230B] hover:text-black hover:underline transition flex items-center gap-1.5 cursor-pointer pb-1 group shrink-0"
+          className="text-xs sm:text-sm font-bold text-[#47230B] hover:text-black hover:underline transition flex items-center gap-1 sm:gap-1.5 cursor-pointer pb-0.5 sm:pb-1 group shrink-0"
         >
           <span>See More</span>
-          <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
+          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 group-hover:translate-x-1" />
         </Link>
       </div>
 

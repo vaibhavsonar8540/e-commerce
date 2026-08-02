@@ -257,8 +257,8 @@ export default function OrderPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             
-            {/* LEFT SIDE: SHIPPING FORM (Cols 7) */}
-            <div className="lg:col-span-7 bg-white border border-gray-200/85 p-5 sm:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm space-y-6">
+            {/* SHIPPING FORM (Cols 7 on Desktop, 2nd on Mobile) */}
+            <div className="order-2 lg:order-1 lg:col-span-7 bg-white border border-gray-200/85 p-5 sm:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm space-y-6">
               <div className="border-b border-gray-100 pb-4">
                 <h2 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2.5">
                   <MapPin size={20} className="text-black" />
@@ -499,8 +499,8 @@ export default function OrderPage() {
               </form>
             </div>
 
-            {/* RIGHT SIDE: ITEMS TO BUY & COUPON SUMMARY (Cols 5) */}
-            <div className="lg:col-span-5 bg-white border border-gray-200/85 p-5 sm:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm lg:sticky lg:top-8 space-y-6">
+            {/* ORDER SUMMARY (Cols 5 on Desktop, 1st on Mobile) */}
+            <div className="order-1 lg:order-2 lg:col-span-5 bg-white border border-gray-200/85 p-5 sm:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm lg:sticky lg:top-8 space-y-6">
               
               {/* Header */}
               <div className="border-b border-gray-100 pb-4 flex items-center justify-between">

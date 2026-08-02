@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { LinkButton } from "./Buttons";
 import CustomImage from "./customImage";
+import Link from "next/link";
 
 const HeroCarousel = ({
   slides = [],
@@ -23,7 +24,9 @@ const HeroCarousel = ({
 
   const prevSlide = useCallback(() => {
     if (!slides || slides.length === 0) return;
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + slides.length) % slides.length);
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + slides.length) % slides.length,
+    );
   }, [slides]);
 
   useEffect(() => {
@@ -61,7 +64,7 @@ const HeroCarousel = ({
 
   return (
     <div
-      className={`relative w-full overflow-hidden select-none group ${className}`}
+      className={`relative w-full overflow-hidden select-none group bg-gray-300 ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={handleTouchStart}
@@ -69,19 +72,14 @@ const HeroCarousel = ({
       onTouchEnd={handleTouchEnd}
     >
       {/* Slides Container */}
-      <div className="relative w-full h-full min-h-[380px] xss:min-h-[420px] sm:min-h-[480px] md:min-h-[550px] lg:min-h-[620px] xl:min-h-[680px]">
+      <div className="relative w-full overflow-hidden">
         {slides.map((slide, index) => {
           const isActive = index === currentIndex;
           const desktopSrc = slide.srcAttr || slide.src;
           const mobileSrc = slide.mobileSrc;
 
-          return (
-            <div
-              key={index}
-              className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
-                isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
-              }`}
-            >
+          const slideImages = (
+            <>
               {/* Desktop Image */}
               {desktopSrc && (
                 <CustomImage
@@ -89,9 +87,9 @@ const HeroCarousel = ({
                   altAttr={slide.altAttr || slide.title || "hero slide"}
                   titleAttr={slide.titleAttr || slide.title || "hero slide"}
                   containerClassName={
-                    mobileSrc ? "hidden lg:block w-full h-full" : "w-full h-full"
+                    mobileSrc ? "hidden lg:block w-full" : "w-full"
                   }
-                  className="w-full h-full object-cover"
+                  className="w-full h-[750px] object-fill block"
                 />
               )}
 
@@ -101,53 +99,79 @@ const HeroCarousel = ({
                   srcAttr={mobileSrc}
                   altAttr={slide.altAttr || slide.title || "hero slide"}
                   titleAttr={slide.titleAttr || slide.title || "hero slide"}
-                  containerClassName="block lg:hidden w-full h-full"
-                  className="w-full h-full object-cover"
+                  containerClassName="block lg:hidden w-full"
+                  className="w-full h-auto block"
                 />
               )}
+            </>
+          );
 
-              {/* Content Overlay */}
-              <div
-                className={
-                  slide.contentClass ||
-                  "absolute w-[90%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[25%] bottom-8 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto right-auto sm:right-8 md:right-10 lg:right-14 text-center sm:text-left z-20"
-                }
-              >
-                {slide.title && (
-                  <h1
-                    className={
-                      slide.titleClass ||
-                      "text-white !font-playfair font-semibold text-lg xss:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight drop-shadow-md"
-                    }
-                  >
-                    {slide.title}
-                  </h1>
-                )}
+          return (
+            <div
+              key={index}
+              className={`w-full transition-opacity duration-700 ease-in-out ${
+                index === 0 ? "relative" : "absolute inset-0 h-full"
+              } ${
+                isActive
+                  ? "opacity-100 z-10 pointer-events-auto"
+                  : "opacity-0 z-0 pointer-events-none"
+              }`}
+            >
+              {slide.href ? (
+                <Link
+                  href={slide.href}
+                  className="block w-full h-full cursor-pointer"
+                >
+                  {slideImages}
+                </Link>
+              ) : (
+                slideImages
+              )}
 
-                {slide.desc && (
-                  <p
-                    className={
-                      slide.descClass ||
-                      "text-white pt-1.5 sm:pt-3 pb-3 sm:pb-5 text-[11px] xss:text-xs sm:text-sm md:text-base font-medium line-clamp-2 sm:line-clamp-none drop-shadow"
-                    }
-                  >
-                    {slide.desc}
-                  </p>
-                )}
+              {/* Content Overlay (Rendered only if text/button provided) */}
+              {(slide.title || slide.desc || slide.btnText) && (
+                <div
+                  className={
+                    slide.contentClass ||
+                    "absolute w-[90%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[25%] bottom-8 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto right-auto sm:right-8 md:right-10 lg:right-14 text-center sm:text-left z-20"
+                  }
+                >
+                  {slide.title && (
+                    <h1
+                      className={
+                        slide.titleClass ||
+                        "text-white !font-playfair font-semibold text-lg xss:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight drop-shadow-md"
+                      }
+                    >
+                      {slide.title}
+                    </h1>
+                  )}
 
-                {slide.btnText && (
-                  <LinkButton
-                    className={
-                      slide.btnClassName ||
-                      "font-medium !rounded-none text-xs sm:text-sm !py-2 !px-4 sm:!py-3 sm:!px-6 shadow-md"
-                    }
-                    href={slide.href || "/collection"}
-                    variant={slide.variant || "whiteHover"}
-                  >
-                    {slide.btnText}
-                  </LinkButton>
-                )}
-              </div>
+                  {slide.desc && (
+                    <p
+                      className={
+                        slide.descClass ||
+                        "text-white pt-1.5 sm:pt-3 pb-3 sm:pb-5 text-[11px] xss:text-xs sm:text-sm md:text-base font-medium line-clamp-2 sm:line-clamp-none drop-shadow"
+                      }
+                    >
+                      {slide.desc}
+                    </p>
+                  )}
+
+                  {slide.btnText && (
+                    <LinkButton
+                      className={
+                        slide.btnClassName ||
+                        "font-medium !rounded-none text-xs sm:text-sm !py-2 !px-4 sm:!py-3 sm:!px-6 shadow-md"
+                      }
+                      href={slide.href || "/collection"}
+                      variant={slide.variant || "whiteHover"}
+                    >
+                      {slide.btnText}
+                    </LinkButton>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
