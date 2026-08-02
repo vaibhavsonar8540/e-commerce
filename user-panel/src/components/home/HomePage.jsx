@@ -2,7 +2,7 @@
 
 import heroBanner from "@/assets/home/heroBanner.webp";
 import heroBanner2 from "@/assets/home/hero.webp";
-import HeroBanner from "@/components/heroBanner";
+import HeroCarousel from "@/components/heroCarousel";
 import KeyFeatures from "@/components/keyFeatures";
 import OtherCollection from "@/components/otherCollection";
 import MarqueeComponent from "@/components/marqueeComponent";
@@ -17,6 +17,54 @@ import electronicBannerForSmallScreen from "@/assets/home/electronicBannerSmallS
 import CustomImage from "../customImage";
 import Link from "next/link";
 import { Button, LinkButton } from "../Buttons";
+
+const heroSlides = [
+  {
+    src: heroBanner,
+    mobileSrc: heroBanner2,
+    title: "Elevate Your Style",
+    desc: "Premium fashion and lifestyle essentials for every day.",
+    btnText: "Explore Collections",
+    href: "/collection/women",
+    variant: "whiteHover",
+    btnClassName: "font-medium !rounded-none text-xs sm:text-sm !py-2 !px-4 sm:!py-3 sm:!px-6",
+    contentClass: "absolute w-[90%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[22%] bottom-8 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto right-auto sm:right-8 md:right-10 lg:right-14 text-center sm:text-left",
+    titleClass: "text-white !font-playfair font-semibold text-lg xss:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight",
+    descClass: "text-white pt-1.5 sm:pt-3 pb-3 sm:pb-5 text-[11px] xss:text-xs sm:text-sm md:text-base font-medium line-clamp-2 sm:line-clamp-none",
+    altAttr: "home",
+    titleAttr: "home",
+  },
+  {
+    src: fashionBanner,
+    mobileSrc: fashion2,
+    title: "Discover Your Signature Style",
+    desc: "Upgrade your wardrobe with contemporary trends and premium fabrics.",
+    btnText: "Shop Men's Collection",
+    href: "/collection/men",
+    variant: "whiteHover",
+    btnClassName: "font-medium !rounded-none text-xs sm:text-sm !py-2 !px-4 sm:!py-3 sm:!px-6",
+    contentClass: "absolute w-[90%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[25%] bottom-8 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto right-auto sm:right-8 md:right-10 lg:right-14 text-center sm:text-left",
+    titleClass: "text-white !font-playfair font-semibold text-lg xss:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight",
+    descClass: "text-white pt-1.5 sm:pt-3 pb-3 sm:pb-5 text-[11px] xss:text-xs sm:text-sm md:text-base font-medium line-clamp-2 sm:line-clamp-none",
+    altAttr: "fashion",
+    titleAttr: "fashion",
+  },
+  {
+    src: electronicBannerForBigScreen,
+    mobileSrc: electronicBannerForSmallScreen,
+    title: "Upgrade Your Tech Today",
+    desc: "Discover the latest electronics with premium quality and unbeatable value.",
+    btnText: "Explore Tech",
+    href: "/collection/electronics",
+    variant: "whiteHover",
+    btnClassName: "font-medium !rounded-none text-xs sm:text-sm !py-2 !px-4 sm:!py-3 sm:!px-6",
+    contentClass: "absolute w-[90%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[25%] bottom-8 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto right-auto sm:right-8 md:right-10 lg:right-14 text-center sm:text-left",
+    titleClass: "text-white !font-playfair font-semibold text-lg xss:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight",
+    descClass: "text-white pt-1.5 sm:pt-3 pb-3 sm:pb-5 text-[11px] xss:text-xs sm:text-sm md:text-base font-medium line-clamp-2 sm:line-clamp-none",
+    altAttr: "electronics",
+    titleAttr: "electronics",
+  },
+];
 
 const HomePage = () => {
   const [menProducts, setMenProducts] = useState([]);
@@ -59,21 +107,7 @@ const HomePage = () => {
   return (
     <div>
       <section>
-        <HeroBanner
-          src={heroBanner}
-          mobileSrc={heroBanner2}
-          title="Elevate Your Style"
-          desc="Premium fashion and lifestyle essentials for every day."
-          btnText="Explore Collections"
-          btnClassName="font-medium !rounded-none text-xs sm:text-sm !py-2 !px-4 sm:!py-3 sm:!px-6"
-          variant="whiteHover"
-          contentClass="absolute w-[90%] sm:w-[50%] md:w-[35%] lg:w-[28%] xl:w-[22%] bottom-8 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto right-auto sm:right-8 md:right-10 lg:right-14 text-center sm:text-left"
-          titleClass="text-white !font-playfair font-semibold text-lg xss:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight"
-          descClass="text-white pt-1.5 sm:pt-3 pb-3 sm:pb-5 text-[11px] xss:text-xs sm:text-sm md:text-base font-medium line-clamp-2 sm:line-clamp-none"
-          href="/collection/women"
-          altAttr="home"
-          titleAttr="home"
-        />
+        <HeroCarousel slides={heroSlides} autoPlayInterval={4500} />
       </section>
 
       <MarqueeComponent />
