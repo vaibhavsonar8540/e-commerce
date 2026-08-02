@@ -119,6 +119,7 @@ const orderController = {
             }
 
             const discount = Number(req.body.discountAmount) || 0;
+            const appliedCouponCode = req.body.couponCode || "";
             if (discount > 0) {
                 totalAmount = Math.max(0, totalAmount - discount);
             }
@@ -129,16 +130,19 @@ const orderController = {
                 items: orderItems,
                 totalAmount, // Holds the safe final calculated value
                 shippingAddress,
+                couponCode: appliedCouponCode,
+                discountAmount: discount,
                 paymentStatus: "Paid",
                 orderStatus: "Processing",
                 paymentId: finalPaymentId
             }], { session });
 
-            // Deduct inventory stock
+            // Deduct inventory stock & track sales
             for (const item of cart.items) {
+                const prodId = item.productId._id || item.productId;
                 await Product.findByIdAndUpdate(
-                    item.productId._id, 
-                    { $inc: { stock: -item.quantity } },
+                    prodId, 
+                    { $inc: { stock: -item.quantity, totalSales: item.quantity } },
                     { session }
                 );
             }

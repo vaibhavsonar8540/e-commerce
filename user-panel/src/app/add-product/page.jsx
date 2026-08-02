@@ -324,7 +324,7 @@ export default function AddProducts() {
               <button
                 type="button"
                 onClick={() => window.history.back()}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow transition cursor-pointer"
+                className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-black bg-transparent transition cursor-pointer py-1"
               >
                 <ArrowLeft size={16} />
                 <span>Back</span>

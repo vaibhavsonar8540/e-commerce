@@ -219,25 +219,19 @@ export default function OrderPage() {
         <div className="flex flex-col gap-3 sm:gap-4 border-b border-gray-200/80 pb-4 sm:pb-6">
           <button
             onClick={() => router.push("/cart")}
-            className="flex items-center gap-2 self-start px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 rounded-xl shadow-xs hover:shadow transition cursor-pointer"
+            className="flex items-center gap-2 self-start text-xs sm:text-sm font-semibold text-gray-700 hover:text-black bg-transparent transition cursor-pointer py-1"
           >
             <ArrowLeft size={16} />
             <span>Back to Cart</span>
           </button>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight font-playfair">
-                Checkout & Shipping
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                Enter your delivery details and proceed directly to payment.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-3.5 py-1.5 rounded-full text-xs font-bold self-start sm:self-auto">
-              <ShieldCheck size={16} />
-              <span>100% Secure Checkout</span>
-            </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight font-playfair">
+              Checkout & Shipping
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              Enter your delivery details and proceed directly to payment.
+            </p>
           </div>
         </div>
 

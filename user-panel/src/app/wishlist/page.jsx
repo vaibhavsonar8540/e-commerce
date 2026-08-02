@@ -48,7 +48,7 @@ export default function WishlistPage() {
         <div className="flex flex-col gap-4 border-b border-gray-200/80 pb-6">
           <button
             onClick={() => window.history.back()}
-            className="flex items-center gap-2 self-start px-4 py-2 text-sm font-semibold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow transition cursor-pointer"
+            className="flex items-center gap-2 self-start text-sm font-semibold text-gray-700 hover:text-black bg-transparent transition cursor-pointer py-1"
           >
             <ArrowLeft size={16} />
             <span>Back</span>

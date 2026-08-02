@@ -24,7 +24,6 @@ export default function CartPage() {
     const newQty = currentQty + delta;
     try {
       await dispatch(updateCartQtyAction(productId, newQty));
-      toast.success("Cart updated.");
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to update item quantity.");
     }
@@ -71,7 +70,7 @@ export default function CartPage() {
         <div className="flex flex-col gap-4 border-b border-gray-200/80 pb-6">
           <button
             onClick={() => window.history.back()}
-            className="flex items-center gap-2 self-start px-4 py-2 text-sm font-semibold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow transition cursor-pointer"
+            className="flex items-center gap-2 self-start text-sm font-semibold text-gray-700 hover:text-black bg-transparent transition cursor-pointer py-1"
           >
             <ArrowLeft size={16} />
             <span>Back</span>
@@ -131,15 +130,19 @@ export default function CartPage() {
                       />
                     </div>
 
-                    <div className="grow min-w-0 pr-8">
-                      <h3 className="text-sm font-bold text-gray-800 line-clamp-1 capitalize">
-                        {prod.productName}
-                      </h3>
-                      <p className="text-xs text-gray-400 font-semibold mt-0.5">
-                        Stock: {prod.stock > 0 ? `${prod.stock} units` : "Out of stock"}
-                      </p>
+                    <div className="grow min-w-0 flex flex-col justify-between self-stretch py-1">
+                      {/* Row 1: Product Name & Price in right corner */}
+                      <div className="flex items-center justify-between gap-4">
+                        <h3 className="text-sm sm:text-base font-bold text-gray-800 line-clamp-1 capitalize">
+                          {prod.productName}
+                        </h3>
+                        <span className="text-sm sm:text-base font-extrabold text-black shrink-0">
+                          ₹{item.itemTotal}
+                        </span>
+                      </div>
 
-                      <div className="flex items-center gap-4 mt-3">
+                      {/* Row 2: Quantity Selector + Delete Button */}
+                      <div className="flex items-center gap-3 mt-2">
                         {/* Quantity Selector */}
                         <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50/50 p-1">
                           <button
@@ -161,23 +164,17 @@ export default function CartPage() {
                           </button>
                         </div>
 
-                        {/* Price Calculations */}
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xs font-semibold text-gray-400">Total:</span>
-                          <span className="text-sm font-extrabold text-black">
-                            ₹{item.itemTotal}
-                          </span>
-                        </div>
+                        {/* Delete Item Button after quantity */}
+                        <button
+                          onClick={() => handleRemoveItem(prod._id)}
+                          className="p-2 rounded-xl text-gray-450 hover:text-red-600 hover:bg-red-50/50 transition cursor-pointer"
+                          title="Remove item"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
 
-                    {/* Delete Item Button */}
-                    <button
-                      onClick={() => handleRemoveItem(prod._id)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl text-gray-450 hover:text-red-600 hover:bg-red-50/50 transition cursor-pointer"
-                    >
-                      <Trash2 size={16} />
-                    </button>
                   </div>
                 );
               })}

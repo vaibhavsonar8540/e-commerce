@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCartAction } from "@/redux/action/commonAction";
-import { setIsModelOpen, setIsCartOpen } from "@/redux/slices/commonSlice";
+import { setIsModelOpen } from "@/redux/slices/commonSlice";
 import {
   ShoppingCart,
   Zap,
@@ -106,7 +106,6 @@ export default function ProductDetail({ product }) {
 
     if (isAlreadyInCart) {
       toast.warning("Product is already in your cart!");
-      dispatch(setIsCartOpen(true));
       return;
     }
 
@@ -114,7 +113,6 @@ export default function ProductDetail({ product }) {
     try {
       await dispatch(addToCartAction(product._id, 1));
       toast.success("Added to cart!");
-      dispatch(setIsCartOpen(true));
     } catch (err) {
       toast.error(err?.response?.data?.message || "Error adding item to cart.");
     } finally {

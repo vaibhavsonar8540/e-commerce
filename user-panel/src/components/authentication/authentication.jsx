@@ -11,13 +11,16 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useDispatch } from "react-redux";
 import { createUser, loggedUser } from "@/redux/action/authAction";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
 
 const Authentication = ({ onClose }) => {
   const [value, setValue] = useState("1");
+  const [loginFlash, setLoginFlash] = useState(null);
+  const [regFlash, setRegFlash] = useState(null);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+    setLoginFlash(null);
+    setRegFlash(null);
   };
 
   const dispatch = useDispatch();
@@ -34,31 +37,39 @@ const Authentication = ({ onClose }) => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setRegFlash(null);
 
     try {
       await dispatch(createUser(regValue));
-
-      toast.success("Account Created Successfully");
-
-      onClose(); // Modal Close
-      router.push("/"); // Redirect
+      setRegFlash({ type: "success", message: "Account Created Successfully!" });
+      setTimeout(() => {
+        onClose(); // Modal Close
+        router.push("/"); // Redirect
+      }, 900);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Registration Failed");
+      setRegFlash({
+        type: "error",
+        message: error.response?.data?.message || "Registration Failed",
+      });
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoginFlash(null);
 
     try {
       await dispatch(loggedUser(loginValue));
-
-      toast.success("Login Successfully");
-
-      onClose(); // Modal Close
-      router.push("/"); // Redirect
+      setLoginFlash({ type: "success", message: "Login Successful!" });
+      setTimeout(() => {
+        onClose(); // Modal Close
+        router.push("/"); // Redirect
+      }, 900);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login Failed");
+      setLoginFlash({
+        type: "error",
+        message: error.response?.data?.message || "Login Failed",
+      });
     }
   };
 
@@ -142,6 +153,18 @@ const Authentication = ({ onClose }) => {
             </p>
 
             <form onSubmit={handleLogin} className="flex flex-col gap-3.5 mt-1">
+              {loginFlash && (
+                <div
+                  className={`px-3 py-2.5 rounded-xl text-xs font-semibold text-center transition-all ${
+                    loginFlash.type === "success"
+                      ? "bg-green-100 border border-green-300 text-green-900"
+                      : "bg-red-100 border border-red-300 text-red-900"
+                  }`}
+                >
+                  {loginFlash.message}
+                </div>
+              )}
+
               <input
                 type="email"
                 required
@@ -198,6 +221,18 @@ const Authentication = ({ onClose }) => {
             </p>
 
             <form className="flex flex-col gap-3 mt-1" onSubmit={handleRegister}>
+              {regFlash && (
+                <div
+                  className={`px-3 py-2.5 rounded-xl text-xs font-semibold text-center transition-all ${
+                    regFlash.type === "success"
+                      ? "bg-green-100 border border-green-300 text-green-900"
+                      : "bg-red-100 border border-red-300 text-red-900"
+                  }`}
+                >
+                  {regFlash.message}
+                </div>
+              )}
+
               <input
                 type="text"
                 required

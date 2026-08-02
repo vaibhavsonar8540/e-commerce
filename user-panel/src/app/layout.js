@@ -7,35 +7,40 @@ import localFont from "next/font/local";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const raleway = localFont({
+const openSans = localFont({
   src: [
     {
-      path: "../../public/fonts/Railway/Raleway-Light.ttf",
+      path: "../../public/fonts/OpenSans/OpenSans-Light.ttf",
       weight: "300",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Railway/Raleway-Regular.ttf",
+      path: "../../public/fonts/OpenSans/OpenSans-Regular.ttf",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Railway/Raleway-Medium.ttf",
+      path: "../../public/fonts/OpenSans/OpenSans-Medium.ttf",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Railway/Raleway-SemiBold.ttf",
+      path: "../../public/fonts/OpenSans/OpenSans-SemiBold.ttf",
       weight: "600",
       style: "normal",
     },
     {
-      path: "../../public/fonts/Railway/Raleway-Bold.ttf",
+      path: "../../public/fonts/OpenSans/OpenSans-Bold.ttf",
       weight: "700",
       style: "normal",
     },
+    {
+      path: "../../public/fonts/OpenSans/OpenSans-ExtraBold.ttf",
+      weight: "800",
+      style: "normal",
+    },
   ],
-  variable: "--font-raleway",
+  variable: "--font-opensans",
 });
 
 const playfairDisplay = localFont({
@@ -64,9 +69,13 @@ const playfairDisplay = localFont({
   variable: "--font-playfair",
 });
 
+import { DEFAULT_META } from "@/utils/pageMeta";
+
 export const metadata = {
-  title: "Veloza - E-Commerce Store",
-  description: "Your ultimate shopping destination",
+  title: DEFAULT_META.title,
+  description: DEFAULT_META.description,
+  keywords: DEFAULT_META.keywords,
+  openGraph: DEFAULT_META.openGraph,
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -87,7 +96,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${playfairDisplay.variable} h-full antialiased`}
+      className={`${openSans.variable} ${playfairDisplay.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
@@ -99,7 +108,7 @@ export default function RootLayout({ children }) {
               {children}
             </main>
             <Footer />
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+            <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar={false} />
           </Providers>
         </SmoothScroll>
       </body>

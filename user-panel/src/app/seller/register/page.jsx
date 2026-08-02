@@ -7,7 +7,6 @@ import * as Yup from "yup";
 import api from "@/utils/axiosInstant";
 import { updateUser } from "@/redux/slices/authSlice";
 import { setIsModelOpen } from "@/redux/slices/commonSlice";
-import { toast } from "react-toastify";
 import { Building, MapPin, BadgePercent, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -16,6 +15,7 @@ export default function SellerRegisterPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
+  const [flashMessage, setFlashMessage] = useState(null);
 
   const formik = useFormik({
     initialValues: {
@@ -34,6 +34,7 @@ export default function SellerRegisterPage() {
     }),
     onSubmit: async (values) => {
       setLoading(true);
+      setFlashMessage(null);
       try {
         const res = await api.post("/user/register-seller", {
           email: values.email || user?.email,
@@ -43,12 +44,17 @@ export default function SellerRegisterPage() {
         });
 
         if (res.data.success) {
-          toast.success("Seller account setup complete!");
+          setFlashMessage({ type: "success", message: "Seller account setup complete!" });
           dispatch(updateUser(res.data.user));
-          router.push("/add-product");
+          setTimeout(() => {
+            router.push("/add-product");
+          }, 1000);
         }
       } catch (err) {
-        toast.error(err?.response?.data?.message || "Failed to submit business details.");
+        setFlashMessage({
+          type: "error",
+          message: err?.response?.data?.message || "Failed to submit business details.",
+        });
       } finally {
         setLoading(false);
       }
@@ -92,6 +98,17 @@ export default function SellerRegisterPage() {
         </div>
 
         <form onSubmit={formik.handleSubmit} className="space-y-6">
+          {flashMessage && (
+            <div
+              className={`p-3.5 rounded-xl text-sm font-semibold text-center transition-all ${
+                flashMessage.type === "success"
+                  ? "bg-green-100 border border-green-300 text-green-900"
+                  : "bg-red-100 border border-red-300 text-red-900"
+              }`}
+            >
+              {flashMessage.message}
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">

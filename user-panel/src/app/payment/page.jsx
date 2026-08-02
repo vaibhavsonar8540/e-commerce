@@ -233,7 +233,7 @@ export default function PaymentPage() {
         <div className="flex flex-col gap-3 sm:gap-4 border-b border-gray-200/80 pb-4 sm:pb-6">
           <button
             onClick={() => router.push("/order")}
-            className="flex items-center gap-2 self-start px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 rounded-xl shadow-xs hover:shadow transition cursor-pointer"
+            className="flex items-center gap-2 self-start text-xs sm:text-sm font-semibold text-gray-700 hover:text-black bg-transparent transition cursor-pointer py-1"
           >
             <ArrowLeft size={16} />
             <span>Edit Shipping Address</span>

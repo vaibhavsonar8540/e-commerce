@@ -228,7 +228,7 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between">
           <button
             onClick={() => window.history.back()}
-            className="flex items-center gap-2 px-4.5 py-2 bg-white border border-gray-200 text-gray-700 font-bold text-xs rounded-xl cursor-pointer hover:bg-gray-100 transition shadow-sm"
+            className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-black bg-transparent transition cursor-pointer py-1"
           >
             <ArrowLeft size={14} />
             <span>Back</span>

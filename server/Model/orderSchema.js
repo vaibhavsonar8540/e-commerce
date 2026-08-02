@@ -28,11 +28,18 @@ const orderSchema = new mongoose.Schema({
     },
 
     shippingAddress: {
-        street: { type: String, required: true },
-        city: { type: String, required: true },
-        state: { type: String, required: true },
-        postalCode: { type: String, required: true },
-        country: { type: String, required: true }
+        type: mongoose.Schema.Types.Mixed,
+        required: true
+    },
+
+    couponCode: {
+        type: String,
+        default: ""
+    },
+
+    discountAmount: {
+        type: Number,
+        default: 0
     },
 
     paymentStatus: {
