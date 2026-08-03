@@ -25,6 +25,8 @@ import fashionLg from "@/assets/corosaul/fashion-lg.webp";
 import fashionSmall from "@/assets/corosaul/fashion-small.webp";
 import homeDecoreLg from "@/assets/corosaul/home-decore-lg.webp";
 import homeDecoreSmall from "@/assets/corosaul/home-decore-small.webp";
+import beautyLg from "@/assets/corosaul/beauty-lg.webp";
+import beautySmall from "@/assets/corosaul/beauty-small.webp";
 
 const heroSlides = [
   {
@@ -32,6 +34,12 @@ const heroSlides = [
     mobileSrc: fashionSmall,
     altAttr: "Fashion Collection",
     href: "/collection/women",
+  },
+  {
+    src: beautyLg,
+    mobileSrc: beautySmall,
+    altAttr: "Beauty Collection",
+    href: "/collection/beauty",
   },
   {
     src: electronicLg,
