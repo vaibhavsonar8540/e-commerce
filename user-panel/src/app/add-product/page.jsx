@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import api from "@/utils/axiosInstant";
 import {
   ArrowLeft,
-  FileSpreadsheet,
   Image,
   Video,
   ChevronDown,
@@ -367,16 +366,6 @@ export default function AddProducts() {
 
         {/* Right Side: Form Containment */}
         <form className="lg:col-span-2 space-y-6" onSubmit={formik.handleSubmit}>
-          {/* Import Excel button on top of product form in right corner */}
-          <div className="flex justify-end mb-2">
-            <button
-              type="button"
-              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl shadow-md hover:shadow-lg transition cursor-pointer"
-            >
-              <FileSpreadsheet size={16} />
-              <span>Import Excel</span>
-            </button>
-          </div>
           {/* Card 1: Product Specifications */}
           <div className="bg-white rounded-3xl border border-gray-200/80 p-6 sm:p-8 shadow-sm space-y-6">
             <div className="border-b border-gray-100 pb-4">
