@@ -125,7 +125,7 @@ export default function Sitemap() {
               <h3 className="font-bold text-gray-800">Subcategories</h3>
             </div>
             
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+            <div className="space-y-4">
               {categories.map((cat) => {
                 const catSubs = subCategories.filter(
                   (sub) => sub.category?._id === cat._id || sub.category === cat._id

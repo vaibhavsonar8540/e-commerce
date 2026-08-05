@@ -115,15 +115,15 @@ export default function MyProductsPage() {
       <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom duration-300">
         
         {/* Top bar / Action items */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold text-[#45220e] font-playfair tracking-tight">Your Products</h1>
+        <div className="flex flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+          <div className="space-y-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#45220e] font-playfair tracking-tight">Your Products</h1>
             <p className="text-xs sm:text-sm text-gray-400">Manage and look up inventories offered under your account profile.</p>
           </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 self-start sm:self-auto">
             <button
               onClick={fetchMyProducts}
-              className="p-3 bg-white border border-gray-200 text-gray-600 rounded-xl hover:text-black hover:shadow-sm transition cursor-pointer"
+              className="p-2.5 sm:p-3 bg-white border border-gray-200 text-gray-600 rounded-xl hover:text-black hover:shadow-sm transition cursor-pointer"
               title="Refresh Catalog"
               disabled={loading}
             >
@@ -131,10 +131,11 @@ export default function MyProductsPage() {
             </button>
             <Link
               href="/add-product"
-              className="flex items-center justify-center gap-2 px-5 py-3 bg-[#45220e] hover:bg-[#34180a] text-white font-semibold text-sm rounded-xl cursor-pointer shadow-md hover:shadow-lg transition flex-1 sm:flex-none"
+              className="flex items-center justify-center gap-2 p-2.5 sm:px-5 sm:py-3 bg-[#45220e] hover:bg-[#34180a] text-white font-semibold text-sm rounded-xl cursor-pointer shadow-md hover:shadow-lg transition"
+              title="Create Product"
             >
-              <Plus size={16} />
-              <span>Create Product</span>
+              <Plus size={18} className="sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Create Product</span>
             </Link>
           </div>
         </div>
