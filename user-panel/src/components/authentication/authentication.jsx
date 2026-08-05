@@ -8,6 +8,7 @@ import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import { Eye, EyeOff } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { createUser, loggedUser } from "@/redux/action/authAction";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,9 @@ const Authentication = ({ onClose }) => {
   const [value, setValue] = useState("1");
   const [loginFlash, setLoginFlash] = useState(null);
   const [regFlash, setRegFlash] = useState(null);
+
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -179,19 +183,29 @@ const Authentication = ({ onClose }) => {
                 className="w-full rounded-xl border border-gray-300 px-4 py-2.5 sm:py-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
               />
 
-              <input
-                type="password"
-                required
-                value={loginValue.password}
-                onChange={(e) =>
-                  setLoginValue({
-                    ...loginValue,
-                    password: e.target.value,
-                  })
-                }
-                placeholder="Password"
-                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 sm:py-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-              />
+              <div className="relative w-full">
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  required
+                  value={loginValue.password}
+                  onChange={(e) =>
+                    setLoginValue({
+                      ...loginValue,
+                      password: e.target.value,
+                    })
+                  }
+                  placeholder="Password"
+                  className="w-full rounded-xl border border-gray-300 pl-4 pr-11 py-2.5 sm:py-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
 
               <button
                 type="submit"
@@ -275,19 +289,29 @@ const Authentication = ({ onClose }) => {
                 }
               />
 
-              <input
-                type="password"
-                required
-                placeholder="Password"
-                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                value={regValue.password}
-                onChange={(e) =>
-                  setRegValue({
-                    ...regValue,
-                    password: e.target.value,
-                  })
-                }
-              />
+              <div className="relative w-full">
+                <input
+                  type={showRegPassword ? "text" : "password"}
+                  required
+                  placeholder="Password"
+                  className="w-full rounded-xl border border-gray-300 pl-4 pr-11 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                  value={regValue.password}
+                  onChange={(e) =>
+                    setRegValue({
+                      ...regValue,
+                      password: e.target.value,
+                    })
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowRegPassword(!showRegPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showRegPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
 
               <button
                 type="submit"

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setIsModelOpen, setFlashMessage } from "@/redux/slices/commonSlice";
-import { User, Mail, Phone, Calendar, LogOut, Edit2, Save, X, Key, Store, ArrowLeft, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
+import { User, Mail, Phone, Calendar, LogOut, Edit2, Save, X, Key, Store, ArrowLeft, Trash2, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { logout, updateUser } from "@/redux/slices/authSlice";
 import api from "@/utils/axiosInstant";
 import Cookies from "js-cookie";
@@ -77,6 +77,9 @@ export default function ProfilePage() {
     newPassword: "",
     confirmPassword: "",
   });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Fetch logged in user details on mount to ensure fresh profile data
   useEffect(() => {
@@ -606,18 +609,28 @@ export default function ProfilePage() {
                 <form onSubmit={handlePasswordSubmit} className="space-y-4 max-w-md">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Current Password</label>
-                    <input
-                      type="password"
-                      value={passwordForm.currentPassword}
-                      onChange={(e) => {
-                        setPasswordForm({ ...passwordForm, currentPassword: e.target.value });
-                        if (errors.currentPassword) setErrors((prev) => ({ ...prev, currentPassword: null }));
-                      }}
-                      placeholder="••••••••"
-                      className={`w-full py-3 px-4 border rounded-xl outline-none transition text-sm ${
-                        errors.currentPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
-                      }`}
-                    />
+                    <div className="relative w-full">
+                      <input
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={passwordForm.currentPassword}
+                        onChange={(e) => {
+                          setPasswordForm({ ...passwordForm, currentPassword: e.target.value });
+                          if (errors.currentPassword) setErrors((prev) => ({ ...prev, currentPassword: null }));
+                        }}
+                        placeholder="••••••••"
+                        className={`w-full py-3 pl-4 pr-11 border rounded-xl outline-none transition text-sm ${
+                          errors.currentPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1 transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                     {errors.currentPassword && (
                       <p className="text-xs text-red-600 font-semibold mt-1">{errors.currentPassword}</p>
                     )}
@@ -625,18 +638,28 @@ export default function ProfilePage() {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">New Password</label>
-                    <input
-                      type="password"
-                      value={passwordForm.newPassword}
-                      onChange={(e) => {
-                        setPasswordForm({ ...passwordForm, newPassword: e.target.value });
-                        if (errors.newPassword) setErrors((prev) => ({ ...prev, newPassword: null }));
-                      }}
-                      placeholder="••••••••"
-                      className={`w-full py-3 px-4 border rounded-xl outline-none transition text-sm ${
-                        errors.newPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
-                      }`}
-                    />
+                    <div className="relative w-full">
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        value={passwordForm.newPassword}
+                        onChange={(e) => {
+                          setPasswordForm({ ...passwordForm, newPassword: e.target.value });
+                          if (errors.newPassword) setErrors((prev) => ({ ...prev, newPassword: null }));
+                        }}
+                        placeholder="••••••••"
+                        className={`w-full py-3 pl-4 pr-11 border rounded-xl outline-none transition text-sm ${
+                          errors.newPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1 transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                     {errors.newPassword && (
                       <p className="text-xs text-red-600 font-semibold mt-1">{errors.newPassword}</p>
                     )}
@@ -644,18 +667,28 @@ export default function ProfilePage() {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Confirm New Password</label>
-                    <input
-                      type="password"
-                      value={passwordForm.confirmPassword}
-                      onChange={(e) => {
-                        setPasswordForm({ ...passwordForm, confirmPassword: e.target.value });
-                        if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: null }));
-                      }}
-                      placeholder="••••••••"
-                      className={`w-full py-3 px-4 border rounded-xl outline-none transition text-sm ${
-                        errors.confirmPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
-                      }`}
-                    />
+                    <div className="relative w-full">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) => {
+                          setPasswordForm({ ...passwordForm, confirmPassword: e.target.value });
+                          if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: null }));
+                        }}
+                        placeholder="••••••••"
+                        className={`w-full py-3 pl-4 pr-11 border rounded-xl outline-none transition text-sm ${
+                          errors.confirmPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1 transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                     {errors.confirmPassword && (
                       <p className="text-xs text-red-600 font-semibold mt-1">{errors.confirmPassword}</p>
                     )}
