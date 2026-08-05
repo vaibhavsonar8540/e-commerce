@@ -84,7 +84,7 @@ const cartController = {
         try {
                         const cart = await Cart.findOne({ userId }).populate({
                 path: "items.productId",
-                select: "productName price discountedPrice images stock thumbnail"
+                select: "productName price discountPrice discountedPrice images stock thumbnail"
             });
 
             if (!cart || cart.items.length === 0) {
@@ -103,7 +103,11 @@ const cartController = {
                 const product = item.productId;
                 if (!product) continue;
 
-                const basePrice = product.discountedPrice || product.price;
+                const basePrice = (product.discountPrice != null && product.discountPrice > 0 && product.discountPrice < product.price)
+                    ? product.discountPrice
+                    : (product.discountedPrice != null && product.discountedPrice > 0 && product.discountedPrice < product.price)
+                        ? product.discountedPrice
+                        : product.price;
                 const itemTotal = basePrice * item.quantity; // Price multiplied by quantity
                 subTotal += itemTotal;
 

@@ -1,11 +1,14 @@
 import "./globals.css";
-import Header from "@/components/ui/header";
-import Footer from "@/components/ui/footer";
-import SmoothScroll from "@/components/smoothScroll";
 import Providers from "./Provider";
 import localFont from "next/font/local";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import {
+  DynamicHeader,
+  DynamicFooter,
+  DynamicSmoothScroll,
+  DynamicSplashScreen,
+} from "@/components/DynamicComponents";
 
 const openSans = localFont({
   src: [
@@ -90,8 +93,6 @@ export const metadata = {
 };
 
 
-import SplashScreen from "@/components/splashScreen";
-
 export default function RootLayout({ children }) {
   return (
     <html
@@ -100,17 +101,17 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <SmoothScroll>
+        <DynamicSmoothScroll>
           <Providers>
-            <SplashScreen />
-            <Header />
+            <DynamicSplashScreen />
+            <DynamicHeader />
             <main className="grow flex flex-col w-full">
               {children}
             </main>
-            <Footer />
+            <DynamicFooter />
             <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar={false} />
           </Providers>
-        </SmoothScroll>
+        </DynamicSmoothScroll>
       </body>
     </html>
   );

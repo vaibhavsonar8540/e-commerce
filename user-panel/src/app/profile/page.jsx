@@ -3,14 +3,41 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setIsModelOpen, setFlashMessage } from "@/redux/slices/commonSlice";
-import { User, Mail, Phone, Calendar, LogOut, Edit2, Save, X, Key, Store, ArrowLeft, Trash2 } from "lucide-react";
+import { User, Mail, Phone, Calendar, LogOut, Edit2, Save, X, Key, Store, ArrowLeft, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
 import { logout, updateUser } from "@/redux/slices/authSlice";
 import api from "@/utils/axiosInstant";
 import Cookies from "js-cookie";
-import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getMediaUrl, DEFAULT_PLACEHOLDER_IMAGE } from "@/utils/imageUrl";
+import * as Yup from "yup";
+
+// Yup validation schema for profile inputs
+const profileValidationSchema = Yup.object().shape({
+  fullname: Yup.string()
+    .trim()
+    .required("Full name is required")
+    .min(2, "Full name must be at least 2 characters"),
+  email: Yup.string()
+    .trim()
+    .required("Email address is required")
+    .email("Please enter a valid email address"),
+  phone: Yup.string()
+    .trim()
+    .required("Phone number is required")
+    .matches(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number"),
+});
+
+// Yup validation schema for password form
+const passwordValidationSchema = Yup.object().shape({
+  currentPassword: Yup.string().required("Current password is required"),
+  newPassword: Yup.string()
+    .required("New password is required")
+    .min(6, "New password must be at least 6 characters"),
+  confirmPassword: Yup.string()
+    .required("Confirm password is required")
+    .oneOf([Yup.ref("newPassword"), null], "New passwords do not match"),
+});
 
 export default function ProfilePage() {
   const dispatch = useDispatch();
@@ -20,8 +47,14 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile"); // profile, change-password, your-store
   const [isEditing, setIsEditing] = useState(false);
   const [fullname, setFullname] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [updating, setUpdating] = useState(false);
+
+  // Validation & status message state (replaces toast)
+  const [errors, setErrors] = useState({});
+  const [profileMessage, setProfileMessage] = useState(null); // { type: 'success' | 'error', text: string }
+  const [passwordMessage, setPasswordMessage] = useState(null);
 
   // Store products states
   const [products, setProducts] = useState([]);
@@ -38,17 +71,37 @@ export default function ProfilePage() {
   });
   const [editingProductSubmitting, setEditingProductSubmitting] = useState(false);
 
-  // Form states for password changes (UI ONLY)
+  // Form states for password changes
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
+  // Fetch logged in user details on mount to ensure fresh profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await api.get("/user/me");
+        if (response.data?.success && response.data?.user) {
+          dispatch(updateUser(response.data.user));
+        }
+      } catch (err) {
+        // catch silently
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchUserProfile();
+    }
+  }, [isAuthenticated, dispatch]);
+
+  // Sync inputs with user state
   useEffect(() => {
     if (user) {
-      setFullname(user.fullname || "");
-      setPhone(user.phone || "");
+      setFullname(user.fullname || user.name || "");
+      setEmail(user.email || "");
+      setPhone(user.phone || user.phoneNumber || user.mobile || "");
     }
   }, [user]);
 
@@ -80,46 +133,91 @@ export default function ProfilePage() {
     router.push("/");
   };
 
+  // Profile Save with Yup Validation & Red/Green status messages (No Toasts)
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!fullname.trim() || !phone.trim()) {
-      toast.error("Name and phone number cannot be empty.");
-      return;
-    }
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (!phoneRegex.test(phone)) {
-      toast.error("Please enter a valid 10-digit Indian phone number.");
-      return;
+    setErrors({});
+    setProfileMessage(null);
+
+    // 1. Validate inputs using Yup schema
+    try {
+      await profileValidationSchema.validate(
+        { fullname, email, phone },
+        { abortEarly: false }
+      );
+    } catch (yupErr) {
+      if (yupErr.inner) {
+        const formErrors = {};
+        yupErr.inner.forEach((err) => {
+          if (!formErrors[err.path]) {
+            formErrors[err.path] = err.message;
+          }
+        });
+        setErrors(formErrors);
+        setProfileMessage({
+          type: "error",
+          text: yupErr.errors[0] || "Please resolve the errors highlighted below.",
+        });
+        return;
+      }
     }
 
+    // 2. Submit API update
     setUpdating(true);
     try {
       const response = await api.put("/user/update-profile", { fullname, phone });
       if (response.data?.success) {
         dispatch(updateUser(response.data.user));
-        toast.success(response.data.message || "Profile updated successfully!");
+        setProfileMessage({
+          type: "success",
+          text: response.data.message || "Profile details updated successfully!",
+        });
         setIsEditing(false);
       } else {
-        toast.error("Failed to update profile details.");
+        setProfileMessage({
+          type: "error",
+          text: response.data?.message || "Failed to update profile details.",
+        });
       }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "An error occurred while updating profile.");
+      setProfileMessage({
+        type: "error",
+        text: err?.response?.data?.message || "An error occurred while updating profile.",
+      });
     } finally {
       setUpdating(false);
     }
   };
 
-  const handlePasswordSubmit = (e) => {
+  // Password Submit with Yup Validation
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      toast.error("All password fields are required.");
-      return;
+    setErrors({});
+    setPasswordMessage(null);
+
+    try {
+      await passwordValidationSchema.validate(passwordForm, { abortEarly: false });
+    } catch (yupErr) {
+      if (yupErr.inner) {
+        const formErrors = {};
+        yupErr.inner.forEach((err) => {
+          if (!formErrors[err.path]) {
+            formErrors[err.path] = err.message;
+          }
+        });
+        setErrors(formErrors);
+        setPasswordMessage({
+          type: "error",
+          text: yupErr.errors[0] || "Please correct the password fields.",
+        });
+        return;
+      }
     }
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error("New passwords do not match.");
-      return;
-    }
-    toast.info("Password update feature and validation API is coming soon!");
+
+    setPasswordMessage({
+      type: "success",
+      text: "Password verification submitted! Backend integration coming soon.",
+    });
     setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
   };
 
@@ -129,13 +227,10 @@ export default function ProfilePage() {
       try {
         const response = await api.delete(`/product/delete/${id}`);
         if (response.data?.success) {
-          toast.success("Product deleted successfully!");
           setProducts((prev) => prev.filter((p) => p._id !== id));
-        } else {
-          toast.error(response.data?.message || "Failed to delete product.");
         }
       } catch (err) {
-        toast.error("Error deleting product.");
+        // handle silently or inline
       }
     }
   };
@@ -156,7 +251,6 @@ export default function ProfilePage() {
   const handleProductEditSubmit = async (e) => {
     e.preventDefault();
     if (editingProductForm.discountPrice > editingProductForm.price) {
-      toast.error("Discount price cannot exceed original price.");
       return;
     }
 
@@ -164,15 +258,11 @@ export default function ProfilePage() {
     try {
       const response = await api.put(`/product/update/${editingProduct._id}`, editingProductForm);
       if (response.data?.success) {
-        toast.success("Product details updated successfully!");
         setEditingProduct(null);
-        // Refresh list
         fetchProducts();
-      } else {
-        toast.error(response.data?.message || "Failed to update product details.");
       }
     } catch (err) {
-      toast.error("Failed to edit product.");
+      // handle error
     } finally {
       setEditingProductSubmitting(false);
     }
@@ -215,7 +305,6 @@ export default function ProfilePage() {
     { id: "change-password", label: "Change Password", icon: Key },
   ];
 
-  // Conditional addition of "Your Store"
   if (user?.role === "seller" || user?.role === "admin") {
     menuItems.push({ id: "your-store", label: "Your Store", icon: Store });
   }
@@ -224,7 +313,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50/50 py-10 px-4 sm:px-8 lg:px-12">
       <div className="max-w-6xl mx-auto space-y-6">
         
-        {/* Top Header Row with dynamic total product counters */}
+        {/* Top Header Row */}
         <div className="flex items-center justify-between">
           <button
             onClick={() => window.history.back()}
@@ -233,14 +322,6 @@ export default function ProfilePage() {
             <ArrowLeft size={14} />
             <span>Back</span>
           </button>
-          
-          {(user?.role === "seller" || user?.role === "admin") && (
-            <div className="flex items-center gap-3">
-              <span className="text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-2 rounded-full font-bold shadow-sm">
-                Total Store Products: {products.length}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Dashboard Grid Wrapper */}
@@ -270,6 +351,8 @@ export default function ProfilePage() {
                       onClick={() => {
                         setActiveTab(item.id);
                         setIsEditing(false);
+                        setProfileMessage(null);
+                        setErrors({});
                       }}
                       className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition duration-200 cursor-pointer ${
                         isActive
@@ -303,6 +386,8 @@ export default function ProfilePage() {
             {/* Active tab content: PROFILE */}
             {activeTab === "profile" && (
               <div className="space-y-6 animate-fade-in">
+                
+                {/* Profile Header Row with Mobile-Optimized Icon Buttons */}
                 <div className="flex justify-between items-center border-b border-gray-100 pb-4">
                   <div>
                     <h3 className="text-lg font-bold text-gray-800">Account Details</h3>
@@ -311,92 +396,163 @@ export default function ProfilePage() {
                   <div>
                     {!isEditing ? (
                       <button
-                        onClick={() => setIsEditing(true)}
-                        className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl cursor-pointer hover:bg-gray-50 transition"
+                        type="button"
+                        onClick={() => {
+                          setIsEditing(true);
+                          setProfileMessage(null);
+                          setErrors({});
+                        }}
+                        className="flex items-center gap-1.5 p-2 sm:px-4 sm:py-2 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl cursor-pointer hover:bg-gray-50 transition"
+                        title="Edit Profile"
                       >
-                        <Edit2 size={13} />
-                        <span>Edit Profile</span>
+                        <Edit2 size={14} />
+                        <span className="hidden sm:inline">Edit Profile</span>
                       </button>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => {
                           setIsEditing(false);
-                          setFullname(user?.fullname || "");
-                          setPhone(user?.phone || "");
+                          setFullname(user?.fullname || user?.name || "");
+                          setEmail(user?.email || "");
+                          setPhone(user?.phone || user?.phoneNumber || "");
+                          setProfileMessage(null);
+                          setErrors({});
                         }}
-                        className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl cursor-pointer hover:bg-gray-50 transition"
+                        className="flex items-center gap-1.5 p-2 sm:px-4 sm:py-2 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl cursor-pointer hover:bg-gray-50 transition"
+                        title="Cancel"
                       >
-                        <X size={13} />
-                        <span>Cancel</span>
+                        <X size={14} />
+                        <span className="hidden sm:inline">Cancel</span>
                       </button>
                     )}
                   </div>
                 </div>
 
+                {/* Profile Position Warning/Error (Red) & Success (Green) Status Banner */}
+                {profileMessage && (
+                  <div
+                    className={`p-3.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-2 ${
+                      profileMessage.type === "success"
+                        ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                        : "bg-red-50 text-red-600 border border-red-200"
+                    }`}
+                  >
+                    {profileMessage.type === "success" ? (
+                      <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
+                    ) : (
+                      <AlertCircle size={16} className="shrink-0 text-red-600" />
+                    )}
+                    <span>{profileMessage.text}</span>
+                  </div>
+                )}
+
                 <form onSubmit={handleSave} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    {/* Full Name Input Field */}
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-450 shrink-0">
+                      <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-450 shrink-0 mt-0.5">
                         <User size={18} />
                       </div>
                       <div className="space-y-1 w-full">
-                        <p className="text-[10px] text-gray-400 uppercase font-black tracking-wide">Full Name</p>
-                        {!isEditing ? (
-                          <p className="text-sm sm:text-base font-semibold text-[#45220e] capitalize">{user?.fullname}</p>
-                        ) : (
-                          <input
-                            type="text"
-                            value={fullname}
-                            onChange={(e) => setFullname(e.target.value)}
-                            className="w-full py-2 px-3 border border-gray-200 rounded-xl outline-none focus:border-black transition text-sm font-semibold"
-                            required
-                          />
+                        <label className="text-[10px] text-gray-400 uppercase font-black tracking-wide block">Full Name</label>
+                        <input
+                          type="text"
+                          value={fullname}
+                          onChange={(e) => {
+                            setFullname(e.target.value);
+                            if (errors.fullname) setErrors((prev) => ({ ...prev, fullname: null }));
+                          }}
+                          disabled={!isEditing}
+                          placeholder="Enter full name"
+                          className={`w-full py-2.5 px-3.5 border rounded-xl outline-none text-sm font-semibold transition ${
+                            !isEditing
+                              ? "bg-gray-50/60 border-gray-200/80 text-[#45220e] cursor-not-allowed"
+                              : errors.fullname
+                              ? "bg-white border-red-500 focus:border-red-600 text-gray-900"
+                              : "bg-white border-gray-300 focus:border-black text-gray-900"
+                          }`}
+                        />
+                        {errors.fullname && (
+                          <p className="text-xs text-red-600 font-semibold mt-1 animate-fade-in">{errors.fullname}</p>
                         )}
                       </div>
                     </div>
 
+                    {/* Email Address Input Field */}
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-[#45220e]/60 shrink-0">
+                      <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-[#45220e]/60 shrink-0 mt-0.5">
                         <Mail size={18} />
                       </div>
                       <div className="space-y-1 w-full">
-                        <p className="text-[10px] text-gray-405 uppercase font-black tracking-wide">Email Address</p>
-                        <p className="text-sm sm:text-base font-semibold text-gray-500 break-all bg-gray-50/50 p-2 rounded-xl border border-gray-100">
-                          {user?.email}
-                        </p>
+                        <label className="text-[10px] text-gray-400 uppercase font-black tracking-wide block">Email Address</label>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            if (errors.email) setErrors((prev) => ({ ...prev, email: null }));
+                          }}
+                          disabled={!isEditing}
+                          placeholder="Enter email address"
+                          className={`w-full py-2.5 px-3.5 border rounded-xl outline-none text-sm font-semibold transition ${
+                            !isEditing
+                              ? "bg-gray-50/60 border-gray-200/80 text-gray-600 cursor-not-allowed"
+                              : errors.email
+                              ? "bg-white border-red-500 focus:border-red-600 text-gray-900"
+                              : "bg-white border-gray-300 focus:border-black text-gray-900"
+                          }`}
+                        />
+                        {errors.email && (
+                          <p className="text-xs text-red-600 font-semibold mt-1 animate-fade-in">{errors.email}</p>
+                        )}
                       </div>
                     </div>
 
+                    {/* Phone Number Input Field */}
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-450 shrink-0">
+                      <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-450 shrink-0 mt-0.5">
                         <Phone size={18} />
                       </div>
                       <div className="space-y-1 w-full">
-                        <p className="text-[10px] text-gray-450 uppercase font-black tracking-wide">Phone Number</p>
-                        {!isEditing ? (
-                          <p className="text-sm sm:text-base font-semibold text-[#45220e]">
-                            {user?.phone || "No phone linked"}
-                          </p>
-                        ) : (
-                          <input
-                            type="text"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className="w-full py-2 px-3 border border-gray-200 rounded-xl outline-none focus:border-black transition text-sm font-semibold"
-                            required
-                          />
+                        <label className="text-[10px] text-gray-400 uppercase font-black tracking-wide block">Phone Number</label>
+                        <input
+                          type="text"
+                          value={phone}
+                          onChange={(e) => {
+                            setPhone(e.target.value);
+                            if (errors.phone) setErrors((prev) => ({ ...prev, phone: null }));
+                          }}
+                          disabled={!isEditing}
+                          placeholder="Enter phone number"
+                          className={`w-full py-2.5 px-3.5 border rounded-xl outline-none text-sm font-semibold transition ${
+                            !isEditing
+                              ? "bg-gray-50/60 border-gray-200/80 text-[#45220e] cursor-not-allowed"
+                              : errors.phone
+                              ? "bg-white border-red-500 focus:border-red-600 text-gray-900"
+                              : "bg-white border-gray-300 focus:border-black text-gray-900"
+                          }`}
+                        />
+                        {errors.phone && (
+                          <p className="text-xs text-red-600 font-semibold mt-1 animate-fade-in">{errors.phone}</p>
                         )}
                       </div>
                     </div>
 
                     {joinDate && (
                       <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-450 shrink-0">
+                        <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-450 shrink-0 mt-0.5">
                           <Calendar size={18} />
                         </div>
                         <div className="space-y-1 w-full">
-                          <p className="text-[10px] text-gray-455 uppercase font-black tracking-wide">Member Since</p>
-                          <p className="text-sm sm:text-base font-semibold text-[#45220e]">{joinDate}</p>
+                          <label className="text-[10px] text-gray-400 uppercase font-black tracking-wide block">Member Since</label>
+                          <input
+                            type="text"
+                            value={joinDate}
+                            disabled
+                            className="w-full py-2.5 px-3.5 border border-gray-200/80 bg-gray-50/60 rounded-xl text-sm font-semibold text-[#45220e] cursor-not-allowed"
+                          />
                         </div>
                       </div>
                     )}
@@ -430,16 +586,41 @@ export default function ProfilePage() {
                   <p className="text-xs text-gray-450 mt-1">Configure a new secure password code for login safety</p>
                 </div>
 
+                {passwordMessage && (
+                  <div
+                    className={`p-3.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-2 ${
+                      passwordMessage.type === "success"
+                        ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                        : "bg-red-50 text-red-600 border border-red-200"
+                    }`}
+                  >
+                    {passwordMessage.type === "success" ? (
+                      <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
+                    ) : (
+                      <AlertCircle size={16} className="shrink-0 text-red-600" />
+                    )}
+                    <span>{passwordMessage.text}</span>
+                  </div>
+                )}
+
                 <form onSubmit={handlePasswordSubmit} className="space-y-4 max-w-md">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Current Password</label>
                     <input
                       type="password"
                       value={passwordForm.currentPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                      onChange={(e) => {
+                        setPasswordForm({ ...passwordForm, currentPassword: e.target.value });
+                        if (errors.currentPassword) setErrors((prev) => ({ ...prev, currentPassword: null }));
+                      }}
                       placeholder="••••••••"
-                      className="w-full py-3 px-4 border border-gray-200 rounded-xl outline-none focus:border-black transition text-sm"
+                      className={`w-full py-3 px-4 border rounded-xl outline-none transition text-sm ${
+                        errors.currentPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
+                      }`}
                     />
+                    {errors.currentPassword && (
+                      <p className="text-xs text-red-600 font-semibold mt-1">{errors.currentPassword}</p>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
@@ -447,10 +628,18 @@ export default function ProfilePage() {
                     <input
                       type="password"
                       value={passwordForm.newPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                      onChange={(e) => {
+                        setPasswordForm({ ...passwordForm, newPassword: e.target.value });
+                        if (errors.newPassword) setErrors((prev) => ({ ...prev, newPassword: null }));
+                      }}
                       placeholder="••••••••"
-                      className="w-full py-3 px-4 border border-gray-200 rounded-xl outline-none focus:border-black transition text-sm"
+                      className={`w-full py-3 px-4 border rounded-xl outline-none transition text-sm ${
+                        errors.newPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
+                      }`}
                     />
+                    {errors.newPassword && (
+                      <p className="text-xs text-red-600 font-semibold mt-1">{errors.newPassword}</p>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
@@ -458,10 +647,18 @@ export default function ProfilePage() {
                     <input
                       type="password"
                       value={passwordForm.confirmPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                      onChange={(e) => {
+                        setPasswordForm({ ...passwordForm, confirmPassword: e.target.value });
+                        if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: null }));
+                      }}
                       placeholder="••••••••"
-                      className="w-full py-3 px-4 border border-gray-200 rounded-xl outline-none focus:border-black transition text-sm"
+                      className={`w-full py-3 px-4 border rounded-xl outline-none transition text-sm ${
+                        errors.confirmPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
+                      }`}
                     />
+                    {errors.confirmPassword && (
+                      <p className="text-xs text-red-600 font-semibold mt-1">{errors.confirmPassword}</p>
+                    )}
                   </div>
 
                   <div className="pt-2">
@@ -494,8 +691,6 @@ export default function ProfilePage() {
                         {user?.businessName || "Zara Boutique Veloza Store"}
                       </p>
                     </div>
-
-
 
                     <div className="md:col-span-2 space-y-1 w-full bg-gray-50/55 p-4 border border-gray-100 rounded-2xl">
                       <p className="text-[10px] text-gray-405 uppercase font-black tracking-wide">Registered Business Address</p>

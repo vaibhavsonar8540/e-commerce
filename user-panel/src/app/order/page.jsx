@@ -21,6 +21,7 @@ import {
   Globe,
   ArrowRight,
   CreditCard,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { State, City } from "country-state-city";
@@ -181,12 +182,8 @@ export default function OrderPage() {
       );
     }
 
-    toast.success("Shipping address saved! Opening payment screen...");
-    
-    // Smooth transition to payment screen
-    setTimeout(() => {
-      router.push("/payment");
-    }, 400);
+    // Navigate directly to payment screen
+    router.push("/payment");
   };
 
   if (!isAuthenticated) {
@@ -365,19 +362,25 @@ export default function OrderPage() {
                     <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
                       State <span className="text-red-500">*</span>
                     </label>
-                    <select
-                      required
-                      value={formData.stateCode}
-                      onChange={handleStateChange}
-                      className="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 outline-none focus:border-black text-xs sm:text-sm font-medium bg-gray-50/20 focus:bg-white transition cursor-pointer"
-                    >
-                      <option value="">Select Indian State</option>
-                      {indianStates.map((st) => (
-                        <option key={st.isoCode} value={st.isoCode}>
-                          {st.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        required
+                        value={formData.stateCode}
+                        onChange={handleStateChange}
+                        className="w-full border border-gray-300 rounded-xl pl-3.5 pr-10 py-2.5 outline-none focus:border-black focus:ring-1 focus:ring-black text-xs sm:text-sm font-medium bg-gray-50/20 focus:bg-white transition cursor-pointer appearance-none"
+                      >
+                        <option value="">Select Indian State</option>
+                        {indianStates.map((st) => (
+                          <option key={st.isoCode} value={st.isoCode}>
+                            {st.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown
+                        size={16}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -385,20 +388,26 @@ export default function OrderPage() {
                       City <span className="text-red-500">*</span>
                     </label>
                     {availableCities.length > 0 ? (
-                      <select
-                        required
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        className="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 outline-none focus:border-black text-xs sm:text-sm font-medium bg-gray-50/20 focus:bg-white transition cursor-pointer"
-                      >
-                        <option value="">Select City</option>
-                        {availableCities.map((ct) => (
-                          <option key={ct.name} value={ct.name}>
-                            {ct.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <select
+                          required
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          className="w-full border border-gray-300 rounded-xl pl-3.5 pr-10 py-2.5 outline-none focus:border-black focus:ring-1 focus:ring-black text-xs sm:text-sm font-medium bg-gray-50/20 focus:bg-white transition cursor-pointer appearance-none"
+                        >
+                          <option value="">Select City</option>
+                          {availableCities.map((ct) => (
+                            <option key={ct.name} value={ct.name}>
+                              {ct.name}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown
+                          size={16}
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                        />
+                      </div>
                     ) : (
                       <input
                         type="text"

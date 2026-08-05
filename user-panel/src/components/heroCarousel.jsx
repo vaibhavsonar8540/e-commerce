@@ -89,10 +89,9 @@ const HeroCarousel = ({
                   containerClassName={
                     mobileSrc ? "hidden lg:block w-full" : "w-full"
                   }
-                  className="w-full h-[750px] object-fill block"
+                  className="w-full h-[800px] object-fill block"
                 />
               )}
-
               {/* Mobile Image */}
               {mobileSrc && (
                 <CustomImage
@@ -181,6 +180,7 @@ const HeroCarousel = ({
       {slides.length > 1 && (
         <>
           <button
+            suppressHydrationWarning
             onClick={prevSlide}
             aria-label="Previous Slide"
             className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/30 hover:bg-black/70 backdrop-blur-sm text-white flex items-center justify-center transition-all opacity-70 group-hover:opacity-100 cursor-pointer shadow-lg hover:scale-105"
@@ -188,6 +188,7 @@ const HeroCarousel = ({
             <ChevronLeft size={22} className="sm:w-6 sm:h-6" />
           </button>
           <button
+            suppressHydrationWarning
             onClick={nextSlide}
             aria-label="Next Slide"
             className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/30 hover:bg-black/70 backdrop-blur-sm text-white flex items-center justify-center transition-all opacity-70 group-hover:opacity-100 cursor-pointer shadow-lg hover:scale-105"
@@ -203,6 +204,7 @@ const HeroCarousel = ({
           {slides.map((_, index) => (
             <button
               key={index}
+              suppressHydrationWarning
               onClick={() => setCurrentIndex(index)}
               aria-label={`Go to slide ${index + 1}`}
               className={`transition-all duration-300 rounded-full cursor-pointer ${

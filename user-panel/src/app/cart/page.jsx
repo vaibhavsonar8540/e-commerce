@@ -136,9 +136,16 @@ export default function CartPage() {
                         <h3 className="text-sm sm:text-base font-bold text-gray-800 line-clamp-1 capitalize">
                           {prod.productName}
                         </h3>
-                        <span className="text-sm sm:text-base font-extrabold text-black shrink-0">
-                          ₹{item.itemTotal}
-                        </span>
+                        <div className="flex items-baseline gap-2 shrink-0">
+                          <span className="text-sm sm:text-base font-extrabold text-black">
+                            ₹{item.itemTotal}
+                          </span>
+                          {prod.price && (prod.price * item.quantity > item.itemTotal) && (
+                            <span className="text-xs text-gray-400 line-through font-medium">
+                              ₹{prod.price * item.quantity}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Row 2: Quantity Selector + Delete Button */}

@@ -5,11 +5,13 @@ import Image from "next/image";
 import logo from "@/../public/images/logo.png";
 
 export default function SplashScreen() {
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [fade, setFade] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Disable scroll while splash screen is showing
     document.body.style.overflow = "hidden";
 
@@ -36,7 +38,7 @@ export default function SplashScreen() {
     };
   }, []);
 
-  if (!loading) return null;
+  if (!mounted || !loading) return null;
 
   return (
     <div

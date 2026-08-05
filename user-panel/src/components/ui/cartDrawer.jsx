@@ -60,7 +60,7 @@ export default function CartDrawer() {
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <ShoppingBag size={22} className="text-[#45220e]" />
-            <h2 className="text-xl font-bold text-gray-900 font-playfair">Your Shop Cart</h2>
+            <h2 className="text-xl font-bold text-gray-900 font-playfair">Your Cart</h2>
           </div>
           <button
             onClick={() => dispatch(setIsCartOpen(false))}
@@ -119,7 +119,11 @@ export default function CartDrawer() {
               {cart.items.map((item, index) => {
                 if (!item.product) return null;
                 const prod = item.product;
-                const priceText = prod.discountedPrice || prod.price;
+                const finalPrice = (prod.discountPrice != null && prod.discountPrice > 0 && prod.discountPrice < prod.price)
+                  ? prod.discountPrice
+                  : (prod.discountedPrice != null && prod.discountedPrice > 0 && prod.discountedPrice < prod.price)
+                    ? prod.discountedPrice
+                    : prod.price;
 
                 return (
                   <div key={prod._id || index} className="flex gap-4 p-4 border border-gray-200 rounded-2xl bg-white">
@@ -139,7 +143,12 @@ export default function CartDrawer() {
                     <div className="flex-1 flex flex-col justify-between py-0.5 min-w-0">
                       <div>
                         <h4 className="text-base font-bold text-[#45220e] truncate capitalize">{prod.productName}</h4>
-                        <p className="text-sm font-bold text-gray-900 mt-1">₹{priceText}</p>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-sm font-bold text-gray-900">₹{finalPrice}</span>
+                          {prod.price && prod.price > finalPrice && (
+                            <span className="text-xs text-gray-400 line-through font-medium">₹{prod.price}</span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Quantity select counter & Delete */}
@@ -209,7 +218,7 @@ export default function CartDrawer() {
                   dispatch(setIsCartOpen(false));
                   router.push("/order");
                 }}
-                className="w-full py-3.5 bg-black text-white font-bold text-sm rounded-2xl cursor-pointer"
+                className="w-full h-12 flex items-center justify-center bg-black hover:bg-neutral-900 border border-black text-white font-bold text-sm rounded-2xl cursor-pointer transition"
               >
                 Proceed to Checkout
               </button>
@@ -219,7 +228,7 @@ export default function CartDrawer() {
                   dispatch(setIsCartOpen(false));
                   router.push("/cart");
                 }}
-                className="w-full py-3.5 bg-white text-[#45220e] border border-[#45220e] font-bold text-sm rounded-2xl cursor-pointer"
+                className="w-full h-12 flex items-center justify-center bg-white hover:bg-gray-50 text-[#45220e] border border-[#45220e] font-bold text-sm rounded-2xl cursor-pointer transition"
               >
                 View Your Bag
               </button>

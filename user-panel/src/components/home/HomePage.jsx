@@ -16,17 +16,16 @@ import electronicBannerForBigScreen from "@/assets/home/electronicBannerForBigSc
 import electronicBannerForSmallScreen from "@/assets/home/electronicBannerSmallScreen.webp";
 import CustomImage from "../customImage";
 import Link from "next/link";
-import { Button, LinkButton } from "../Buttons";
 
 // Carousel images from assets/corosaul
 import electronicLg from "@/assets/corosaul/electronic-lg.webp";
 import electronicSmall from "@/assets/corosaul/electronic-small.webp";
 import fashionLg from "@/assets/corosaul/fashion-lg.webp";
 import fashionSmall from "@/assets/corosaul/fashion-small.webp";
-import homeDecoreLg from "@/assets/corosaul/home-decore-lg.webp";
-import homeDecoreSmall from "@/assets/corosaul/home-decore-small.webp";
-import beautyLg from "@/assets/corosaul/beauty-lg.webp";
-import beautySmall from "@/assets/corosaul/beauty-small.webp";
+// import homeDecoreLg from "@/assets/corosaul/home-decore-lg.webp";
+// import homeDecoreSmall from "@/assets/corosaul/home-decore-small.webp";
+// import beautyLg from "@/assets/corosaul/beauty-lg.webp";
+// import beautySmall from "@/assets/corosaul/beauty-small.webp";
 
 const heroSlides = [
   {
@@ -36,22 +35,10 @@ const heroSlides = [
     href: "/collection/women",
   },
   {
-    src: beautyLg,
-    mobileSrc: beautySmall,
-    altAttr: "Beauty Collection",
-    href: "/collection/beauty",
-  },
-  {
     src: electronicLg,
     mobileSrc: electronicSmall,
     altAttr: "Electronics Collection",
     href: "/collection/electronics",
-  },
-  {
-    src: homeDecoreLg,
-    mobileSrc: homeDecoreSmall,
-    altAttr: "Home & Decor Collection",
-    href: "/collection/home-and-kitchen",
   },
 ];
 
@@ -115,7 +102,7 @@ const HomePage = () => {
         </section>
       )}
 
-      <section className="relative overflow-hidden mt-6 lg:mt-10">
+      <section className="relative overflow-hidden mt-4 lg:mt-10">
         <CustomImage
           srcAttr={fashionBanner}
           altAttr="Fashion Banner"
@@ -143,7 +130,7 @@ const HomePage = () => {
       </section>
 
       {menProducts && (
-        <section className="px-4 sm:px-8 md:px-12 lg:px-16 mt-6 lg:mt-10 animate-in fade-in duration-300">
+        <section className="px-4 sm:px-8 md:px-12 lg:px-16 mt-4 lg:mt-10 animate-in fade-in duration-300">
           <ProductSlider
             title="Latest Arrivals For Men"
             products={menProducts}
@@ -154,7 +141,7 @@ const HomePage = () => {
 
       <Link
         href="/collection/electronics"
-        className="block relative overflow-hidden mt-6 lg:mt-10"
+        className="block relative overflow-hidden mt-4 lg:mt-10"
       >
         <CustomImage
           srcAttr={electronicBannerForBigScreen}
@@ -190,7 +177,7 @@ const HomePage = () => {
       </Link>
 
       {electronicsProducts && electronicsProducts.length > 0 && (
-        <section className="px-4 sm:px-8 md:px-12 lg:px-16 my-6 lg:my-10 animate-in fade-in duration-300">
+        <section className="px-4 sm:px-8 md:px-12 lg:px-16 my-4 lg:my-10 animate-in fade-in duration-300">
           <ProductSlider
             title="Latest Arrivals In Electronics"
             products={electronicsProducts}

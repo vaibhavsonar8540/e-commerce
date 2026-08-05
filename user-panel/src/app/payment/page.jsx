@@ -239,20 +239,14 @@ export default function PaymentPage() {
             <span>Edit Shipping Address</span>
           </button>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight font-playfair flex items-center gap-3">
-                Select Payment Method
-                <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                Choose Razorpay for fast, instant & secure online checkout or Pay on Delivery.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-xl text-xs font-bold self-start sm:self-auto shadow-md">
-              <Zap size={15} className="text-amber-400 fill-amber-400" />
-              <span>Razorpay Integration Ready</span>
-            </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight font-playfair flex items-center gap-3">
+              Select Payment Method
+              <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              Choose Razorpay for fast, instant & secure online checkout or Pay on Delivery.
+            </p>
           </div>
         </div>
 
@@ -260,195 +254,8 @@ export default function PaymentPage() {
           
           {/* LEFT SIDE: PAYMENT OPTIONS (Cols 7) */}
           <div className="lg:col-span-7 bg-white border border-gray-200/90 p-5 sm:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm space-y-6">
-            <div className="border-b border-gray-100 pb-4 flex items-center justify-between">
-              <h2 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2.5">
-                <CreditCard size={20} className="text-black" />
-                Payment Options
-              </h2>
-              <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                <Lock size={13} />
-                256-Bit SSL Encrypted
-              </span>
-            </div>
-
-            <div className="space-y-3.5">
-              
-              {/* Option 1: Razorpay Gateway (Primary & Featured) */}
-              <div
-                onClick={() => setSelectedMethod("RAZORPAY")}
-                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${
-                  selectedMethod === "RAZORPAY"
-                    ? "border-black bg-gradient-to-r from-gray-900 to-black text-white shadow-lg scale-[1.01]"
-                    : "border-gray-200 bg-white hover:border-gray-400 text-gray-900"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3.5">
-                    <div
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
-                        selectedMethod === "RAZORPAY"
-                          ? "bg-white/10 text-white border border-white/20"
-                          : "bg-blue-50 text-blue-600 border border-blue-100"
-                      }`}
-                    >
-                      <CreditCard size={24} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm sm:text-base font-extrabold tracking-wide">
-                          Razorpay Secure Checkout
-                        </h3>
-                        <span
-                          className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                            selectedMethod === "RAZORPAY"
-                              ? "bg-amber-400 text-black"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          Fastest & Safe
-                        </span>
-                      </div>
-                      <p
-                        className={`text-xs mt-1 ${
-                          selectedMethod === "RAZORPAY" ? "text-gray-300" : "text-gray-500"
-                        }`}
-                      >
-                        UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, NetBanking & Wallets.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="shrink-0">
-                    <div
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                        selectedMethod === "RAZORPAY"
-                          ? "border-amber-400 bg-amber-400 text-black"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      {selectedMethod === "RAZORPAY" && <Check size={16} className="stroke-[3]" />}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Option 2: Cash on Delivery */}
-              <div
-                onClick={() => setSelectedMethod("COD")}
-                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer ${
-                  selectedMethod === "COD"
-                    ? "border-black bg-gray-50 shadow-xs"
-                    : "border-gray-200 bg-white hover:border-gray-300 text-gray-900"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                      <Banknote size={22} />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                        Cash on Delivery (COD)
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Pay with cash or UPI at your doorstep upon receiving order.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="shrink-0">
-                    <div
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                        selectedMethod === "COD"
-                          ? "border-black bg-black text-white"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      {selectedMethod === "COD" && <Check size={16} className="stroke-[3]" />}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Option 3: UPI / QR Code */}
-              <div
-                onClick={() => setSelectedMethod("UPI")}
-                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer ${
-                  selectedMethod === "UPI"
-                    ? "border-black bg-gray-50 shadow-xs"
-                    : "border-gray-200 bg-white hover:border-gray-300 text-gray-900"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
-                      <QrCode size={22} />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900">
-                        UPI / Instant QR Code
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Google Pay, PhonePe, Paytm, BHIM & all UPI apps via Razorpay.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="shrink-0">
-                    <div
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                        selectedMethod === "UPI"
-                          ? "border-black bg-black text-white"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      {selectedMethod === "UPI" && <Check size={16} className="stroke-[3]" />}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Option 4: Net Banking */}
-              <div
-                onClick={() => setSelectedMethod("NETBANKING")}
-                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer ${
-                  selectedMethod === "NETBANKING"
-                    ? "border-black bg-gray-50 shadow-xs"
-                    : "border-gray-200 bg-white hover:border-gray-300 text-gray-900"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                      <Building2 size={22} />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900">
-                        Net Banking
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        SBI, HDFC, ICICI, Axis & 50+ major Indian banks supported.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="shrink-0">
-                    <div
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                        selectedMethod === "NETBANKING"
-                          ? "border-black bg-black text-white"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      {selectedMethod === "NETBANKING" && <Check size={16} className="stroke-[3]" />}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Delivery Address Snapshot */}
+            
+            {/* Delivery Address Snapshot (Shown on top before Payment Options) */}
             {shipping.fullname && (
               <div className="bg-gray-50/80 border border-gray-200/90 rounded-2xl p-4 space-y-1.5">
                 <div className="flex items-center gap-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
@@ -459,21 +266,228 @@ export default function PaymentPage() {
                 <p className="text-xs text-gray-600 leading-relaxed">
                   {shipping.address}, {shipping.roadArea}, {shipping.city}, {shipping.stateName} - {shipping.pincode}
                 </p>
-                <p className="text-xs text-gray-500 font-mono">Phone: {shipping.phone} | Email: {shipping.email}</p>
+                <div className="text-xs text-gray-500 font-mono flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 pt-0.5">
+                  <span>Phone: {shipping.phone}</span>
+                  <span className="hidden sm:inline text-gray-400">|</span>
+                  <span className="break-all sm:break-normal">Email: {shipping.email}</span>
+                </div>
               </div>
             )}
+
+            <div className="border-b border-gray-100 pb-4">
+              <h2 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2.5">
+                <CreditCard size={20} className="text-black" />
+                Payment Options
+              </h2>
+            </div>
+
+            <div className="space-y-3.5">
+              
+              {/* Option 1: Razorpay Gateway */}
+              <div
+                onClick={() => setSelectedMethod("RAZORPAY")}
+                className={`p-3.5 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${
+                  selectedMethod === "RAZORPAY"
+                    ? "border-black bg-gradient-to-r from-gray-900 to-black text-white shadow-lg scale-[1.01]"
+                    : "border-gray-200 bg-white hover:border-gray-400 text-gray-900"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                        selectedMethod === "RAZORPAY"
+                          ? "bg-white/10 text-white border border-white/20"
+                          : "bg-blue-50 text-blue-600 border border-blue-100"
+                      }`}
+                    >
+                      <CreditCard size={20} className="sm:w-6 sm:h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs sm:text-base font-extrabold tracking-wide">
+                        Razorpay Secure Checkout
+                      </h3>
+                      <p
+                        className={`text-[11px] sm:text-xs mt-0.5 ${
+                          selectedMethod === "RAZORPAY" ? "text-gray-300" : "text-gray-500"
+                        }`}
+                      >
+                        UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, NetBanking & Wallets.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 ml-2">
+                    <div
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selectedMethod === "RAZORPAY"
+                          ? "border-white bg-white text-black"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {selectedMethod === "RAZORPAY" && <Check size={14} className="sm:w-4 sm:h-4 stroke-[3]" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Option 2: Cash on Delivery */}
+              <div
+                onClick={() => setSelectedMethod("COD")}
+                className={`p-3.5 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${
+                  selectedMethod === "COD"
+                    ? "border-black bg-gradient-to-r from-gray-900 to-black text-white shadow-lg scale-[1.01]"
+                    : "border-gray-200 bg-white hover:border-gray-400 text-gray-900"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                        selectedMethod === "COD"
+                          ? "bg-white/10 text-white border border-white/20"
+                          : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                      }`}
+                    >
+                      <Banknote size={20} className="sm:w-6 sm:h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs sm:text-base font-extrabold tracking-wide">
+                        Cash on Delivery (COD)
+                      </h3>
+                      <p
+                        className={`text-[11px] sm:text-xs mt-0.5 ${
+                          selectedMethod === "COD" ? "text-gray-300" : "text-gray-500"
+                        }`}
+                      >
+                        Pay with cash or UPI at your doorstep upon receiving order.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 ml-2">
+                    <div
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selectedMethod === "COD"
+                          ? "border-white bg-white text-black"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {selectedMethod === "COD" && <Check size={14} className="sm:w-4 sm:h-4 stroke-[3]" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Option 3: UPI / QR Code */}
+              <div
+                onClick={() => setSelectedMethod("UPI")}
+                className={`p-3.5 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${
+                  selectedMethod === "UPI"
+                    ? "border-black bg-gradient-to-r from-gray-900 to-black text-white shadow-lg scale-[1.01]"
+                    : "border-gray-200 bg-white hover:border-gray-400 text-gray-900"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                        selectedMethod === "UPI"
+                          ? "bg-white/10 text-white border border-white/20"
+                          : "bg-purple-50 text-purple-600 border border-purple-100"
+                      }`}
+                    >
+                      <QrCode size={20} className="sm:w-6 sm:h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs sm:text-base font-extrabold tracking-wide">
+                        UPI / Instant QR Code
+                      </h3>
+                      <p
+                        className={`text-[11px] sm:text-xs mt-0.5 ${
+                          selectedMethod === "UPI" ? "text-gray-300" : "text-gray-500"
+                        }`}
+                      >
+                        Google Pay, PhonePe, Paytm, BHIM & all UPI apps via Razorpay.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 ml-2">
+                    <div
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selectedMethod === "UPI"
+                          ? "border-white bg-white text-black"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {selectedMethod === "UPI" && <Check size={14} className="sm:w-4 sm:h-4 stroke-[3]" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Option 4: Net Banking */}
+              <div
+                onClick={() => setSelectedMethod("NETBANKING")}
+                className={`p-3.5 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${
+                  selectedMethod === "NETBANKING"
+                    ? "border-black bg-gradient-to-r from-gray-900 to-black text-white shadow-lg scale-[1.01]"
+                    : "border-gray-200 bg-white hover:border-gray-400 text-gray-900"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                        selectedMethod === "NETBANKING"
+                          ? "bg-white/10 text-white border border-white/20"
+                          : "bg-amber-50 text-amber-600 border border-amber-100"
+                      }`}
+                    >
+                      <Building2 size={20} className="sm:w-6 sm:h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs sm:text-base font-extrabold tracking-wide">
+                        Net Banking
+                      </h3>
+                      <p
+                        className={`text-[11px] sm:text-xs mt-0.5 ${
+                          selectedMethod === "NETBANKING" ? "text-gray-300" : "text-gray-500"
+                        }`}
+                      >
+                        SBI, HDFC, ICICI, Axis & 50+ major Indian banks supported.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 ml-2">
+                    <div
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selectedMethod === "NETBANKING"
+                          ? "border-white bg-white text-black"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {selectedMethod === "NETBANKING" && <Check size={14} className="sm:w-4 sm:h-4 stroke-[3]" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
 
             {/* Complete Purchase Button */}
             <button
               onClick={handlePlaceFinalOrder}
               disabled={submittingPayment}
-              className="w-full py-4.5 bg-black hover:bg-gray-900 text-white font-bold rounded-2xl transition-all shadow-xl hover:shadow-2xl text-sm sm:text-base flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 active:scale-[0.99]"
+              className="w-full py-3.5 sm:py-4.5 bg-black hover:bg-gray-900 text-white font-bold rounded-2xl transition-all shadow-xl hover:shadow-2xl text-xs sm:text-base flex items-center justify-center gap-2 sm:gap-2.5 cursor-pointer disabled:opacity-50 active:scale-[0.99]"
             >
               {submittingPayment ? (
                 <span>Processing Order...</span>
               ) : (
                 <>
-                  <ShieldCheck size={22} className="text-amber-400" />
+                  <ShieldCheck size={18} className="sm:w-5 sm:h-5 text-amber-400" />
                   <span>
                     {selectedMethod === "COD"
                       ? "Place Order (Cash on Delivery)"

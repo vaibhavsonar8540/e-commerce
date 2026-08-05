@@ -34,11 +34,19 @@ const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Clear search query on page refresh or route change
+  useEffect(() => {
+    setSearchQuery("");
+    setIsSearchOpen(false);
+  }, [pathname]);
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/collection/search?query=${encodeURIComponent(searchQuery.trim())}`);
+      const q = searchQuery.trim();
+      setSearchQuery("");
       setIsSearchOpen(false);
+      router.push(`/collection/search?query=${encodeURIComponent(q)}`);
     }
   };
 
@@ -290,6 +298,7 @@ const Header = () => {
             <button
               ref={searchToggleRef}
               type="button"
+              suppressHydrationWarning
               onClick={toggleSearch}
               className="inline-flex items-center cursor-pointer"
               aria-label="Toggle Search Bar"
@@ -311,6 +320,7 @@ const Header = () => {
             <div className="relative inline-flex items-center">
               <button
                 type="button"
+                suppressHydrationWarning
                 onClick={() => dispatch(setIsCartOpen(true))}
                 className={`${hoverClassname} inline-flex items-center`}
               >
@@ -411,6 +421,8 @@ const Header = () => {
                 <input
                   ref={searchInputDesktopRef}
                   type="text"
+                  autoComplete="off"
+                  suppressHydrationWarning
                   placeholder="Search products by collection, category, subcategory, name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -419,6 +431,7 @@ const Header = () => {
                 {searchQuery && (
                   <button
                     type="button"
+                    suppressHydrationWarning
                     onClick={() => setSearchQuery("")}
                     className="absolute right-24 p-1 rounded-full text-gray-400 hover:text-black hover:bg-gray-100 transition cursor-pointer z-10 flex items-center justify-center"
                     title="Clear search"
@@ -429,6 +442,7 @@ const Header = () => {
                 )}
                 <button
                   type="submit"
+                  suppressHydrationWarning
                   className="absolute right-2.5 bg-black hover:bg-gray-900 text-white px-4 py-1.5 rounded-lg font-bold text-xs uppercase tracking-wider cursor-pointer z-10"
                 >
                   Search
@@ -470,6 +484,7 @@ const Header = () => {
           <button
             ref={searchToggleMobileRef}
             type="button"
+            suppressHydrationWarning
             onClick={toggleSearch}
             className="inline-flex items-center cursor-pointer"
             aria-label="Toggle Search Bar"
@@ -480,6 +495,7 @@ const Header = () => {
           <div className="relative inline-flex items-center">
             <button
               type="button"
+              suppressHydrationWarning
               onClick={() => dispatch(setIsCartOpen(true))}
               className="inline-flex items-center cursor-pointer text-gray-700"
             >
@@ -500,6 +516,7 @@ const Header = () => {
           ) : (
             <div className="relative" ref={profileMobileRef}>
               <button
+                suppressHydrationWarning
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-1 cursor-pointer"
               >
@@ -578,6 +595,8 @@ const Header = () => {
                 <input
                   ref={searchInputMobileRef}
                   type="text"
+                  autoComplete="off"
+                  suppressHydrationWarning
                   placeholder="Search products by collection, category, subcategory..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -586,6 +605,7 @@ const Header = () => {
                 {searchQuery && (
                   <button
                     type="button"
+                    suppressHydrationWarning
                     onClick={() => setSearchQuery("")}
                     className="absolute right-22 p-1 rounded-full text-gray-400 hover:text-black hover:bg-gray-100 transition cursor-pointer z-10 flex items-center justify-center"
                     title="Clear search"
@@ -596,6 +616,7 @@ const Header = () => {
                 )}
                 <button
                   type="submit"
+                  suppressHydrationWarning
                   className="absolute right-2 bg-black hover:bg-gray-900 text-white px-3 py-1 rounded-md font-bold text-[11px] uppercase tracking-wider cursor-pointer z-10"
                 >
                   Search
