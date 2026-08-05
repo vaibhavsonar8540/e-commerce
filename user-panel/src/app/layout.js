@@ -79,6 +79,9 @@ export const metadata = {
   description: DEFAULT_META.description,
   keywords: DEFAULT_META.keywords,
   openGraph: DEFAULT_META.openGraph,
+  verification: {
+    google: "google5c7ad7afbf8414d5",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico" },
