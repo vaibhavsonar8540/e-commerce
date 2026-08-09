@@ -12,27 +12,57 @@ const userController = {
     const { fullname, email, phone, password } = req.body;
 
     if (!fullname || !email || !phone || !password) {
-      return res.status(400).json({ message: "Please fill all fields" });
+      return res.status(400).json({ success: false, message: "Please fill all required fields" });
+    }
+
+    const trimmedFullname = fullname.trim();
+    const trimmedEmail = email.toLowerCase().trim();
+    const trimmedPhone = phone.trim();
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid email address" });
+    }
+
+    // Indian 10-digit phone format validation
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(trimmedPhone)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid 10-digit Indian phone number" });
+    }
+
+    // Minimum password length
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: "Password must be at least 6 characters long" });
     }
 
     try {
-      const isExistUser = await User.findOne({ email });
+      // Check if user already exists with email or phone
+      const isExistUser = await User.findOne({
+        $or: [{ email: trimmedEmail }, { phone: trimmedPhone }]
+      });
+
       if (isExistUser) {
-        return res
-          .status(409)
-          .json({
-            message: "User already existed ! , please go to Login screen",
+        if (isExistUser.email.toLowerCase() === trimmedEmail) {
+          return res.status(409).json({
+            success: false,
+            message: "An account with this email already exists! Please log in.",
           });
+        }
+        if (isExistUser.phone === trimmedPhone) {
+          return res.status(409).json({
+            success: false,
+            message: "An account with this phone number already exists! Please log in.",
+          });
+        }
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      if (!hashedPassword) {
-        return res.status(404).json({ message: "Error while hasing password" });
-      }
-
       const newUser = await User.create({
-        ...req.body,
+        fullname: trimmedFullname,
+        email: trimmedEmail,
+        phone: trimmedPhone,
         password: hashedPassword,
       });
 
@@ -40,7 +70,6 @@ const userController = {
       const token = jwt.sign(
         {
           id: newUser._id,
-          role: newUser.role,
         },
         process.env.JWT_SECRET,
         {
@@ -56,16 +85,27 @@ const userController = {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      res.status(201).json({
-        message: "User created successfully !",
+      return res.status(201).json({
+        success: true,
+        message: "User created successfully!",
         token,
         user: {
           id: newUser._id,
           fullname: newUser.fullname,
+          email: newUser.email,
+          phone: newUser.phone,
+          role: newUser.role,
+          userBuyCount: newUser.userBuyCount || 0,
+          businessName: newUser.businessName || "",
+          gstin: newUser.gstin || "",
+          address: newUser.address || "",
         }
       });
     } catch (error) {
-      res.status(404).json({ message: "Error while creating new user", error });
+      return res.status(500).json({
+        success: false,
+        message: error.message || "Error while creating new user",
+      });
     }
   },
 
@@ -101,11 +141,10 @@ const userController = {
         });
       }
 
-      // 3. GENERATE TOKEN: पेलोड में रोल भी डाल दें ताकि फ्रंटएंड/मिडिलवेयर पर काम आए
+      // 3. GENERATE TOKEN (Contains only user ID for security & fresh DB state lookup)
       const token = jwt.sign(
         {
           id: isExistUser._id,
-          role: isExistUser.role,
         },
         process.env.JWT_SECRET,
         {

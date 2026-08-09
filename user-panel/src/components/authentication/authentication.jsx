@@ -39,22 +39,50 @@ const Authentication = ({ onClose }) => {
   const [regValue, setRegValue] = useState(initialState);
   const [loginValue, setLoginValue] = useState(initialState);
 
+  const [regLoading, setRegLoading] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setRegFlash(null);
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(regValue.email.trim())) {
+      setRegFlash({ type: "error", message: "Please enter a valid email address." });
+      return;
+    }
+
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(regValue.phone.trim())) {
+      setRegFlash({ type: "error", message: "Please enter a valid 10-digit Indian phone number." });
+      return;
+    }
+
+    if (regValue.password.length < 6) {
+      setRegFlash({ type: "error", message: "Password must be at least 6 characters long." });
+      return;
+    }
+
+    setRegLoading(true);
     try {
-      await dispatch(createUser(regValue));
+      await dispatch(createUser({
+        fullname: regValue.fullname.trim(),
+        email: regValue.email.trim(),
+        phone: regValue.phone.trim(),
+        password: regValue.password,
+      }));
       setRegFlash({ type: "success", message: "Account Created Successfully!" });
       setTimeout(() => {
         onClose(); // Modal Close
         router.push("/"); // Redirect
-      }, 2500);
+      }, 1500);
     } catch (error) {
       setRegFlash({
         type: "error",
         message: error.response?.data?.message || "Registration Failed",
       });
+    } finally {
+      setRegLoading(false);
     }
   };
 
@@ -315,9 +343,14 @@ const Authentication = ({ onClose }) => {
 
               <button
                 type="submit"
-                className="w-full rounded-xl bg-primary py-3 text-white font-semibold text-sm transition hover:opacity-90 active:scale-[0.99] cursor-pointer mt-1"
+                disabled={regLoading}
+                className="w-full rounded-xl bg-primary py-3 text-white font-semibold text-sm transition hover:opacity-90 active:scale-[0.99] cursor-pointer mt-1 flex items-center justify-center gap-2 disabled:opacity-60"
               >
-                Create Account
+                {regLoading ? (
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                ) : (
+                  "Create Account"
+                )}
               </button>
             </form>
           </div>

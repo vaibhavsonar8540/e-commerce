@@ -1,6 +1,7 @@
 import { login, register } from "@/service/authService";
 import { loginSuccess, authRequest, authSuccess, authFailed } from "../slices/authSlice";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 axios.defaults.withCredentials = true;
 const baseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -8,6 +9,9 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 export const loggedUser = (payload) => async (dispatch) => {
   try {
     const data = await login(payload);
+    if (data?.token) {
+      Cookies.set("token", data.token, { expires: 7 });
+    }
     dispatch(loginSuccess(data));
     return data;
   } catch (error) {
@@ -18,6 +22,9 @@ export const loggedUser = (payload) => async (dispatch) => {
 export const createUser = (payload) => async (dispatch) => {
   try {
     const data = await register(payload);
+    if (data?.token) {
+      Cookies.set("token", data.token, { expires: 7 });
+    }
     // Automatically log in after register
     dispatch(loginSuccess(data));
     return data;
