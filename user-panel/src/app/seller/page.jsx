@@ -2,7 +2,7 @@
 
 import React from "react";
 import HeroBanner from "@/components/heroBanner";
-import sellerBnr from "@/assets/seller.webp";
+import sellerBnr from "@/assets/become-seller.webp";
 import { CheckCircle2, ChevronRight, Award, DollarSign, Ban, BookOpen } from "lucide-react";
 import Link from "next/link";
 
@@ -11,36 +11,43 @@ const SellerPage = () => {
     <div className="bg-white min-h-screen text-gray-800">
       
       {/* Hero Banner Component: custom-suited for seller onboarding */}
-      <div className="relative h-120 overflow-hidden bg-linear-to-r from-purple-800 to-indigo-900 flex items-center col-span-1">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center z-10">
+      <div className="relative overflow-hidden bg-linear-to-br from-black via-gray-900 to-gray-950 py-16 sm:py-20 lg:py-24 text-white">
+        {/* Subtle Decorative Ambient Lighting */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-gray-800/30 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-gray-800/40 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-10 items-center relative z-10">
           <div className="space-y-6">
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight font-playfair leading-tight animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-bold text-gray-200 tracking-wide uppercase backdrop-blur-md">
+              <span>Veloza Supplier Portal</span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight font-playfair leading-[1.15]">
               Grow Your Business with Veloza
             </h1>
-            <p className="text-sm sm:text-base text-gray-200 leading-relaxed font-medium">
+            <p className="text-sm sm:text-base text-gray-300 leading-relaxed font-normal max-w-xl">
               Sell to lakhs of customers across India with 0% Commission and 0 penalty charges. Start your digital store in minutes!
             </p>
             <div className="pt-2 flex flex-col sm:flex-row gap-4">
               <Link
                 href="/seller/register"
-                className="inline-flex items-center justify-center px-8 py-3.5 bg-[#FF6B35] hover:bg-[#e05624] text-white font-extrabold rounded-xl transition shadow-lg text-sm text-center cursor-pointer"
+                className="inline-flex items-center justify-center px-8 py-3.5 bg-white hover:bg-gray-100 text-black font-extrabold rounded-2xl transition shadow-xl text-sm text-center cursor-pointer"
               >
                 <span>Become a Seller</span>
                 <ChevronRight size={16} className="ml-1" />
               </Link>
               <a
                 href="#how-it-works"
-                className="inline-flex items-center justify-center px-8 py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl transition text-sm text-center cursor-pointer"
+                className="inline-flex items-center justify-center px-8 py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-2xl transition text-sm text-center cursor-pointer backdrop-blur-sm"
               >
                 Learn More
               </a>
             </div>
           </div>
-          <div className="hidden md:flex justify-end pr-5">
-            <div className="relative w-80 h-80 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 p-2">
+          <div className="hidden md:flex justify-end pr-4">
+            <div className="relative w-72 h-72 lg:w-80 lg:h-80 rounded-3xl overflow-hidden shadow-2xl border border-white/20 p-2.5 bg-white/10 backdrop-blur-md">
               <img
-                src={sellerBnr.src || "/assets/seller.webp"}
-                alt="Seller Portal Logo"
+                src={sellerBnr.src || sellerBnr}
+                alt="Become a Seller Portal"
                 className="w-full h-full object-cover rounded-2xl"
                 onError={(e) => {
                   e.target.src = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=400";
@@ -49,28 +56,26 @@ const SellerPage = () => {
             </div>
           </div>
         </div>
-        {/* Background Decorative Accent */}
-        <div className="absolute inset-0 bg-black/30 pointer-events-none"></div>
       </div>
 
       {/* Grid statistics section */}
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-8 lg:px-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 bg-white border border-gray-150 rounded-3xl p-6 shadow-sm divide-y md:divide-y-0 md:divide-x divide-gray-150">
-          <div className="p-4 text-center">
-            <h3 className="text-3xl font-extrabold text-[#FF6B35]">Lakhs+</h3>
-            <p className="text-xs text-gray-500 font-bold mt-1 uppercase tracking-wide">Trusted Suppliers</p>
+      <div className="max-w-7xl mx-auto -mt-6 sm:-mt-8 px-4 sm:px-8 lg:px-12 relative z-20 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 bg-white border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xl divide-y md:divide-y-0 md:divide-x divide-gray-100">
+          <div className="p-3 text-center">
+            <h3 className="text-3xl sm:text-4xl font-extrabold text-black font-playfair tracking-tight">Lakhs+</h3>
+            <p className="text-xs text-gray-500 font-bold mt-1.5 uppercase tracking-wide">Trusted Suppliers</p>
           </div>
-          <div className="p-4 text-center">
-            <h3 className="text-3xl font-extrabold text-[#FF6B35]">Crores+</h3>
-            <p className="text-xs text-gray-500 font-bold mt-1 uppercase tracking-wide">Registered Buyers</p>
+          <div className="p-3 text-center">
+            <h3 className="text-3xl sm:text-4xl font-extrabold text-black font-playfair tracking-tight">Crores+</h3>
+            <p className="text-xs text-gray-500 font-bold mt-1.5 uppercase tracking-wide">Registered Buyers</p>
           </div>
-          <div className="p-4 text-center pt-8 md:pt-4">
-            <h3 className="text-3xl font-extrabold text-[#FF6B35]">28,000+</h3>
-            <p className="text-xs text-gray-500 font-bold mt-1 uppercase tracking-wide">Serviceable Pincodes</p>
+          <div className="p-3 text-center pt-6 md:pt-3">
+            <h3 className="text-3xl sm:text-4xl font-extrabold text-black font-playfair tracking-tight">28,000+</h3>
+            <p className="text-xs text-gray-500 font-bold mt-1.5 uppercase tracking-wide">Serviceable Pincodes</p>
           </div>
-          <div className="p-4 text-center pt-8 md:pt-4">
-            <h3 className="text-3xl font-extrabold text-[#FF6B35]">700+</h3>
-            <p className="text-xs text-gray-500 font-bold mt-1 uppercase tracking-wide">Product Categories</p>
+          <div className="p-3 text-center pt-6 md:pt-3">
+            <h3 className="text-3xl sm:text-4xl font-extrabold text-black font-playfair tracking-tight">700+</h3>
+            <p className="text-xs text-gray-500 font-bold mt-1.5 uppercase tracking-wide">Product Categories</p>
           </div>
         </div>
       </div>
@@ -86,7 +91,7 @@ const SellerPage = () => {
               Veloza is the fastest-growing online store hub in the country. Our seller-friendly ecosystem guarantees maximal earnings.
             </p>
             <div className="pt-2">
-              <Link href="/seller/register" className="inline-flex items-center text-xs font-extrabold text-[#FF6B35] hover:text-[#e05624] tracking-wide uppercase transition cursor-pointer">
+              <Link href="/seller/register" className="inline-flex items-center text-xs font-extrabold text-black hover:text-gray-700 tracking-wide uppercase transition cursor-pointer">
                 <span>Start Earning Now</span>
                 <ChevronRight size={14} className="ml-1" />
               </Link>

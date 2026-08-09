@@ -7,7 +7,7 @@ import * as Yup from "yup";
 import api from "@/utils/axiosInstant";
 import { updateUser } from "@/redux/slices/authSlice";
 import { setIsModelOpen } from "@/redux/slices/commonSlice";
-import { Building, MapPin, BadgePercent, ShieldCheck } from "lucide-react";
+import { Building, MapPin, BadgePercent, ShieldCheck, CheckCircle2, Store } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function SellerRegisterPage() {
@@ -16,6 +16,7 @@ export default function SellerRegisterPage() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [flashMessage, setFlashMessage] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -44,11 +45,8 @@ export default function SellerRegisterPage() {
         });
 
         if (res.data.success) {
-          setFlashMessage({ type: "success", message: "Seller account setup complete!" });
           dispatch(updateUser(res.data.user));
-          setTimeout(() => {
-            router.push("/add-product");
-          }, 1000);
+          setShowSuccessModal(true);
         }
       } catch (err) {
         setFlashMessage({
@@ -83,8 +81,38 @@ export default function SellerRegisterPage() {
     );
   }
 
+  if (user?.role === "seller") {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-gray-50/50 p-6 text-center">
+        <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-5 shadow-inner border border-emerald-100">
+          <Store size={32} />
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight font-playfair">
+          You Are Already a Seller!
+        </h2>
+        <p className="mt-2 text-sm text-gray-500 max-w-md leading-relaxed">
+          Your account is already upgraded to a registered seller. You can manage your store items and list new products right away.
+        </p>
+        <div className="mt-6 flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={() => router.push("/my-products")}
+            className="px-6 py-3 bg-[#45220e] hover:bg-[#34180a] text-white font-bold rounded-xl transition text-sm shadow-md cursor-pointer"
+          >
+            My Products
+          </button>
+          <button
+            onClick={() => router.push("/add-product")}
+            className="px-6 py-3 bg-[#45220e] hover:bg-[#34180a] text-white font-bold rounded-xl transition text-sm shadow-md cursor-pointer"
+          >
+            + Create New Product
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50/40 py-12 px-4 sm:px-8 lg:px-12 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50/40 py-12 px-4 sm:px-8 lg:px-12 flex items-center justify-center relative">
       <div className="w-full max-w-2xl bg-white border border-gray-200 rounded-3xl p-6 sm:p-10 shadow-xl space-y-8 relative overflow-hidden">
         <div className="flex justify-between items-center border-b border-gray-100 pb-5">
           <div className="space-y-1">
@@ -195,13 +223,50 @@ export default function SellerRegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-black hover:bg-gray-900 text-white font-extrabold rounded-xl transition text-sm cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 bg-black hover:bg-gray-900 text-white font-extrabold rounded-xl transition text-sm cursor-pointer disabled:opacity-50 shadow-md"
             >
               {loading ? "Saving Portal..." : "Register & Complete Onboarding"}
             </button>
           </div>
         </form>
       </div>
+
+      {/* Success Modal Popup in Center */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center space-y-6 shadow-2xl border border-gray-100">
+            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+              <CheckCircle2 size={44} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-black text-gray-900 font-playfair tracking-tight">
+                Congratulations! 🎉
+              </h3>
+              <p className="text-sm font-bold text-emerald-600 uppercase tracking-wider">
+                You Are a Seller Now!
+              </p>
+              <p className="text-sm text-gray-500 leading-relaxed pt-1">
+                Your supplier account has been successfully set up. You can now start adding products to Veloza and grow your digital store!
+              </p>
+            </div>
+            <div className="pt-2 flex flex-col gap-3">
+              <button
+                onClick={() => router.push("/add-product")}
+                className="w-full py-3.5 bg-black hover:bg-gray-900 text-white font-extrabold rounded-xl transition text-sm shadow-lg cursor-pointer"
+              >
+                + Add Your First Product
+              </button>
+              <button
+                onClick={() => router.push("/my-products")}
+                className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition text-sm cursor-pointer"
+              >
+                View My Products
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
