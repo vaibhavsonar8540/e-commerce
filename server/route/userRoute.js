@@ -11,6 +11,7 @@ userRoute.post("/register" , userController.register)
 userRoute.post("/login" , userController.login)
 userRoute.get("/me", CheckAuth, userController.getMe)
 userRoute.put("/update-profile", CheckAuth, userController.updateProfile)
+userRoute.put("/update-store", CheckAuth, userController.updateStoreInfo)
 userRoute.get("/all", CheckAuth, CheckRole, userController.getUsers)
 userRoute.get("/dashboard-stats", CheckAuth, CheckRole, userController.getDashboardStats)
 

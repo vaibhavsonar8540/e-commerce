@@ -152,11 +152,13 @@ export default function ProductDetail({ product }) {
         ? [product.color]
         : [];
 
-  const displayPrice = product.price;
-  const isDiscounted = product.discountPrice && product.discountPrice > 0;
-  const finalPrice = isDiscounted ? product.discountPrice : displayPrice;
+  const displayPrice = Number(product.price || 0);
+  const rawDiscount = product.discountPrice != null ? product.discountPrice : product.discountedPrice;
+  const discountPrice = Number(rawDiscount || 0);
+  const isDiscounted = Boolean(discountPrice > 0 && displayPrice > discountPrice);
+  const finalPrice = isDiscounted ? discountPrice : displayPrice;
   const discountPercent = isDiscounted
-    ? Math.round(((displayPrice - product.discountPrice) / displayPrice) * 100)
+    ? Math.round(((displayPrice - discountPrice) / displayPrice) * 100)
     : 0;
 
   // Media items list
@@ -324,7 +326,7 @@ export default function ProductDetail({ product }) {
                   <span className="text-xl sm:text-3xl font-extrabold text-gray-900">
                     ₹{finalPrice}
                   </span>
-                  {isDiscounted && (
+                  {isDiscounted ? (
                     <>
                       <span className="text-xs sm:text-sm text-gray-400 line-through">
                         ₹{displayPrice}
@@ -333,7 +335,7 @@ export default function ProductDetail({ product }) {
                         {discountPercent}% off onwards
                       </span>
                     </>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Stock Status Badge */}

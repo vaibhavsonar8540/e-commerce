@@ -26,9 +26,18 @@ const ProductCard = ({ data }) => {
   // Resolve image source
   const imgUrl = getMediaUrl(data.thumbnail || data.image);
 
-  const priceVal = data.discountPrice || data.price || 0;
-  const discountTag = data.discountPrice && data.price && data.price > data.discountPrice
-    ? Math.round(((data.price - data.discountPrice) / data.price) * 100)
+  const price = Number(data.price || 0);
+  const rawDiscount = data.discountPrice != null ? data.discountPrice : data.discountedPrice;
+  const discountPrice = Number(rawDiscount || 0);
+
+  const hasDiscount = Boolean(
+    discountPrice > 0 && price > discountPrice
+  );
+
+  const priceVal = hasDiscount ? discountPrice : price;
+
+  const discountTag = hasDiscount
+    ? Math.round(((price - discountPrice) / price) * 100)
     : null;
 
   const handleAddToCart = async (e) => {
@@ -95,11 +104,11 @@ const ProductCard = ({ data }) => {
     <div className="group w-full relative overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-300 flex flex-col justify-between">
       
       {/* Discount Badge */}
-      {discountTag && (
+      {hasDiscount && discountTag != null ? (
         <div className="absolute left-3 top-3 z-10 bg-emerald-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-lg shadow-sm">
           {discountTag}% OFF
         </div>
-      )}
+      ) : null}
 
       {/* Wishlist Button */}
       <div
@@ -145,9 +154,9 @@ const ProductCard = ({ data }) => {
             <span className="text-sm font-extrabold text-primary">
               ₹{priceVal}
             </span>
-            {data.discountPrice && data.price && data.price > data.discountPrice && (
-              <span className="text-[10px] text-gray-400 font-semibold line-through">₹{data.price}</span>
-            )}
+            {hasDiscount ? (
+              <span className="text-[10px] text-gray-400 font-semibold line-through">₹{price}</span>
+            ) : null}
           </div>
         </div>
 

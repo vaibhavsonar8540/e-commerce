@@ -15,6 +15,11 @@ const orderSchema = new mongoose.Schema({
                 required: true
             },
 
+            seller: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            },
+
             // if product is changed or deleted after user purchase so in user's billing order history it will still shows user after deleting product beacuse that stored in productname and price 
             productName: { type: String, required: true }, // Snapshotted name
             price: { type: Number, required: true },       // Snapshotted price paid

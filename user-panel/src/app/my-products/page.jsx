@@ -204,8 +204,12 @@ export default function MyProductsPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filteredProducts.map((p) => {
-                    const priceText = `₹${p.price.toLocaleString()}`;
-                    const discountText = p.discountPrice ? `₹${p.discountPrice.toLocaleString()}` : null;
+                    const price = Number(p.price || 0);
+                    const rawDisc = p.discountPrice != null ? p.discountPrice : p.discountedPrice;
+                    const discountPrice = Number(rawDisc || 0);
+                    const hasDiscount = discountPrice > 0 && price > discountPrice;
+                    const priceText = `₹${price.toLocaleString()}`;
+                    const discountText = hasDiscount ? `₹${discountPrice.toLocaleString()}` : null;
                     const isOutOfStock = p.stock === 0;
                     const isLowStock = !isOutOfStock && p.stock < 5;
 

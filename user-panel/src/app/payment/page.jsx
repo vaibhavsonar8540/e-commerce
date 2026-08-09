@@ -20,6 +20,7 @@ import {
   Sparkles,
   Zap,
   Check,
+  Copy,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import api from "@/utils/axiosInstant";
@@ -49,6 +50,7 @@ export default function PaymentPage() {
   const [checkoutData, setCheckoutData] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState("RAZORPAY"); // Default to Razorpay
   const [submittingPayment, setSubmittingPayment] = useState(false);
+  const [copiedCard, setCopiedCard] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -82,13 +84,14 @@ export default function PaymentPage() {
     : "Standard Delivery Address";
 
   // Execute Order Creation In Database
-  const completeOrderPlacement = async (paymentRefId, methodUsed) => {
+  const completeOrderPlacement = async (paymentRefId, methodUsed, extraRazorpayData = {}) => {
     const orderRes = await api.post("/order/place-order", {
       shippingAddress: fullShippingAddress,
       paymentId: paymentRefId,
       paymentMethod: methodUsed,
       discountAmount: discountAmount,
       couponCode: checkoutData?.appliedCoupon?.code || "",
+      ...extraRazorpayData,
     });
 
     if (orderRes.data?.success) {
@@ -146,11 +149,9 @@ export default function PaymentPage() {
         }
 
         const razorpayKey =
-          process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
           razorpayOrderData?.key ||
-          "rzp_test_VeloraStore2026Key";
-
-        const razorpayOrderId = razorpayOrderData?.orderId || `order_${Date.now()}`;
+          process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
+          "rzp_test_TNjIaRUsYunrIB";
 
         // 2. Options for Razorpay Popup Modal
         const options = {
@@ -158,11 +159,10 @@ export default function PaymentPage() {
           amount: Math.round(finalTotalAmount * 100),
           currency: "INR",
           name: "Velora Store",
-          description: "Payment for Order Checkout",
+          description: "Payment for Order Checkout (Test Mode)",
           image: "https://cdn-icons-png.flaticon.com/512/1170/1170576.png",
-          order_id: razorpayOrderId,
           prefill: {
-            name: shipping.fullname || user?.fullname || "Customer",
+            name: shipping.fullname || user?.fullname || "Test Customer",
             email: shipping.email || user?.email || "customer@example.com",
             contact: shipping.phone || user?.phone || "9876543210",
           },
@@ -176,7 +176,11 @@ export default function PaymentPage() {
             try {
               toast.info("Payment authorized! Finalizing order...");
               const payId = response.razorpay_payment_id || `RZP_${Date.now()}`;
-              await completeOrderPlacement(payId, "Razorpay Online Payment");
+              await completeOrderPlacement(payId, "Razorpay Online Payment", {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              });
             } catch (error) {
               toast.error(error.message || "Failed to complete order after payment.");
               setSubmittingPayment(false);
@@ -190,6 +194,11 @@ export default function PaymentPage() {
           },
         };
 
+        // Attach order_id ONLY if it was created by Razorpay server
+        if (razorpayOrderData?.isRealOrder && razorpayOrderData?.orderId) {
+          options.order_id = razorpayOrderData.orderId;
+        }
+
         const rzpWindow = new window.Razorpay(options);
         rzpWindow.on("payment.failed", function (response) {
           toast.error(response.error.description || "Payment Failed.");
@@ -200,6 +209,15 @@ export default function PaymentPage() {
     } catch (err) {
       toast.error(err?.response?.data?.message || err.message || "Failed to complete order.");
       setSubmittingPayment(false);
+    }
+  };
+
+  const handleCopyTestCard = () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText("4100280000001007");
+      setCopiedCard(true);
+      toast.success("Test Card Number (4100 2800 0000 1007) copied!");
+      setTimeout(() => setCopiedCard(false), 3000);
     }
   };
 
@@ -239,14 +257,24 @@ export default function PaymentPage() {
             <span>Edit Shipping Address</span>
           </button>
 
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight font-playfair flex items-center gap-3">
-              Select Payment Method
-              <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              Choose Razorpay for fast, instant & secure online checkout or Pay on Delivery.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight font-playfair flex items-center gap-3">
+                Select Payment Method
+                <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                Choose Razorpay for fast, instant & secure online checkout or Pay on Delivery.
+              </p>
+            </div>
+
+            {/* Test Mode Badge */}
+            <div className="self-start sm:self-auto">
+              <span className="bg-gradient-to-r from-red-600 to-rose-600 text-white text-[11px] font-black px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-md flex items-center gap-2 border border-red-400/30">
+                <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+                <span>Test Mode Active</span>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -273,6 +301,63 @@ export default function PaymentPage() {
                 </div>
               </div>
             )}
+
+            {/* Razorpay Test Mode Helper Card */}
+            <div className="bg-gradient-to-r from-amber-50/90 via-orange-50/80 to-red-50/90 border-2 border-amber-200/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-amber-900 font-extrabold text-xs sm:text-sm">
+                  <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+                  <span>Razorpay Sandbox Test Credentials</span>
+                </div>
+                <span className="bg-amber-600 text-white text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wide">
+                  Test Mode
+                </span>
+              </div>
+
+              <p className="text-[11px] sm:text-xs text-amber-900/90 leading-relaxed font-medium">
+                <strong>Recommended Test Method:</strong> Select <strong>Netbanking</strong> or <strong>UPI</strong> in the popup below and click <strong>"Success"</strong>.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-xs">
+                {/* Card Number */}
+                <div className="bg-white/95 border border-amber-200 p-2.5 rounded-xl flex items-center justify-between shadow-xs">
+                  <div className="space-y-0.5">
+                    <span className="text-[9px] text-gray-400 font-extrabold uppercase block">Test Card Number</span>
+                    <span className="font-mono font-bold text-gray-900 text-xs sm:text-sm tracking-wider">4100 2800 0000 1007</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyTestCard}
+                    className="px-2.5 py-1.5 bg-black hover:bg-gray-800 text-white font-bold text-[10px] rounded-lg transition cursor-pointer shrink-0 flex items-center gap-1.5"
+                  >
+                    {copiedCard ? (
+                      <>
+                        <Check size={12} className="text-emerald-400" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={12} />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Expiry & CVV */}
+                <div className="bg-white/95 border border-amber-200 p-2.5 rounded-xl flex items-center justify-between shadow-xs">
+                  <div className="space-y-0.5">
+                    <span className="text-[9px] text-gray-400 font-extrabold uppercase block">Expiry / CVV / OTP</span>
+                    <span className="font-mono font-bold text-gray-900 text-xs">12/28 | CVV: 123 | OTP: 123456</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-[10px] text-amber-950 font-medium flex items-center gap-1.5 pt-0.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>Note: If card shows "International cards not supported", use <strong>Netbanking</strong> (choose ICICI/SBI/HDFC test bank) & click <strong>Success</strong>.</span>
+              </div>
+            </div>
 
             <div className="border-b border-gray-100 pb-4">
               <h2 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2.5">

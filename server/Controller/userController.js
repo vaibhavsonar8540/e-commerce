@@ -179,6 +179,9 @@ getMe: async (req, res) => {
         phone: user.phone,
         role: user.role,
         userBuyCount: user.userBuyCount || 0,
+        businessName: user.businessName || "",
+        gstin: user.gstin || "",
+        address: user.address || "",
       },
     });
   } catch (error) {
@@ -349,6 +352,50 @@ getDashboardStats: async (req, res) => {
           address: user.address
         },
         token
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  updateStoreInfo: async (req, res) => {
+    try {
+      const { businessName, gstin, address } = req.body;
+
+      if (!businessName || !address) {
+        return res.status(400).json({
+          success: false,
+          message: "Business Name and Business Address are required."
+        });
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+          businessName: businessName.trim(),
+          gstin: gstin ? gstin.trim() : "",
+          address: address.trim()
+        },
+        { new: true, runValidators: true }
+      ).select("-password");
+
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Store details updated successfully.",
+        user: {
+          id: updatedUser._id,
+          fullname: updatedUser.fullname,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          role: updatedUser.role,
+          businessName: updatedUser.businessName,
+          gstin: updatedUser.gstin,
+          address: updatedUser.address
+        }
       });
     } catch (error) {
       return res.status(500).json({ success: false, message: error.message });

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setIsModelOpen, setFlashMessage } from "@/redux/slices/commonSlice";
-import { User, Mail, Phone, Calendar, LogOut, Edit2, Save, X, Key, Store, ArrowLeft, Trash2, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Phone, Calendar, LogOut, Edit2, Save, X, Store, ArrowLeft, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
 import { logout, updateUser } from "@/redux/slices/authSlice";
 import api from "@/utils/axiosInstant";
 import Cookies from "js-cookie";
@@ -28,33 +28,29 @@ const profileValidationSchema = Yup.object().shape({
     .matches(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number"),
 });
 
-// Yup validation schema for password form
-const passwordValidationSchema = Yup.object().shape({
-  currentPassword: Yup.string().required("Current password is required"),
-  newPassword: Yup.string()
-    .required("New password is required")
-    .min(6, "New password must be at least 6 characters"),
-  confirmPassword: Yup.string()
-    .required("Confirm password is required")
-    .oneOf([Yup.ref("newPassword"), null], "New passwords do not match"),
-});
-
 export default function ProfilePage() {
   const dispatch = useDispatch();
   const router = useRouter();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
-  const [activeTab, setActiveTab] = useState("profile"); // profile, change-password, your-store
+  const [activeTab, setActiveTab] = useState("profile"); // profile, your-store
   const [isEditing, setIsEditing] = useState(false);
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [updating, setUpdating] = useState(false);
 
+  // Store info edit states
+  const [isEditingStore, setIsEditingStore] = useState(false);
+  const [businessName, setBusinessName] = useState("");
+  const [gstin, setGstin] = useState("");
+  const [address, setAddress] = useState("");
+  const [updatingStore, setUpdatingStore] = useState(false);
+  const [storeMessage, setStoreMessage] = useState(null);
+
   // Validation & status message state (replaces toast)
   const [errors, setErrors] = useState({});
   const [profileMessage, setProfileMessage] = useState(null); // { type: 'success' | 'error', text: string }
-  const [passwordMessage, setPasswordMessage] = useState(null);
 
   // Store products states
   const [products, setProducts] = useState([]);
@@ -70,16 +66,6 @@ export default function ProfilePage() {
     stock: 0,
   });
   const [editingProductSubmitting, setEditingProductSubmitting] = useState(false);
-
-  // Form states for password changes
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Fetch logged in user details on mount to ensure fresh profile data
   useEffect(() => {
@@ -105,6 +91,9 @@ export default function ProfilePage() {
       setFullname(user.fullname || user.name || "");
       setEmail(user.email || "");
       setPhone(user.phone || user.phoneNumber || user.mobile || "");
+      setBusinessName(user.businessName || "");
+      setGstin(user.gstin || "");
+      setAddress(user.address || "");
     }
   }, [user]);
 
@@ -192,37 +181,51 @@ export default function ProfilePage() {
     }
   };
 
-  // Password Submit with Yup Validation
-  const handlePasswordSubmit = async (e) => {
+  // Seller Store Info Save
+  const handleSaveStore = async (e) => {
     e.preventDefault();
-    setErrors({});
-    setPasswordMessage(null);
+    setStoreMessage(null);
 
-    try {
-      await passwordValidationSchema.validate(passwordForm, { abortEarly: false });
-    } catch (yupErr) {
-      if (yupErr.inner) {
-        const formErrors = {};
-        yupErr.inner.forEach((err) => {
-          if (!formErrors[err.path]) {
-            formErrors[err.path] = err.message;
-          }
-        });
-        setErrors(formErrors);
-        setPasswordMessage({
-          type: "error",
-          text: yupErr.errors[0] || "Please correct the password fields.",
-        });
-        return;
-      }
+    if (!businessName.trim() || !address.trim()) {
+      setStoreMessage({
+        type: "error",
+        text: "Store / Business Name and Business Address are required."
+      });
+      return;
     }
 
-    setPasswordMessage({
-      type: "success",
-      text: "Password verification submitted! Backend integration coming soon.",
-    });
-    setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    setUpdatingStore(true);
+    try {
+      const response = await api.put("/user/update-store", {
+        businessName,
+        gstin,
+        address
+      });
+
+      if (response.data?.success) {
+        dispatch(updateUser(response.data.user));
+        setStoreMessage({
+          type: "success",
+          text: response.data.message || "Store info updated successfully!"
+        });
+        setIsEditingStore(false);
+      } else {
+        setStoreMessage({
+          type: "error",
+          text: response.data?.message || "Failed to update store info."
+        });
+      }
+    } catch (err) {
+      setStoreMessage({
+        type: "error",
+        text: err?.response?.data?.message || "An error occurred while updating store info."
+      });
+    } finally {
+      setUpdatingStore(false);
+    }
   };
+
+
 
   // Product Delete Handler
   const handleDeleteProduct = async (id) => {
@@ -305,7 +308,6 @@ export default function ProfilePage() {
 
   const menuItems = [
     { id: "profile", label: "Profile", icon: User },
-    { id: "change-password", label: "Change Password", icon: Key },
   ];
 
   if (user?.role === "seller" || user?.role === "admin") {
@@ -581,130 +583,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Active tab content: CHANGE PASSWORD */}
-            {activeTab === "change-password" && (
-              <div className="space-y-6 animate-fade-in">
-                <div className="border-b border-gray-100 pb-4">
-                  <h3 className="text-lg font-bold text-gray-800">Change Password</h3>
-                  <p className="text-xs text-gray-450 mt-1">Configure a new secure password code for login safety</p>
-                </div>
 
-                {passwordMessage && (
-                  <div
-                    className={`p-3.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-2 ${
-                      passwordMessage.type === "success"
-                        ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
-                        : "bg-red-50 text-red-600 border border-red-200"
-                    }`}
-                  >
-                    {passwordMessage.type === "success" ? (
-                      <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
-                    ) : (
-                      <AlertCircle size={16} className="shrink-0 text-red-600" />
-                    )}
-                    <span>{passwordMessage.text}</span>
-                  </div>
-                )}
-
-                <form onSubmit={handlePasswordSubmit} className="space-y-4 max-w-md">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Current Password</label>
-                    <div className="relative w-full">
-                      <input
-                        type={showCurrentPassword ? "text" : "password"}
-                        value={passwordForm.currentPassword}
-                        onChange={(e) => {
-                          setPasswordForm({ ...passwordForm, currentPassword: e.target.value });
-                          if (errors.currentPassword) setErrors((prev) => ({ ...prev, currentPassword: null }));
-                        }}
-                        placeholder="••••••••"
-                        className={`w-full py-3 pl-4 pr-11 border rounded-xl outline-none transition text-sm ${
-                          errors.currentPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1 transition-colors"
-                        tabIndex={-1}
-                      >
-                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                    {errors.currentPassword && (
-                      <p className="text-xs text-red-600 font-semibold mt-1">{errors.currentPassword}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">New Password</label>
-                    <div className="relative w-full">
-                      <input
-                        type={showNewPassword ? "text" : "password"}
-                        value={passwordForm.newPassword}
-                        onChange={(e) => {
-                          setPasswordForm({ ...passwordForm, newPassword: e.target.value });
-                          if (errors.newPassword) setErrors((prev) => ({ ...prev, newPassword: null }));
-                        }}
-                        placeholder="••••••••"
-                        className={`w-full py-3 pl-4 pr-11 border rounded-xl outline-none transition text-sm ${
-                          errors.newPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1 transition-colors"
-                        tabIndex={-1}
-                      >
-                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                    {errors.newPassword && (
-                      <p className="text-xs text-red-600 font-semibold mt-1">{errors.newPassword}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Confirm New Password</label>
-                    <div className="relative w-full">
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) => {
-                          setPasswordForm({ ...passwordForm, confirmPassword: e.target.value });
-                          if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: null }));
-                        }}
-                        placeholder="••••••••"
-                        className={`w-full py-3 pl-4 pr-11 border rounded-xl outline-none transition text-sm ${
-                          errors.confirmPassword ? "border-red-500 focus:border-red-600" : "border-gray-200 focus:border-black"
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1 transition-colors"
-                        tabIndex={-1}
-                      >
-                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                    {errors.confirmPassword && (
-                      <p className="text-xs text-red-600 font-semibold mt-1">{errors.confirmPassword}</p>
-                    )}
-                  </div>
-
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      className="px-6 py-3 bg-[#45220e] hover:bg-[#34180a] text-white font-bold rounded-xl transition text-xs sm:text-sm cursor-pointer shadow"
-                    >
-                      Update Password
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
 
             {/* Active tab content: YOUR STORE */}
             {activeTab === "your-store" && (
@@ -712,26 +591,159 @@ export default function ProfilePage() {
                 
                 {/* Store Profile Section */}
                 <div className="space-y-6">
-                  <div className="border-b border-gray-100 pb-4">
-                    <h3 className="text-l font-bold text-gray-800">Your Store Registry</h3>
-                    <p className="text-xs text-gray-450 mt-1">Verified seller credentials and store registration logs</p>
+                  <div className="flex justify-between items-center border-b border-gray-100 pb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800">Your Store Registry</h3>
+                      <p className="text-xs text-gray-450 mt-1">Verified seller credentials and store registration details</p>
+                    </div>
+                    <div>
+                      {!isEditingStore ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingStore(true);
+                            setStoreMessage(null);
+                          }}
+                          className="flex items-center gap-1.5 p-2 sm:px-4 sm:py-2 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl cursor-pointer hover:bg-gray-50 transition"
+                          title="Edit Shop Info"
+                        >
+                          <Edit2 size={14} />
+                          <span className="hidden sm:inline">Edit Shop Info</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingStore(false);
+                            setBusinessName(user?.businessName || "");
+                            setGstin(user?.gstin || "");
+                            setAddress(user?.address || "");
+                            setStoreMessage(null);
+                          }}
+                          className="flex items-center gap-1.5 p-2 sm:px-4 sm:py-2 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl cursor-pointer hover:bg-gray-50 transition"
+                          title="Cancel"
+                        >
+                          <X size={14} />
+                          <span className="hidden sm:inline">Cancel</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-1 w-full bg-gray-50/50 p-4 border border-gray-100 rounded-2xl">
-                      <p className="text-[10px] text-gray-400 uppercase font-black tracking-wide">Store / Business Name</p>
-                      <p className="text-sm sm:text-base font-bold text-gray-800 capitalize leading-relaxed">
-                        {user?.businessName || "Zara Boutique Veloza Store"}
-                      </p>
+                  {storeMessage && (
+                    <div
+                      className={`p-3.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-2 ${
+                        storeMessage.type === "success"
+                          ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                          : "bg-red-50 text-red-600 border border-red-200"
+                      }`}
+                    >
+                      {storeMessage.type === "success" ? (
+                        <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
+                      ) : (
+                        <AlertCircle size={16} className="shrink-0 text-red-600" />
+                      )}
+                      <span>{storeMessage.text}</span>
                     </div>
+                  )}
 
-                    <div className="md:col-span-2 space-y-1 w-full bg-gray-50/55 p-4 border border-gray-100 rounded-2xl">
-                      <p className="text-[10px] text-gray-405 uppercase font-black tracking-wide">Registered Business Address</p>
-                      <p className="text-sm sm:text-base font-semibold text-gray-750 leading-relaxed capitalize">
-                        {user?.address || "12, Fashion Hub Complex, Outer Ring Road, New Delhi - 110001, India"}
-                      </p>
+                  {!isEditingStore ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1 w-full bg-gray-50/50 p-4 border border-gray-100 rounded-2xl">
+                        <p className="text-[10px] text-gray-400 uppercase font-black tracking-wide">Store / Business Name</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-800 capitalize leading-relaxed">
+                          {user?.businessName || "Not Provided"}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1 w-full bg-gray-50/50 p-4 border border-gray-100 rounded-2xl">
+                        <p className="text-[10px] text-gray-400 uppercase font-black tracking-wide">GSTIN / Tax ID</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-800 uppercase leading-relaxed font-mono">
+                          {user?.gstin || "N/A"}
+                        </p>
+                      </div>
+
+                      <div className="md:col-span-2 space-y-1 w-full bg-gray-50/55 p-4 border border-gray-100 rounded-2xl">
+                        <p className="text-[10px] text-gray-400 uppercase font-black tracking-wide">Registered Business Address</p>
+                        <p className="text-sm sm:text-base font-semibold text-gray-750 leading-relaxed capitalize">
+                          {user?.address || "Not Provided"}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <form onSubmit={handleSaveStore} className="space-y-5 bg-gray-50/40 p-5 rounded-2xl border border-gray-200/80">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="space-y-1.5 w-full">
+                          <label className="text-xs font-bold text-gray-600 uppercase tracking-wide block">
+                            Store / Business Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={businessName}
+                            onChange={(e) => setBusinessName(e.target.value)}
+                            placeholder="Enter business/store name"
+                            className="w-full py-2.5 px-3.5 border border-gray-300 rounded-xl outline-none focus:border-black text-sm font-semibold text-gray-900 bg-white"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5 w-full">
+                          <label className="text-xs font-bold text-gray-600 uppercase tracking-wide block">
+                            GSTIN / GST Number <span className="text-gray-400 font-normal">(Optional)</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={gstin}
+                            onChange={(e) => setGstin(e.target.value.toUpperCase())}
+                            placeholder="e.g. 22AAAAA0000A1Z5"
+                            className="w-full py-2.5 px-3.5 border border-gray-300 rounded-xl outline-none focus:border-black text-sm font-semibold font-mono text-gray-900 bg-white uppercase"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2 space-y-1.5 w-full">
+                          <label className="text-xs font-bold text-gray-600 uppercase tracking-wide block">
+                            Registered Business Address <span className="text-red-500">*</span>
+                          </label>
+                          <textarea
+                            required
+                            rows={3}
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="Enter full business address with city, state & pincode"
+                            className="w-full py-2.5 px-3.5 border border-gray-300 rounded-xl outline-none focus:border-black text-sm font-semibold text-gray-900 bg-white resize-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-3 pt-3 border-t border-gray-200">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingStore(false);
+                            setBusinessName(user?.businessName || "");
+                            setGstin(user?.gstin || "");
+                            setAddress(user?.address || "");
+                            setStoreMessage(null);
+                          }}
+                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={updatingStore}
+                          className="flex items-center gap-2 px-6 py-2 bg-[#45220e] hover:bg-[#34180a] text-white font-bold text-xs rounded-xl transition cursor-pointer shadow disabled:bg-gray-400"
+                        >
+                          {updatingStore ? (
+                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                          ) : (
+                            <Save size={14} />
+                          )}
+                          <span>Save Shop Info</span>
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
 
                 {/* Seller Created Products list section */}

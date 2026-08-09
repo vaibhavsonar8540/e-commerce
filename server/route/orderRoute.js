@@ -13,4 +13,11 @@ orderRouter.post("/place-order", checkAuth, orderController.placeOrder);
 // 2. GET LOGGED-IN USER'S ORDER HISTORY
 orderRouter.get("/history", checkAuth, orderController.getOrderHistory);
 
+// 3. GET SELLER'S RECEIVED ORDERS
+orderRouter.get("/seller-orders", checkAuth, orderController.getSellerOrders);
+
+// 4. UPDATE ORDER STATUS (Sellers/Admins)
+orderRouter.put("/update-status", checkAuth, orderController.updateOrderStatus);
+orderRouter.patch("/update-status", checkAuth, orderController.updateOrderStatus);
+
 module.exports = orderRouter;
