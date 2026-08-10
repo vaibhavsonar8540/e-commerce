@@ -112,7 +112,15 @@ export default function RootLayout({ children }) {
               {children}
             </main>
             <DynamicFooter />
-            <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar={false} />
+            <ToastContainer
+              position="bottom-right"
+              autoClose={3500}
+              hideProgressBar={false}
+              newestOnTop={true}
+              closeOnClick={true}
+              pauseOnHover={true}
+              theme="light"
+            />
           </Providers>
         </DynamicSmoothScroll>
       </body>

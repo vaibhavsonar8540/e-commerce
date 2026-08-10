@@ -10,13 +10,17 @@ const orderController = {
     createRazorpayOrder: async (req, res) => {
         try {
             const { amount } = req.body;
-            if (!amount || amount <= 0) {
+            if (amount === undefined || amount === null || amount <= 0) {
                 return res.status(400).json({ success: false, message: "Invalid order amount" });
             }
 
             const Razorpay = require("razorpay");
             const key_id = process.env.RAZORPAY_KEY_ID || "rzp_test_TNjIaRUsYunrIB";
             const key_secret = process.env.RAZORPAY_KEY_SECRET || "u3M1RbOE04hgPSXBxQwHUvsM";
+
+            // Enforce minimum 1 INR (100 paise) for Razorpay Gateway
+            const parsedAmount = Math.max(1, Number(parseFloat(amount).toFixed(2)));
+            const amountInPaise = Math.round(parsedAmount * 100);
 
             let order;
             let isRealOrder = false;
@@ -27,7 +31,7 @@ const orderController = {
                 });
 
                 const options = {
-                    amount: Math.round(amount * 100),
+                    amount: amountInPaise,
                     currency: "INR",
                     receipt: `rcpt_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
                 };
@@ -38,7 +42,7 @@ const orderController = {
                 console.warn("[RAZORPAY API WARN] Using fallback order ID:", rzpErr.message);
                 order = {
                     id: `order_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-                    amount: Math.round(amount * 100),
+                    amount: amountInPaise,
                     currency: "INR",
                     receipt: `rcpt_${Date.now()}`,
                 };
@@ -156,6 +160,10 @@ const orderController = {
             const appliedCouponCode = req.body.couponCode || "";
             if (discount > 0) {
                 totalAmount = Math.max(0, totalAmount - discount);
+            }
+            totalAmount = Number(totalAmount.toFixed(2));
+            if (totalAmount > 0 && totalAmount < 1) {
+                totalAmount = 1;
             }
 
             // 2. Reduce inventory stock & increase totalSales ATOMICALLY inside transaction session

@@ -68,7 +68,12 @@ body {
   animation-play-state: paused;
 }
 
-/* Toast Custom Styles - Bottom Right, Clean White BG with Dark Text */
+/* Toast Custom Styles - Clean, Premium & Responsive for Mobile + Desktop */
+.Toastify__toast-container {
+  z-index: 999999 !important;
+  padding: 0 !important;
+}
+
 .Toastify__toast-container--bottom-right {
   bottom: 1.5rem !important;
   right: 1.5rem !important;
@@ -76,117 +81,159 @@ body {
 
 .Toastify__toast {
   background-color: #ffffff !important;
-  border-radius: 14px !important;
-  border: 1px solid #e5e7eb !important;
-  color: #111827 !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #0f172a !important;
   font-weight: 600 !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+  padding: 12px 16px !important;
+  margin-bottom: 10px !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
 .Toastify__toast-body {
-  color: #111827 !important;
-  font-size: 14px !important;
+  color: #0f172a !important;
+  font-size: 13.5px !important;
+  line-height: 1.4 !important;
   font-weight: 600 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  word-break: break-word !important;
+  white-space: normal !important;
 }
 
-.Toastify__toast--success {
-  background-color: #ffffff !important;
-  color: #111827 !important;
-}
-
-.Toastify__toast--success .Toastify__toast-icon svg {
-  fill: #22c55e !important;
-}
-
-.Toastify__toast--error {
-  background-color: #ffffff !important;
-  color: #111827 !important;
-}
-
-.Toastify__toast--error .Toastify__toast-icon svg {
-  fill: #ef4444 !important;
-}
-
-.Toastify__toast--warning {
-  background-color: #ffffff !important;
-  color: #111827 !important;
-}
-
-.Toastify__toast--warning .Toastify__toast-icon svg {
-  fill: #f59e0b !important;
-}
-
-.Toastify__toast--info {
-  background-color: #ffffff !important;
-  color: #111827 !important;
-}
-
-.Toastify__toast--info .Toastify__toast-icon svg {
-  fill: #3b82f6 !important;
+.Toastify__toast-icon {
+  width: 20px !important;
+  height: 20px !important;
+  margin-right: 10px !important;
+  flex-shrink: 0 !important;
 }
 
 .Toastify__close-button {
-  color: #374151 !important;
+  color: #64748b !important;
   opacity: 0.7 !important;
+  align-self: center !important;
+  margin-left: 8px !important;
+  padding: 2px !important;
+  flex-shrink: 0 !important;
 }
 
 .Toastify__close-button:hover {
   opacity: 1 !important;
+  color: #0f172a !important;
+}
+
+/* Toast Color Themes */
+.Toastify__toast--success {
+  background-color: #ffffff !important;
+  border-left: 4px solid #16a34a !important;
+}
+
+.Toastify__toast--success .Toastify__toast-icon svg {
+  fill: #16a34a !important;
+}
+
+.Toastify__toast--error {
+  background-color: #ffffff !important;
+  border-left: 4px solid #dc2626 !important;
+}
+
+.Toastify__toast--error .Toastify__toast-icon svg {
+  fill: #dc2626 !important;
+}
+
+.Toastify__toast--warning {
+  background-color: #ffffff !important;
+  border-left: 4px solid #d97706 !important;
+}
+
+.Toastify__toast--warning .Toastify__toast-icon svg {
+  fill: #d97706 !important;
+}
+
+.Toastify__toast--info {
+  background-color: #ffffff !important;
+  border-left: 4px solid #2563eb !important;
+}
+
+.Toastify__toast--info .Toastify__toast-icon svg {
+  fill: #2563eb !important;
 }
 
 .Toastify__progress-bar--success {
-  background-color: #22c55e !important;
+  background: linear-gradient(to right, #22c55e, #16a34a) !important;
 }
 
 .Toastify__progress-bar--error {
-  background-color: #ef4444 !important;
+  background: linear-gradient(to right, #ef4444, #dc2626) !important;
 }
 
 .Toastify__progress-bar--warning {
-  background-color: #f59e0b !important;
+  background: linear-gradient(to right, #f59e0b, #d97706) !important;
 }
 
 .Toastify__progress-bar--info {
-  background-color: #3b82f6 !important;
+  background: linear-gradient(to right, #3b82f6, #2563eb) !important;
 }
 
-/* Mobile-only Toast overrides (small screen size reduction) */
+/* Mobile & Small Devices (< 640px) Toast Overrides */
 @media (max-width: 640px) {
   .Toastify__toast-container {
-    width: auto !important;
-    max-width: calc(100% - 32px) !important;
+    position: fixed !important;
+    bottom: 1.25rem !important;
+    top: auto !important;
     left: 50% !important;
+    right: auto !important;
     transform: translateX(-50%) !important;
-    bottom: 1rem !important;
-    padding: 0 !important;
+    width: calc(100% - 32px) !important;
+    max-width: 400px !important;
     margin: 0 !important;
+    padding: 0 !important;
+    z-index: 999999 !important;
+  }
+
+  .Toastify__toast-container--bottom-right,
+  .Toastify__toast-container--bottom-left,
+  .Toastify__toast-container--bottom-center,
+  .Toastify__toast-container--top-right,
+  .Toastify__toast-container--top-left,
+  .Toastify__toast-container--top-center {
+    bottom: 1.25rem !important;
+    top: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
   }
 
   .Toastify__toast {
-    min-height: 40px !important;
+    min-height: 38px !important;
     padding: 8px 12px !important;
-    border-radius: 10px !important;
+    border-radius: 12px !important;
     margin-bottom: 6px !important;
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.16) !important;
   }
 
   .Toastify__toast-body {
     font-size: 12px !important;
-    padding: 0 !important;
+    line-height: 1.3 !important;
   }
 
   .Toastify__toast-icon {
     width: 16px !important;
-    margin-right: 6px !important;
+    height: 16px !important;
+    margin-right: 7px !important;
   }
 
   .Toastify__close-button {
-    padding: 0 2px !important;
-    align-self: center !important;
+    margin-left: 6px !important;
+    padding: 1px !important;
   }
 
   .Toastify__close-button > svg {
-    width: 13px !important;
-    height: 13px !important;
+    width: 12px !important;
+    height: 12px !important;
   }
 }
 

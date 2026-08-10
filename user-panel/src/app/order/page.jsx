@@ -103,8 +103,9 @@ export default function OrderPage() {
 
   const items = cart?.items || [];
   const subTotal = cart?.subTotal || 0;
-  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const finalTotalAmount = Math.max(0, subTotal - discountAmount);
+  const discountAmount = appliedCoupon ? Number(appliedCoupon.discountAmount.toFixed(2)) : 0;
+  const rawTotal = Math.max(0, subTotal - discountAmount);
+  const finalTotalAmount = rawTotal > 0 ? Math.max(1, Number(rawTotal.toFixed(2))) : 0;
 
   // Apply Coupon Code
   const handleApplyCoupon = async (e) => {

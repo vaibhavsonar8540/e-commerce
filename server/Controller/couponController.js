@@ -138,7 +138,13 @@ const couponController = {
         discountAmount = Math.min(coupon.discount, currentSubtotal);
       }
 
-      const finalAmount = Math.max(0, currentSubtotal - discountAmount);
+      // Enforce minimum 1 INR payable total if subtotal >= 1 (Razorpay minimum threshold)
+      if (currentSubtotal >= 1 && currentSubtotal - discountAmount < 1) {
+        discountAmount = Math.max(0, currentSubtotal - 1);
+      }
+
+      discountAmount = Number(discountAmount.toFixed(2));
+      const finalAmount = Number(Math.max(0, currentSubtotal - discountAmount).toFixed(2));
 
       return res.status(200).json({
         success: true,
@@ -147,8 +153,8 @@ const couponController = {
           code: coupon.code,
           discountValue: coupon.discount,
           discountType: coupon.discountType,
-          discountAmount: Number(discountAmount.toFixed(2)),
-          finalAmount: Number(finalAmount.toFixed(2)),
+          discountAmount: discountAmount,
+          finalAmount: finalAmount,
         },
       });
     } catch (error) {

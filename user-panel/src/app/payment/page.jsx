@@ -71,8 +71,13 @@ export default function PaymentPage() {
 
   const items = cart?.items || [];
   const subTotal = checkoutData?.subTotal || cart?.subTotal || 0;
-  const discountAmount = checkoutData?.discountAmount || 0;
-  const finalTotalAmount = checkoutData?.totalAmount || Math.max(0, subTotal - discountAmount);
+  const discountAmount = checkoutData?.discountAmount ? Number(checkoutData.discountAmount.toFixed(2)) : 0;
+  const rawTotal = Math.max(0, subTotal - discountAmount);
+  const finalTotalAmount = checkoutData?.totalAmount
+    ? Number(checkoutData.totalAmount.toFixed(2))
+    : rawTotal > 0
+    ? Math.max(1, Number(rawTotal.toFixed(2)))
+    : 0;
   const shipping = checkoutData?.shipping || {};
 
   const fullShippingAddress = shipping.address
@@ -156,7 +161,7 @@ export default function PaymentPage() {
         // 2. Options for Razorpay Popup Modal
         const options = {
           key: razorpayKey,
-          amount: Math.round(finalTotalAmount * 100),
+          amount: razorpayOrderData?.amount || Math.round(finalTotalAmount * 100),
           currency: "INR",
           name: "Velora Store",
           description: "Payment for Order Checkout (Test Mode)",
@@ -304,12 +309,12 @@ export default function PaymentPage() {
 
             {/* Razorpay Test Mode Helper Card */}
             <div className="bg-gradient-to-r from-amber-50/90 via-orange-50/80 to-red-50/90 border-2 border-amber-200/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-amber-900 font-extrabold text-xs sm:text-sm">
-                  <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+              <div className="flex items-start sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-amber-900 font-extrabold text-xs sm:text-sm leading-tight">
+                  <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 shrink-0" />
                   <span>Razorpay Sandbox Test Credentials</span>
                 </div>
-                <span className="bg-amber-600 text-white text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wide">
+                <span className="bg-amber-600 text-white text-[9px] sm:text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider whitespace-nowrap shrink-0">
                   Test Mode
                 </span>
               </div>
