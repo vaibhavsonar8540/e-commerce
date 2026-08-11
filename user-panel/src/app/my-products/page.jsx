@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { setIsModelOpen } from "@/redux/slices/commonSlice";
-import { ArrowLeft, Package, Sparkles, RefreshCw, AlertCircle, Plus, Eye } from "lucide-react";
+import { ArrowLeft, Package, Sparkles, RefreshCw, AlertCircle, Plus, Eye, CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
 import api from "@/utils/axiosInstant";
 import { toast } from "react-toastify";
@@ -19,6 +19,7 @@ export default function MyProductsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [togglingId, setTogglingId] = useState(null);
 
   const fetchMyProducts = async () => {
     setLoading(true);
@@ -35,6 +36,24 @@ export default function MyProductsPage() {
       toast.error(err?.response?.data?.message || "Failed to load products list.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleProductStatus = async (id, productName) => {
+    setTogglingId(id);
+    try {
+      const response = await api.patch(`/product/toggle-status/${id}`);
+      if (response.data?.success) {
+        const updated = response.data.product;
+        setProducts((prev) =>
+          prev.map((p) => (p._id === id ? { ...p, status: updated.status } : p))
+        );
+        toast.success(response.data.message || `Status of '${productName}' changed to ${updated.status}.`);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update product status.");
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -262,15 +281,29 @@ export default function MyProductsPage() {
                           </span>
                         </td>
                         <td className="py-4 px-6 text-center">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            p.status === "active"
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                              : p.status === "draft"
-                              ? "bg-gray-100 text-gray-600 border border-gray-200"
-                              : "bg-red-50 text-red-700 border border-red-100"
-                          }`}>
-                            {p.status}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleProductStatus(p._id, p.productName)}
+                            disabled={togglingId === p._id}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide transition-all cursor-pointer shadow-xs active:scale-95 border ${
+                              p.status === "active"
+                                ? "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200"
+                                : "bg-red-100 text-red-800 border-red-300 hover:bg-red-200"
+                            }`}
+                            title="Click to toggle active/inactive status"
+                          >
+                            {p.status === "active" ? (
+                              <>
+                                <CheckCircle2 size={13} className="text-emerald-700 shrink-0" />
+                                <span>Active</span>
+                              </>
+                            ) : (
+                              <>
+                                <XCircle size={13} className="text-red-700 shrink-0" />
+                                <span>Inactive</span>
+                              </>
+                            )}
+                          </button>
                         </td>
                         <td className="py-4 px-6 text-center">
                           <Link

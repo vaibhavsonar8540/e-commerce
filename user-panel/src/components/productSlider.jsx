@@ -4,8 +4,17 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ProductCard from "./productCard";
+import { ProductSliderSkeleton } from "@/components/ui/SkeletonLoader";
 
-export default function ProductSlider({ title, subtitle, products = [], collectionSlug, seeMoreUrl }) {
+export default function ProductSlider({
+  title,
+  subtitle,
+  products = [],
+  collectionSlug,
+  seeMoreUrl,
+  loading = false,
+  error = null,
+}) {
   const scrollRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -26,6 +35,9 @@ export default function ProductSlider({ title, subtitle, products = [], collecti
     }
   }
 
+  const hasProducts = Array.isArray(products) && products.length > 0;
+  const showSkeleton = loading || error || !hasProducts;
+
   // Auto slide functionality (Timer: slow 3.5s interval)
   const autoSlide = useCallback(() => {
     if (!scrollRef.current || isHovered || isDragging) return;
@@ -41,13 +53,14 @@ export default function ProductSlider({ title, subtitle, products = [], collecti
   }, [isHovered, isDragging]);
 
   useEffect(() => {
-    if (!products || products.length <= 1) return;
+    if (!hasProducts || showSkeleton) return;
     const interval = setInterval(autoSlide, 3500);
     return () => clearInterval(interval);
-  }, [autoSlide, products]);
+  }, [autoSlide, hasProducts, showSkeleton]);
 
   // Mouse Drag / Touch User Interaction handlers
   const handleMouseDown = (e) => {
+    if (!scrollRef.current) return;
     setIsDragging(true);
     setStartX(e.pageX - scrollRef.current.offsetLeft);
     setScrollLeftState(scrollRef.current.scrollLeft);
@@ -63,16 +76,12 @@ export default function ProductSlider({ title, subtitle, products = [], collecti
   };
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return;
+    if (!isDragging || !scrollRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
     const walk = (x - startX) * 1.5;
     scrollRef.current.scrollLeft = scrollLeftState - walk;
   };
-
-  if (!products || products.length === 0) {
-    return null;
-  }
 
   return (
     <div className="space-y-4">
@@ -87,7 +96,7 @@ export default function ProductSlider({ title, subtitle, products = [], collecti
           )}
         </div>
 
-        {/* See More Link (Replaced old arrow buttons) */}
+        {/* See More Link */}
         <Link
           href={targetUrl}
           className="text-xs sm:text-sm font-bold text-[#47230B] hover:text-black hover:underline transition flex items-center gap-1 sm:gap-1.5 cursor-pointer pb-0.5 sm:pb-1 group shrink-0"
@@ -97,27 +106,31 @@ export default function ProductSlider({ title, subtitle, products = [], collecti
         </Link>
       </div>
 
-      {/* Main Slider Content with User Interaction & Smooth Dragging */}
-      <div
-        ref={scrollRef}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={handleMouseLeave}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        className={`flex gap-4 overflow-x-auto pb-4 scroll-smooth scrollbar-none select-none ${
-          isDragging ? "cursor-grabbing" : "cursor-grab"
-        }`}
-      >
-        {products.map((product) => (
-          <div
-            key={product._id || product.id}
-            className="w-[calc(50%-8px)] xs:w-[calc(33.33%-11px)] sm:w-[calc(25%-12px)] lg:w-[calc(20%-13px)] shrink-0"
-          >
-            <ProductCard data={product} />
-          </div>
-        ))}
-      </div>
+      {/* Main Content: Show product card skeletons if server is offline/loading/empty */}
+      {showSkeleton ? (
+        <ProductSliderSkeleton count={5} />
+      ) : (
+        <div
+          ref={scrollRef}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={handleMouseLeave}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          className={`flex gap-4 overflow-x-auto pb-4 scroll-smooth scrollbar-none select-none ${
+            isDragging ? "cursor-grabbing" : "cursor-grab"
+          }`}
+        >
+          {products.map((product) => (
+            <div
+              key={product._id || product.id}
+              className="w-[calc(50%-8px)] xs:w-[calc(33.33%-11px)] sm:w-[calc(25%-12px)] lg:w-[calc(20%-13px)] shrink-0"
+            >
+              <ProductCard data={product} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

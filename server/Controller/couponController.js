@@ -165,6 +165,35 @@ const couponController = {
       });
     }
   },
+
+  // 5. TOGGLE COUPON STATUS (ACTIVE / INACTIVE)
+  toggleCouponStatus: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const coupon = await Coupon.findById(id);
+      if (!coupon) {
+        return res.status(404).json({
+          success: false,
+          message: "Coupon code not found.",
+        });
+      }
+
+      coupon.isActive = !coupon.isActive;
+      await coupon.save();
+
+      return res.status(200).json({
+        success: true,
+        message: `Coupon '${coupon.code}' is now ${coupon.isActive ? "Active" : "Inactive"}.`,
+        data: coupon,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error while updating status.",
+        error: error.message,
+      });
+    }
+  },
 };
 
 module.exports = couponController;

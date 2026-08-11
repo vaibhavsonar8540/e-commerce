@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
 
+import { CollectionNavSkeleton } from "@/components/ui/SkeletonLoader";
+
 const NavigationHeader = () => {
   const dispatch = useDispatch();
   const [hoverCollection, setHoverCollection] = useState(null);
@@ -31,14 +33,8 @@ const closeMenu = () => {
     dispatch(fetchSUbCategories());
   }, [dispatch]);
 
-  if (loading && (!collection || collection.length === 0)) {
-    return (
-      <div className="flex gap-8 items-center">
-        <div className="h-4 w-16 bg-gray-200 animate-pulse rounded"></div>
-        <div className="h-4 w-20 bg-gray-200 animate-pulse rounded"></div>
-        <div className="h-4 w-16 bg-gray-200 animate-pulse rounded"></div>
-      </div>
-    );
+  if (!collection || collection.length === 0) {
+    return <CollectionNavSkeleton />;
   }
 
   const filteredCategories = hoverCollection

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import api from "@/utils/axiosInstant";
 import ProductCard from "@/components/productCard";
+import { ProductCardSkeleton, ErrorState } from "@/components/ui/SkeletonLoader";
 import { ChevronRight, ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -482,14 +483,13 @@ export default function CollectionPage({ params }) {
 
         {/* Products Listing Grid */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-3">
-            <span className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></span>
-            <p className="text-sm font-semibold text-gray-500">Curating products...</p>
+          <div className="grid grid-cols-1 xss:grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <ProductCardSkeleton key={idx} />
+            ))}
           </div>
         ) : errorMessage ? (
-          <div className="bg-red-50 text-red-700/90 border border-red-200/50 p-5 rounded-2xl text-center font-medium">
-            <p>{errorMessage}</p>
-          </div>
+          <ErrorState message={errorMessage} onRetry={() => window.location.reload()} />
         ) : filteredProducts.length === 0 ? (
           <div className="bg-white border border-gray-200/80 rounded-3xl p-12 text-center max-w-xl mx-auto shadow-sm space-y-5">
             <div className="w-16 h-16 bg-gray-105 rounded-2xl flex items-center justify-center mx-auto text-gray-400 mb-4 shadow-inner">

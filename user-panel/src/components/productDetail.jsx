@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 import { addToCartAction } from "@/redux/action/commonAction";
 import { setIsModelOpen, setFlashMessage } from "@/redux/slices/commonSlice";
 import {
@@ -18,6 +19,7 @@ import { getMediaUrl, DEFAULT_PLACEHOLDER_IMAGE } from "@/utils/imageUrl";
 
 export default function ProductDetail({ product }) {
   const dispatch = useDispatch();
+  const router = useRouter();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { cart } = useSelector((state) => state.common);
 
@@ -135,7 +137,37 @@ export default function ProductDetail({ product }) {
   };
 
   const handleBuyNow = async () => {
-    await handleAddToCart();
+    if (!isAuthenticated) {
+      dispatch(
+        setFlashMessage({
+          type: "info",
+          message: "Please sign-in to purchase items.",
+        }),
+      );
+      dispatch(setIsModelOpen(true));
+      return;
+    }
+
+    const isAlreadyInCart = cart?.items?.some(
+      (item) => (item.product?._id || item.product) === product?._id,
+    );
+
+    setAddingToCart(true);
+    try {
+      if (!isAlreadyInCart) {
+        await dispatch(addToCartAction(product._id, 1));
+      }
+      router.push("/order");
+    } catch (err) {
+      dispatch(
+        setFlashMessage({
+          type: "error",
+          message: err?.response?.data?.message || "Error adding item to cart.",
+        }),
+      );
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   const colorsList = Array.isArray(product?.colors)
@@ -518,21 +550,12 @@ export default function ProductDetail({ product }) {
 
       {/* Bottom Section: Space below Seller Info and ONLY Men's Latest Arrivals */}
       <div className="mt-6 sm:mt-10 border-gray-200">
-        {loadingSliders ? (
-          <div className="flex justify-center items-center py-6">
-            <span className="w-6 h-6 border-2 border-gray-200 border-t-black rounded-full animate-spin"></span>
-          </div>
-        ) : (
-          menArrivals.length > 0 && (
-            <div>
-              <ProductSlider
-                title="Latest Arrivals For Men"
-                products={menArrivals}
-                collectionSlug="men"
-              />
-            </div>
-          )
-        )}
+        <ProductSlider
+          title="Latest Arrivals For Men"
+          products={menArrivals}
+          collectionSlug="men"
+          loading={loadingSliders}
+        />
       </div>
     </>
   );

@@ -3,10 +3,13 @@ import { getCategories, getCollection, getSubCategories, getCartApi, addToCartAp
 
 export const fetchCollection = () => async (dispatch) => {
     try {
+        dispatch(setLoading(true));
         const data = await getCollection();
         dispatch(setCollection(data));
     } catch (error) {
         // catch silently
+    } finally {
+        dispatch(setLoading(false));
     }
 };
 

@@ -332,6 +332,35 @@ const productController = {
       return res.status(500).json({ success: false, message: error.message });
     }
   },
+
+  toggleStatus: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const product = await Product.findById(id);
+
+      if (!product) {
+        return res.status(404).json({ success: false, message: "Product not found." });
+      }
+
+      // Check authorization
+      const userId = req.user?.id || req.user?._id;
+      if (product.seller?.toString() !== userId?.toString() && req.user?.role !== "admin") {
+        return res.status(403).json({ success: false, message: "You are not authorized to edit status of this product." });
+      }
+
+      const newStatus = product.status === "active" ? "inactive" : "active";
+      product.status = newStatus;
+      await product.save();
+
+      return res.status(200).json({
+        success: true,
+        message: `Product '${product.productName}' status updated to ${newStatus}.`,
+        product,
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  },
 };
 
 module.exports = productController;

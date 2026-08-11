@@ -7,7 +7,7 @@ import KeyFeatures from "@/components/keyFeatures";
 import OtherCollection from "@/components/otherCollection";
 import MarqueeComponent from "@/components/marqueeComponent";
 import Category from "./category";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "@/utils/axiosInstant";
 import ProductSlider from "@/components/productSlider";
 import fashionBanner from "@/assets/home/fashionBanner.webp";
@@ -22,10 +22,6 @@ import electronicLg from "@/assets/corosaul/electronic-lg.webp";
 import electronicSmall from "@/assets/corosaul/electronic-small.webp";
 import fashionLg from "@/assets/corosaul/fashion-lg.webp";
 import fashionSmall from "@/assets/corosaul/fashion-small.webp";
-// import homeDecoreLg from "@/assets/corosaul/home-decore-lg.webp";
-// import homeDecoreSmall from "@/assets/corosaul/home-decore-small.webp";
-// import beautyLg from "@/assets/corosaul/beauty-lg.webp";
-// import beautySmall from "@/assets/corosaul/beauty-small.webp";
 
 const heroSlides = [
   {
@@ -47,38 +43,42 @@ const HomePage = () => {
   const [womenProducts, setWomenProducts] = useState([]);
   const [electronicsProducts, setElectronicsProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchHomeSliders = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [menRes, womenRes, electronicsRes] = await Promise.all([
+        api.get("/product/get-filtered", {
+          params: { collectionSlug: "men" },
+        }),
+        api.get("/product/get-filtered", {
+          params: { collectionSlug: "women" },
+        }),
+        api.get("/product/get-filtered", {
+          params: { collectionSlug: "electronics" },
+        }),
+      ]);
+      if (menRes.data?.success) {
+        setMenProducts(menRes.data.products.slice(0, 5));
+      }
+      if (womenRes.data?.success) {
+        setWomenProducts(womenRes.data.products.slice(0, 5));
+      }
+      if (electronicsRes.data?.success) {
+        setElectronicsProducts(electronicsRes.data.products.slice(0, 5));
+      }
+    } catch (err) {
+      setError("Unable to load collection products. Please check network connectivity.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchHomeSliders() {
-      try {
-        const [menRes, womenRes, electronicsRes] = await Promise.all([
-          api.get("/product/get-filtered", {
-            params: { collectionSlug: "men" },
-          }),
-          api.get("/product/get-filtered", {
-            params: { collectionSlug: "women" },
-          }),
-          api.get("/product/get-filtered", {
-            params: { collectionSlug: "electronics" },
-          }),
-        ]);
-        if (menRes.data?.success) {
-          setMenProducts(menRes.data.products.slice(0, 5));
-        }
-        if (womenRes.data?.success) {
-          setWomenProducts(womenRes.data.products.slice(0, 5));
-        }
-        if (electronicsRes.data?.success) {
-          setElectronicsProducts(electronicsRes.data.products.slice(0, 5));
-        }
-      } catch (err) {
-        // catch silently
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchHomeSliders();
-  }, []);
+  }, [fetchHomeSliders]);
 
   return (
     <div>
@@ -92,15 +92,17 @@ const HomePage = () => {
         <Category />
       </section>
 
-      {womenProducts && (
-        <section className="px-4 sm:px-8 md:px-12 lg:px-16 mt-6 lg:mt-10 animate-in fade-in duration-300">
-          <ProductSlider
-            title="Latest Arrivals For Women"
-            products={womenProducts}
-            collectionSlug="women"
-          />
-        </section>
-      )}
+      {/* Latest Arrivals for Women */}
+      <section className="px-4 sm:px-8 md:px-12 lg:px-16 mt-6 lg:mt-10 animate-in fade-in duration-300">
+        <ProductSlider
+          title="Latest Arrivals For Women"
+          products={womenProducts}
+          collectionSlug="women"
+          loading={loading}
+          error={error}
+          onRetry={fetchHomeSliders}
+        />
+      </section>
 
       <section className="relative overflow-hidden mt-4 lg:mt-10">
         <CustomImage
@@ -129,15 +131,17 @@ const HomePage = () => {
         </div>
       </section>
 
-      {menProducts && (
-        <section className="px-4 sm:px-8 md:px-12 lg:px-16 mt-4 lg:mt-10 animate-in fade-in duration-300">
-          <ProductSlider
-            title="Latest Arrivals For Men"
-            products={menProducts}
-            collectionSlug="men"
-          />
-        </section>
-      )}
+      {/* Latest Arrivals for Men */}
+      <section className="px-4 sm:px-8 md:px-12 lg:px-16 mt-4 lg:mt-10 animate-in fade-in duration-300">
+        <ProductSlider
+          title="Latest Arrivals For Men"
+          products={menProducts}
+          collectionSlug="men"
+          loading={loading}
+          error={error}
+          onRetry={fetchHomeSliders}
+        />
+      </section>
 
       <Link
         href="/collection/electronics"
@@ -176,15 +180,17 @@ const HomePage = () => {
         </div>
       </Link>
 
-      {electronicsProducts && electronicsProducts.length > 0 && (
-        <section className="px-4 sm:px-8 md:px-12 lg:px-16 my-4 lg:my-10 animate-in fade-in duration-300">
-          <ProductSlider
-            title="Latest Arrivals In Electronics"
-            products={electronicsProducts}
-            collectionSlug="electronics"
-          />
-        </section>
-      )}
+      {/* Latest Arrivals in Electronics */}
+      <section className="px-4 sm:px-8 md:px-12 lg:px-16 my-4 lg:my-10 animate-in fade-in duration-300">
+        <ProductSlider
+          title="Latest Arrivals In Electronics"
+          products={electronicsProducts}
+          collectionSlug="electronics"
+          loading={loading}
+          error={error}
+          onRetry={fetchHomeSliders}
+        />
+      </section>
 
       <OtherCollection />
 

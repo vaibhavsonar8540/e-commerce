@@ -13,6 +13,7 @@ import {
   Percent,
   IndianRupee,
   CheckCircle2,
+  XCircle,
   Sparkles,
 } from "lucide-react";
 import api from "@/utils/axiosInstant";
@@ -23,6 +24,7 @@ export default function CouponCodePage() {
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [togglingId, setTogglingId] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -52,6 +54,25 @@ export default function CouponCodePage() {
   useEffect(() => {
     fetchCoupons();
   }, []);
+
+  // Toggle Coupon Status (Active / Inactive)
+  const handleToggleCouponStatus = async (id, code) => {
+    setTogglingId(id);
+    try {
+      const res = await api.patch(`/coupon/toggle-status/${id}`);
+      if (res.data?.success) {
+        const updated = res.data.data;
+        setCoupons((prev) =>
+          prev.map((c) => (c._id === id ? { ...c, isActive: updated.isActive } : c))
+        );
+        toast.success(res.data.message || `Coupon '${code}' is now ${updated.isActive ? "Active" : "Inactive"}.`);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update status.");
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   // Handle Create Coupon Submit
   const handleCreateCoupon = async (e) => {
@@ -251,10 +272,29 @@ export default function CouponCodePage() {
                         <span className="text-gray-400 font-medium capitalize">
                           Type: <strong className="text-gray-700">{coupon.discountType}</strong>
                         </span>
-                        <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 text-[11px] font-semibold px-2 py-0.5 rounded-full">
-                          <CheckCircle2 size={12} />
-                          Active
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleCouponStatus(coupon._id, coupon.code)}
+                          disabled={togglingId === coupon._id}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wide transition-all cursor-pointer shadow-xs active:scale-95 border ${
+                            coupon.isActive !== false
+                              ? "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200"
+                              : "bg-red-100 text-red-800 border-red-300 hover:bg-red-200"
+                          }`}
+                          title="Click to toggle status"
+                        >
+                          {coupon.isActive !== false ? (
+                            <>
+                              <CheckCircle2 size={12} className="text-emerald-700" />
+                              <span>Active</span>
+                            </>
+                          ) : (
+                            <>
+                              <XCircle size={12} className="text-red-700" />
+                              <span>Inactive</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -295,10 +335,29 @@ export default function CouponCodePage() {
                             ₹{coupon.minOrderAmount}
                           </td>
                           <td className="p-4">
-                            <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full">
-                              <CheckCircle2 size={12} />
-                              Active
-                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleCouponStatus(coupon._id, coupon.code)}
+                              disabled={togglingId === coupon._id}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide transition-all cursor-pointer shadow-xs active:scale-95 border ${
+                                coupon.isActive !== false
+                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200"
+                                  : "bg-red-100 text-red-800 border-red-300 hover:bg-red-200"
+                              }`}
+                              title="Click to toggle status"
+                            >
+                              {coupon.isActive !== false ? (
+                                <>
+                                  <CheckCircle2 size={13} className="text-emerald-700" />
+                                  <span>Active</span>
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle size={13} className="text-red-700" />
+                                  <span>Inactive</span>
+                                </>
+                              )}
+                            </button>
                           </td>
                           <td className="p-4 text-center">
                             <button
