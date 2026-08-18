@@ -53,7 +53,7 @@ const Category = () => {
             {/* Card */}
             <Link 
               href={item.link} 
-              className="relative w-[115px] min-[380px]:w-[135px] sm:w-[175px] md:w-[185px] lg:w-[200px] h-[100px] min-[380px]:h-[120px] sm:h-[155px] md:h-[165px] lg:h-[180px] bg-light-cream rounded-t-full overflow-visible group"
+              className="relative w-[115px] min-[380px]:w-[135px] sm:w-[175px] md:w-[185px] lg:w-[180px] 2xl:w-[200px] h-[100px] min-[380px]:h-[120px] sm:h-[155px] md:h-[165px] lg:h-[180px] bg-light-cream rounded-t-full overflow-visible group"
             >
               <CustomImage
                 srcAttr={item.img}

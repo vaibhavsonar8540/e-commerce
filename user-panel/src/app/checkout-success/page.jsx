@@ -81,7 +81,7 @@ export default function CheckoutSuccessPage() {
         {/* Buttons */}
         <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
           <Link
-            href="/profile"
+            href="/orders"
             className="w-full sm:flex-1 py-3 sm:py-3.5 bg-black hover:bg-gray-900 text-white font-bold rounded-xl sm:rounded-2xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md cursor-pointer"
           >
             <PackageCheck size={18} />
