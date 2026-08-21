@@ -1,4 +1,5 @@
 import "./globals.css";
+import Script from "next/script";
 import Providers from "./Provider";
 import localFont from "next/font/local";
 import { ToastContainer } from "react-toastify";
@@ -103,6 +104,13 @@ export default function RootLayout({ children }) {
       className={`${openSans.variable} ${playfairDisplay.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <Script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="Znh/owIvld+ylX3c3MHL4A"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <DynamicSmoothScroll>
           <Providers>
