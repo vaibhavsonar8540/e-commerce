@@ -131,12 +131,12 @@ export default function CartPage() {
                     </div>
 
                     <div className="grow min-w-0 flex flex-col justify-between self-stretch py-1">
-                      {/* Row 1: Product Name & Price in right corner */}
-                      <div className="flex items-center justify-between gap-4">
+                      {/* Product Name & Price below it */}
+                      <div>
                         <h3 className="text-sm sm:text-base font-bold text-gray-800 line-clamp-1 capitalize">
                           {prod.productName}
                         </h3>
-                        <div className="flex items-baseline gap-2 shrink-0">
+                        <div className="flex items-baseline gap-2 mt-1">
                           <span className="text-sm sm:text-base font-extrabold text-black">
                             ₹{item.itemTotal}
                           </span>

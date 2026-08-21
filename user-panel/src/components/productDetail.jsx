@@ -98,7 +98,7 @@ export default function ProductDetail({ product }) {
     if (!isAuthenticated) {
       dispatch(
         setFlashMessage({
-          type: "info",
+          type: "warning",
           message: "Please sign-in to purchase items.",
         }),
       );
@@ -140,7 +140,7 @@ export default function ProductDetail({ product }) {
     if (!isAuthenticated) {
       dispatch(
         setFlashMessage({
-          type: "info",
+          type: "warning",
           message: "Please sign-in to purchase items.",
         }),
       );

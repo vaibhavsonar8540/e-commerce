@@ -221,35 +221,29 @@ const Header = () => {
       {/* FLASH MESSAGE BANNER (Floating banner for all screens) */}
       {flashMessage && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[92%] sm:w-auto min-w-[300px] max-w-md px-4 py-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-3 transition-all duration-300 ${
-            typeof flashMessage === "object" && flashMessage?.type === "warning"
-              ? "bg-[#f59e0b] text-black border-amber-600"
-              : typeof flashMessage === "object" && flashMessage?.type === "error"
-              ? "bg-red-600 text-white border-red-700"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[92%] sm:w-auto min-w-[320px] max-w-md px-4 py-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-3 transition-all duration-300 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 ${
+            typeof flashMessage === "object" && flashMessage?.type === "error"
+              ? "bg-red-600 text-white border-red-700 shadow-red-900/30"
               : typeof flashMessage === "object" && flashMessage?.type === "success"
-              ? "bg-emerald-600 text-white border-emerald-700"
-              : "bg-[#45220e] text-white border-[#34180a]"
+              ? "bg-emerald-600 text-white border-emerald-700 shadow-emerald-900/30"
+              : "bg-amber-500 text-white border-amber-600 shadow-amber-900/30"
           }`}
         >
           <div className="flex items-center gap-3 pr-6">
-            {typeof flashMessage === "object" && flashMessage?.type === "warning" ? (
-              <div className="bg-black text-[#f59e0b] p-1.5 rounded-xl shrink-0">
-                <FaExclamationTriangle className="w-4 h-4" />
-              </div>
-            ) : typeof flashMessage === "object" && flashMessage?.type === "error" ? (
-              <div className="bg-white/20 text-white p-1.5 rounded-xl shrink-0">
+            {typeof flashMessage === "object" && flashMessage?.type === "error" ? (
+              <div className="bg-white/20 text-white p-2 rounded-xl shrink-0 flex items-center justify-center">
                 <FaExclamationCircle className="w-4 h-4" />
               </div>
             ) : typeof flashMessage === "object" && flashMessage?.type === "success" ? (
-              <div className="bg-white/20 text-white p-1.5 rounded-xl shrink-0">
+              <div className="bg-white/20 text-white p-2 rounded-xl shrink-0 flex items-center justify-center">
                 <FaCheckCircle className="w-4 h-4" />
               </div>
             ) : (
-              <div className="bg-white/20 text-white p-1.5 rounded-xl shrink-0">
-                <FaInfoCircle className="w-4 h-4" />
+              <div className="bg-white/20 text-white p-2 rounded-xl shrink-0 flex items-center justify-center">
+                <FaExclamationTriangle className="w-4 h-4" />
               </div>
             )}
-            <span className="text-xs sm:text-sm font-extrabold leading-snug">
+            <span className="text-xs sm:text-sm font-extrabold leading-snug tracking-wide">
               {typeof flashMessage === "object" ? flashMessage.message : flashMessage}
             </span>
           </div>
@@ -257,7 +251,7 @@ const Header = () => {
           <button
             type="button"
             onClick={() => dispatch(setFlashMessage(null))}
-            className="absolute top-2.5 right-2.5 p-1 rounded-full hover:bg-black/10 transition cursor-pointer"
+            className="absolute top-2.5 right-2.5 p-1 rounded-full hover:bg-white/20 transition cursor-pointer text-white/90 hover:text-white"
             aria-label="Close"
           >
             <HiX className="w-4 h-4" />

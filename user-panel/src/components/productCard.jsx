@@ -50,7 +50,7 @@ const ProductCard = ({ data }) => {
     }
 
     if (!isAuthenticated) {
-      dispatch(setFlashMessage({ type: "info", message: "Please sign-in to purchase items." }));
+      dispatch(setFlashMessage({ type: "warning", message: "Please sign-in to purchase items." }));
       dispatch(setIsModelOpen(true));
       return;
     }
@@ -82,7 +82,7 @@ const ProductCard = ({ data }) => {
     }
 
     if (!isAuthenticated) {
-      dispatch(setFlashMessage({ type: "info", message: "Please sign-in to save items to wishlist." }));
+      dispatch(setFlashMessage({ type: "warning", message: "Please sign-in to save items to wishlist." }));
       dispatch(setIsModelOpen(true));
       return;
     }
